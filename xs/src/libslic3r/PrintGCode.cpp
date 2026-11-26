@@ -604,8 +604,9 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
         }
 
         // when starting a new object, use the external motion planner for the first travel move
-        if (this->_last_obj_copy.first != copy && this->_last_obj_copy.second )
-            _gcodegen.avoid_crossing_perimeters.use_external_mp = true;
+        // (once, and also for the very first copy, as in Perl)
+        if (!this->_last_obj_copy.second || this->_last_obj_copy.first != copy)
+            _gcodegen.avoid_crossing_perimeters.use_external_mp_once = true;
         this->_last_obj_copy.first = copy;
         this->_last_obj_copy.second = true;
         _gcodegen.set_origin(Pointf::new_unscale(copy));
