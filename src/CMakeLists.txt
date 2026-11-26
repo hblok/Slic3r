@@ -45,13 +45,6 @@ if(Enable_GUI)
     add_compile_options(-DUSE_WX)
 endif(Enable_GUI)
 
-if($ENV{TRAVIS})
-    if($ENV{TRAVIS} STREQUAL "true")
-        message(STATUS "Building on Travis-CI.")
-        set(IS_TRAVIS_BUILD TRUE)
-    endif()
-endif()
-
 execute_process(COMMAND git rev-parse --short HEAD OUTPUT_VARIABLE GIT_VERSION ERROR_QUIET)
 if (MSVC)
     if (CMAKE_BUILD_TYPE MATCHES Debug)
@@ -120,11 +113,11 @@ endif(NOT GIT_VERSION STREQUAL "")
 find_package(Threads REQUIRED)
 
 set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost REQUIRED COMPONENTS system thread filesystem)
+find_package(Boost REQUIRED COMPONENTS thread filesystem)
 
 if (NOT (${Boost_VERSION_STRING} VERSION_LESS "1.74.0"))
     MESSAGE("Adding in boost::nowide")
-    find_package(Boost REQUIRED COMPONENTS system thread filesystem OPTIONAL_COMPONENTS nowide)
+    find_package(Boost REQUIRED COMPONENTS thread filesystem OPTIONAL_COMPONENTS nowide)
 endif()
 
 set(LIBDIR ${CMAKE_CURRENT_SOURCE_DIR}/../xs/src/)
@@ -461,11 +454,7 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
         enable_testing()
         if (NOT TARGET Catch)
             include (ExternalProject)
-            if(IS_TRAVIS_BUILD)     # on travis, use git for fetching instead of wget
-                set(FETCH_EXTERNAL_CATCH
-                    GIT_REPOSITORY https://github.com/catchorg/Catch.git
-                    GIT_TAG 03d122a35c3f5c398c43095a87bc82ed44642516)
-            elseif(WIN32)
+            if(WIN32)
                 set(FETCH_EXTERNAL_CATCH
                     URL https://github.com/catchorg/Catch2/archive/v2.4.2.zip
                     URL_HASH MD5=6a2ffb9c69d368ebc1ad13146c5a5e1e)
@@ -549,11 +538,7 @@ if (SLIC3R_BUILD_TESTS)
     enable_testing()
     if (NOT TARGET Catch)
         include (ExternalProject)
-        if(IS_TRAVIS_BUILD)     # on travis, use git for fetching instead of wget
-            set(FETCH_EXTERNAL_CATCH
-                GIT_REPOSITORY https://github.com/catchorg/Catch.git
-                GIT_TAG 03d122a35c3f5c398c43095a87bc82ed44642516)
-        elseif(WIN32)
+        if(WIN32)
             set(FETCH_EXTERNAL_CATCH
                 URL https://github.com/catchorg/Catch2/archive/v2.4.2.zip
                 URL_HASH MD5=6a2ffb9c69d368ebc1ad13146c5a5e1e)

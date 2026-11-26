@@ -15,6 +15,7 @@
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 #include <math.h>
 #include <boost/filesystem.hpp>
 #include <boost/nowide/args.hpp>
