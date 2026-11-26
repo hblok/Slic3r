@@ -307,6 +307,7 @@ PrintGCode::output()
                 if (layers.count(scale_(layer->print_z)) == 0) { // initialize bucket if empty
                     layers[scale_(layer->print_z)] = std::map<size_t, LayerPtrs >();
                     layers[scale_(layer->print_z)][idx] = LayerPtrs();
+                    z.emplace_back(scale_(layer->print_z)); // support-only heights are printed too
                 }
                 layers[scale_(layer->print_z)][idx].emplace_back(layer);
             }
@@ -410,9 +411,11 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
     const PrintObject& obj { *layer->object() };
     _gcodegen.config.apply(obj.config, true);
 
-    // check for usage of spiralvase logic.
+    // check for usage of spiralvase logic (only when it is configured, as in Perl;
+    // support layers have no regions and would otherwise always qualify).
     this->_spiral_vase.enable = (
-            layer->id() > 0
+            _print.config.spiral_vase
+            && layer->id() > 0
             && (_print.config.skirts == 0 || (layer->id() >= _print.config.skirt_height && !_print.has_infinite_skirt()))
             && std::find_if(layer->regions.cbegin(), layer->regions.cend(), [layer] (const LayerRegion* l)
                 { return    l->region()->config.bottom_solid_layers > layer->id()
@@ -420,11 +423,8 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
                          || l->fills.items_count() > 0;
                 }) == layer->regions.cend()
             );
-    this->_gcodegen.enable_loop_clipping = this->_spiral_vase.enable;
-
-
-
     // if using spiralvase, disable loop clipping.
+    this->_gcodegen.enable_loop_clipping = !this->_spiral_vase.enable;
 
     // initialize autospeed.
     {

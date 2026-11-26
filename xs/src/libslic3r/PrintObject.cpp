@@ -1426,8 +1426,8 @@ PrintObject::_support_material()
     return new SupportMaterial(
         &print()->config,
         &config,
-        first_layer_flow,
         _support_material_flow(),
+        first_layer_flow,
         _support_material_flow(frSupportMaterialInterface)
     );
 }

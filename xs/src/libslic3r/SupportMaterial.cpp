@@ -23,8 +23,13 @@ SupportMaterial::generate_toolpaths(PrintObject *object,
                                     map<int, Polygons> _interface,
                                     map<int, Polygons> base)
 {
-    // Assign the object to the supports class.
+    // Assign the object and the support areas to the supports class:
+    // process_layer() reads them from the members.
     this->object = object;
+    this->overhang = std::move(overhang);
+    this->contact = std::move(contact);
+    this->_interface = std::move(_interface);
+    this->base = std::move(base);
 
     // Shape of contact area.
     toolpaths_params params;
@@ -190,15 +195,12 @@ SupportMaterial::support_layers_z(vector<coordf_t> contact_z,
         }
     }
 
-    // Remove duplicates and make sure all 0.x values have the leading 0.
-    {
-        set<coordf_t> s;
-        for (coordf_t el : z)
-            s.insert(int(el * 1000) / 1000.0); // round it to 2 decimal places.
-        z = vector<coordf_t>();
-        for (coordf_t el : s)
-            z.push_back(el);
-    }
+    // Remove duplicates, keeping the values unchanged: the contact and top maps are
+    // looked up by these exact keys later. (Truncating them to 3 decimals made every
+    // lookup miss, so no support was generated.) Perl merges values equal to 15
+    // significant digits; 1e-9 mm is the same for any printable height.
+    sort(z.begin(), z.end());
+    z.erase(unique(z.begin(), z.end(), [](coordf_t a, coordf_t b) { return fabs(a - b) < 1e-9; }), z.end());
 
     return z;
 }
@@ -481,7 +483,7 @@ SupportMaterial::contact_area(PrintObject *object)
                     scale_vector.push_back(fw / 2);
                     for (int i = static_cast<int>(scale_vector.size()) - 1; i >= 0; i--) {
                         difference = diff(
-                            offset(difference, i),
+                            offset(difference, scale_vector[i]),
                             slices_margin
                         );
                     }
@@ -608,8 +610,9 @@ SupportMaterial::generate_pillars_shape(const map<coordf_t, Polygons> &contact,
 
         for (auto x = bb.min.x; x <= bb.max.x - pillar_size; x += pillar_spacing) {
             for (auto y = bb.min.y; y <= bb.max.y - pillar_size; y += pillar_spacing) {
-                pillars.push_back(pillar);
-                pillar.translate(x, y);
+                Polygon p = pillar;
+                p.translate(x, y);
+                pillars.push_back(p);
             }
         }
 
@@ -636,10 +639,11 @@ SupportMaterial::generate_pillars_shape(const map<coordf_t, Polygons> &contact,
             auto capital_polygons = offset(Polygons({capital}), +(pillar_spacing - pillar_size) / 2);
             append_to(contact_supported_by_capitals, capital_polygons);
 
-            for (int j = i - 1; j >= 0; j--) {
-                capital_polygons = offset(Polygons{capital}, -interface_flow.scaled_width() / 2);
-                if (capitals.empty()) break;
-                append_to(shape[i], capital_polygons);
+            // Shrink the capital step by step on the layers below.
+            for (int j = static_cast<int>(i) - 1; j >= 0; j--) {
+                capital_polygons = offset(capital_polygons, -interface_flow.scaled_width() / 2);
+                if (capital_polygons.empty()) break;
+                append_to(shape[j], capital_polygons);
             }
         }
         // Work on one pillar at time (if any) to prevent the capitals from being merged
@@ -848,7 +852,7 @@ SupportMaterial::overlapping_layers(int layer_idx, const vector<coordf_t> &suppo
 void
 SupportMaterial::clip_with_shape(map<int, Polygons> &support, map<int, Polygons> &shape)
 {
-    for (auto layer : support) {
+    for (auto &layer : support) {
         // Don't clip bottom layer with shape so that we
         // can generate a continuous base flange
         // also don't clip raft layers
@@ -862,40 +866,24 @@ SupportMaterial::clip_with_shape(map<int, Polygons> &support, map<int, Polygons>
 void
 SupportMaterial::clip_with_object(map<int, Polygons> &support, vector<coordf_t> support_z, PrintObject &object)
 {
-    int i = 0;
-    for (auto support_layer: support) {
-        if (support_layer.second.empty()) {
-            i++;
-            continue;
-        }
+    // As clip_with_object in lib/Slic3r/Print/SupportMaterial.pm: index by the map key,
+    // write the result back, and clip with the full slices (holes included).
+    for (auto &support_layer : support) {
+        if (support_layer.second.empty()) continue;
+        const int i = support_layer.first;
         coordf_t z_max = support_z[i];
         coordf_t z_min = (i == 0) ? 0 : support_z[i - 1];
-
-        LayerPtrs layers;
-        for (auto layer : object.layers) {
-            if (layer->print_z > z_min && (layer->print_z - layer->height) < z_max) {
-                layers.push_back(layer);
-            }
-        }
 
         // $layer->slices contains the full shape of layer, thus including
         // perimeter's width. $support contains the full shape of support
         // material, thus including the width of its foremost extrusion.
-        // We leave a gap equal to a full extrusion width. TODO ask about this line @samir
+        // We leave a gap equal to a full extrusion width.
         Polygons slices;
-        for (Layer *l : layers) {
-            for (auto s : l->slices.contours()) {
-                slices.push_back(s);
-            }
-        }
+        for (Layer *layer : object.layers)
+            if (layer->print_z > z_min && (layer->print_z - layer->height) < z_max)
+                append_to(slices, Polygons(layer->slices));
         support_layer.second = diff(support_layer.second, offset(slices, flow.scaled_width()));
     }
-    /*
-        $support->{$i} = diff(
-            $support->{$i},
-            offset([ map @$_, map @{$_->slices}, @layers ], +$self->flow.scaled_width),
-        );
-     */
 }
 
 void
@@ -1027,7 +1015,9 @@ SupportMaterial::process_layer(int layer_id, toolpaths_params params)
     // as Perl copies the C++ pointers by default, so then the C++ objects are shared between threads!
     map<string, Fill *> fillers;
     fillers["interface"] = Fill::new_from_type("rectilinear");
-    fillers["support"] = Fill::new_from_type(InfillPattern(params.pattern)); // FIXME @Samir55
+    // params.pattern is only smpRectilinear or smpHoneycomb here (see generate_toolpaths).
+    // The two enums do not line up, so map them instead of casting.
+    fillers["support"] = Fill::new_from_type(params.pattern == smpHoneycomb ? ipHoneycomb : ipRectilinear);
 
     BoundingBox bounding_box = object->bounding_box();
     fillers["interface"]->bounding_box = bounding_box;
@@ -1062,8 +1052,8 @@ SupportMaterial::process_layer(int layer_id, toolpaths_params params)
                     p2.make_counter_clockwise();
                     if (diff(Polygons({p2}), base, 1).empty())
                         continue;
-                    _interface.push_back(p);
                 }
+                _interface.push_back(p);
             }
         }
         base = diff(base, _interface);
