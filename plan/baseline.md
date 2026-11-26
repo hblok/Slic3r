@@ -130,8 +130,17 @@ positions.
 Different option names: `--center` in C++ is `--print-center` in Perl; C++ has no
 `--merge`.
 
-Not yet compared: multiple different objects, modifier volumes, several extruders,
-transforms (`--scale`, `--rotate`), AMF and 3MF input, the GUI-only steps.
+Second sweep (scratch, not in the script yet): AMF, 3MF, multi-object AMF, layer
+G-code, top/bottom patterns, speed limits, retraction and fan options are identical.
+Open:
+- **C++ CLI crashes** with `--scale`, `--rotate`, `--rotate-x`, `--duplicate-grid`
+  ("Can't call raw_bounding_box() with no instances", then a segfault): the transforms
+  in `src/slic3r.cpp` run before the objects have instances.
+- Differ from Perl: `--adaptive-slicing`, `--vibration-limit`, `--pressure-advance`
+  (the last two are filters Perl implements itself).
+- Not compared yet: several extruders (Perl wants repeated options, e.g.
+  `--temperature 200 --temperature 210`), modifier volumes, GUI-only steps.
+  `--gcode-arcs` is refused by Perl as incomplete.
 
 `src/test/libslic3r/test_support_material.cpp` is still not part of the test build;
 the golden `table_support` output covers the default case.
