@@ -605,7 +605,11 @@ class FullPrintConfig
         if ((opt = PrintConfig::optptr(opt_key, create)) != NULL) return opt;
         if ((opt = HostConfig::optptr(opt_key, create)) != NULL) return opt;
         return NULL;
-    };
+    }
+
+    /// Range checks of ConfigBase, then the checks of Slic3r::Config::validate in
+    /// lib/Slic3r/Config.pm, with its messages. Throws std::invalid_argument.
+    void validate() const;
 };
 
 class SLAPrintConfig

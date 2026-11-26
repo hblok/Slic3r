@@ -212,3 +212,32 @@ SCENARIO("Config ini load/save interface", "[!mayfail]") {
     }
     REQUIRE(false);
 }
+
+SCENARIO("FullPrintConfig validation has the checks of the Perl version") {
+    GIVEN("A default full print config") {
+        FullPrintConfig config;
+        THEN("it is valid") {
+            REQUIRE_NOTHROW(config.validate());
+        }
+        WHEN("fill density is 100% with the default (stars) pattern") {
+            config.fill_density.value = 100;
+            THEN("it is refused") {
+                REQUIRE_THROWS_WITH(config.validate(), "The selected fill pattern is not supposed to work at 100% density");
+            }
+        }
+        WHEN("fill density is 100% with the rectilinear pattern") {
+            config.fill_density.value = 100;
+            config.fill_pattern.value = ipRectilinear;
+            THEN("it is valid") {
+                REQUIRE_NOTHROW(config.validate());
+            }
+        }
+        WHEN("firmware retraction is used with Mach3") {
+            config.use_firmware_retraction.value = true;
+            config.gcode_flavor.value = gcfMach3;
+            THEN("it is refused") {
+                REQUIRE_THROWS_AS(config.validate(), std::invalid_argument);
+            }
+        }
+    }
+}

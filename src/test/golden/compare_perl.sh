@@ -102,9 +102,8 @@ compare start_gcode_plain --start-gcode G28 --first-layer-bed-temperature 60 --b
     --first-layer-temperature 210 --temperature 205 $box
 compare box_with_support --support-material $box
 }
-# Known differences, not in the list: --avoid-crossing-perimeters (Perl detects a new
-# object copy by memory address, see commit 30d45e10); --fill-density 100% with a
-# pattern Perl refuses at 100% (C++ has no such validation yet).
+# Known difference, not in the list: --avoid-crossing-perimeters (Perl detects a new
+# object copy by memory address, see commit 30d45e10).
 
 [ -n "${KEEP:-}" ] && [ $failed -ne 0 ] && echo "outputs kept in $tmp"
 exit $failed

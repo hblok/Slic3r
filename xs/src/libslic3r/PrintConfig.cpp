@@ -1,4 +1,7 @@
 #include "PrintConfig.hpp"
+#include <algorithm>
+#include <functional>
+#include <stdexcept>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
@@ -2144,5 +2147,82 @@ CLIMiscConfigDef::CLIMiscConfigDef()
 const CLIActionsConfigDef    cli_actions_config_def;
 const CLITransformConfigDef  cli_transform_config_def;
 const CLIMiscConfigDef       cli_misc_config_def;
+
+void
+FullPrintConfig::validate() const
+{
+    ConfigBase::validate();
+
+    auto fail = [](const char* msg) { throw std::invalid_argument(msg); };
+    auto any = [](const std::vector<double> &v, std::function<bool(double)> f) {
+        return std::any_of(v.begin(), v.end(), f);
+    };
+
+    if (this->threads.value < 1) fail("Invalid value for --threads");
+    if (this->layer_height.value <= 0) fail("Invalid value for --layer-height");
+    if (this->get_abs_value("first_layer_height") <= 0) fail("Invalid value for --first-layer-height");
+    if (this->adaptive_slicing.value && this->first_layer_height.percent)
+        fail("Adaptive slicing requires a non-relative first layer height.");
+    if (any(this->filament_diameter.values, [](double d) { return d < 1; }))
+        fail("Invalid value for --filament-diameter");
+    if (this->min_shell_thickness.value < 0) fail("Invalid value for --min-shell-thickness");
+    if (any(this->nozzle_diameter.values, [](double d) { return d < 0; }))
+        fail("Invalid value for --nozzle-diameter");
+    if (this->perimeters.value < 0) fail("Invalid value for --perimeters");
+    if (this->top_solid_layers.value < 0) fail("Invalid value for --top-solid-layers");
+    if (this->bottom_solid_layers.value < 0) fail("Invalid value for --bottom-solid-layers");
+    if (this->min_top_bottom_shell_thickness.value < 0)
+        fail("Invalid value for --min-top-bottom-shell-thickness");
+
+    const auto flavor = this->gcode_flavor.value;
+    if (this->use_firmware_retraction.value && flavor != gcfSmoothie && flavor != gcfRepRap
+            && flavor != gcfMachinekit && flavor != gcfRepetier)
+        fail("--use-firmware-retraction is only supported by Marlin, Smoothie, Repetier and Machinekit firmware");
+    if (this->use_firmware_retraction.value
+            && std::any_of(this->wipe.values.begin(), this->wipe.values.end(), [](bool w) { return w; }))
+        fail("--use-firmware-retraction is not compatible with --wipe");
+
+    // 100% density only with the patterns allowed for top and bottom (external) infill
+    const auto pattern = this->fill_pattern.value;
+    if (this->fill_density.value == 100 && pattern != ipRectilinear && pattern != ipConcentric
+            && pattern != ipHilbertCurve && pattern != ipArchimedeanChords && pattern != ipOctagramSpiral)
+        fail("The selected fill pattern is not supposed to work at 100% density");
+
+    if (this->infill_every_layers.value < 1) fail("Invalid value for --infill-every-layers");
+    if (this->skirt_height.value < -1) fail("Invalid value for --skirt-height"); // -1: as tall as the object
+    if (this->bridge_flow_ratio.value <= 0) fail("Invalid value for --bridge-flow-ratio");
+    if (this->extruder_clearance_radius.value <= 0) fail("Invalid value for --extruder-clearance-radius");
+    if (this->extruder_clearance_height.value <= 0) fail("Invalid value for --extruder-clearance-height");
+    if (any(this->extrusion_multiplier.values, [](double m) { return m <= 0; }))
+        fail("Invalid value for --extrusion-multiplier");
+    if ((this->perimeter_acceleration.value || this->infill_acceleration.value
+            || this->bridge_acceleration.value || this->first_layer_acceleration.value)
+            && !this->default_acceleration.value)
+        fail("Invalid zero value for --default-acceleration when using other acceleration settings");
+
+    if (this->spiral_vase.value) {
+        if (this->perimeters.value > 1) fail("Can't make more than one perimeter when spiral vase mode is enabled");
+        if (this->perimeters.value < 1) fail("Can't make less than one perimeter when spiral vase mode is enabled");
+        if (this->min_shell_thickness.value > 0)
+            fail("Minimum shell thickness should be 0 when spiral vase mode is enabled");
+        if (this->fill_density.value > 0)
+            fail("Spiral vase mode can only print hollow objects, so you need to set Fill density to 0");
+        if (this->top_solid_layers.value > 0) fail("Spiral vase mode is not compatible with top solid layers");
+        if (this->support_material.value || this->support_material_enforce_layers.value > 0)
+            fail("Spiral vase mode is not compatible with support material");
+    }
+
+    if (this->adaptive_slicing.value)
+        for (size_t i = 0; i < this->max_layer_height.values.size() && i < this->min_layer_height.values.size(); ++i)
+            if (this->max_layer_height.values[i] < this->min_layer_height.values[i])
+                fail("Max layer height should be greater than min layer height.");
+
+    if (this->nozzle_diameter.values.empty()) return;
+    const double max_nozzle = *std::max_element(this->nozzle_diameter.values.begin(), this->nozzle_diameter.values.end());
+    for (const char* key : {"perimeter_extrusion_width", "infill_extrusion_width", "solid_infill_extrusion_width",
+            "top_infill_extrusion_width", "support_material_extrusion_width", "first_layer_extrusion_width"})
+        if (this->get_abs_value(key, max_nozzle) > 10 * max_nozzle)
+            fail("Invalid extrusion width (too large)");
+}
 
 }
