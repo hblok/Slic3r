@@ -41,7 +41,7 @@ sub new {
     
     # initialize status bar
     $self->{statusbar} = Slic3r::GUI::ProgressStatusBar->new($self, -1);
-    $self->{statusbar}->SetStatusText("Version $Slic3r::VERSION - Remember to check for updates at https://slic3r.org/");
+    $self->{statusbar}->SetStatusText("Version $Slic3r::VERSION");
     $self->SetStatusBar($self->{statusbar});
     
     $self->{loaded} = 1;
@@ -310,10 +310,6 @@ sub _init_menubar {
         wxTheApp->append_menu_item($helpMenu, "Slic3r &Website", 'Open the Slic3r website in your browser', sub {
             Wx::LaunchDefaultBrowser('https://slic3r.org/');
         });
-        my $versioncheck = wxTheApp->append_menu_item($helpMenu, "Check for &Updates...", 'Check for new Slic3r versions', sub {
-            wxTheApp->check_version(1);
-        });
-        $versioncheck->Enable(wxTheApp->have_version_check);
         wxTheApp->append_menu_item($helpMenu, "Slic3r &Manual", 'Open the Slic3r manual in your browser', sub {
             Wx::LaunchDefaultBrowser('http://manual.slic3r.org/');
         });
