@@ -699,7 +699,8 @@ SupportMaterial::generate_base_layers(vector<coordf_t> support_z,
             // (1 interface layer means we only have contact layer, so $interface->{$i+1} is empty).
             Polygons upper_contact;
             if (object_config->support_material_interface_layers.value <= 1) {
-                append_to(upper_contact, ((size_t)i + 1 < support_z.size() ? contact[support_z[i + 1]] : contact[-1]));
+                if ((size_t)i + 1 < support_z.size() && contact.count(support_z[i + 1]) > 0)
+                    append_to(upper_contact, contact[support_z[i + 1]]);
             }
 
             Polygons ps_1;
@@ -708,14 +709,15 @@ SupportMaterial::generate_base_layers(vector<coordf_t> support_z,
             append_to(ps_1, upper_contact); // contact regions on upper layer
 
             Polygons ps_2;
-            for (auto el : overlapping_z) {
+            for (auto el : overlapping_z)
                 if (top.count(el) > 0)
                     append_to(ps_2, top[el]); // top slices on this layer.
-                if (_interface.count(el) > 0)
-                    append_to(ps_2, _interface[el]); // _interface regions on this layer.
+            for (auto idx : overlapping_layers) // _interface is keyed by layer index, not height
+                if (_interface.count(idx) > 0)
+                    append_to(ps_2, _interface[idx]); // _interface regions on this layer.
+            for (auto el : overlapping_z)
                 if (contact.count(el) > 0)
                     append_to(ps_2, contact[el]); // contact regions on this layer.
-            }
 
             base[i] = diff(
                 ps_1,
@@ -854,9 +856,8 @@ SupportMaterial::overlapping_layers(int layer_idx, const vector<coordf_t> &suppo
     coordf_t z_max = support_z[layer_idx];
     coordf_t z_min = layer_idx == 0 ? 0 : support_z[layer_idx - 1];
 
+    // The layer itself is included, as in Perl.
     for (int i = 0; i < (int) support_z.size(); i++) {
-        if (i == layer_idx) continue;
-
         coordf_t z_max2 = support_z[i];
         coordf_t z_min2 = i == 0 ? 0 : support_z[i - 1];
 

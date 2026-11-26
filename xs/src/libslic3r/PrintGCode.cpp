@@ -616,8 +616,8 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
         // and also because we avoid travelling on other things when printing it
         if(layer->is_support()) {
             const SupportLayer* slayer = dynamic_cast<const SupportLayer*>(layer);
-            ExtrusionEntityCollection paths;
             if (slayer->support_interface_fills.size() > 0) {
+                ExtrusionEntityCollection paths;
                 gcode += _gcodegen.set_extruder(obj.config.support_material_interface_extruder - 1);
                 slayer->support_interface_fills.chained_path_from(_gcodegen.last_pos(), &paths, false);
                 for (const auto& path : paths) {
@@ -625,6 +625,8 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
                 }
             }
             if (slayer->support_fills.size() > 0) {
+                // own collection: reusing the interface one printed the interface twice
+                ExtrusionEntityCollection paths;
                 gcode += _gcodegen.set_extruder(obj.config.support_material_extruder - 1);
                 slayer->support_fills.chained_path_from(_gcodegen.last_pos(), &paths, false);
                 for (const auto& path : paths) {
