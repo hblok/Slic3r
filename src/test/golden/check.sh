@@ -41,6 +41,10 @@ check box_tuned $box --nozzle-diameter 0.4 --layer-height 0.2 --first-layer-heig
 profiles=../../../profiles
 check ender5pro_box $box --load $profiles/printer/Ender-5-Pro.ini \
     --load $profiles/filament/Ender-5-Pro-PLA.ini --load $profiles/print/Ender-5-Pro-0.20mm.ini
+# Ender profiles with support on a 3-layer raft: most of the support code in one run
+check ender5pro_table_raft table.stl --load $profiles/printer/Ender-5-Pro.ini \
+    --load $profiles/filament/Ender-5-Pro-PLA.ini --load $profiles/print/Ender-5-Pro-0.20mm.ini \
+    --support-material --raft-layers 3
 # Overhang with the default (pillars) support; matches the Perl pipeline in
 # filament per role (plan/baseline.md).
 check table_support table.stl --support-material --gcode-comments

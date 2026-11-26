@@ -2,6 +2,7 @@
 #include "PrintConfig.hpp"
 #include "Log.hpp"
 #include <algorithm>
+#include <cstdlib>
 #include <cstdio>
 #include <ctime>
 #include <iostream>
@@ -288,41 +289,31 @@ PrintGCode::output()
             p.emplace_back(obj->_shifted_copies.at(0));
         Geometry::chained_path(p, obj_idx);
 
-        std::vector<size_t> z;
-        z.reserve(100); // preallocate with 100 layers
-        std::map<coord_t, std::map<size_t, LayerPtrs > > layers {};
+        // Buckets of layers by height, in height order. Heights are compared at 15
+        // significant digits, as the Perl exporter's hash keys do, so an object layer at
+        // 1.2000000000000002 and a support layer at 1.2 are one bucket (object first).
+        auto z_key = [](coordf_t print_z) {
+            char buf[32];
+            snprintf(buf, sizeof(buf), "%.15g", print_z);
+            return std::strtod(buf, nullptr);
+        };
+        std::map<coordf_t, std::map<size_t, LayerPtrs > > layers {};
         for (size_t idx = 0U; idx < _print.objects.size(); ++idx) {
             const PrintObject& object { *objects.at(idx) };
-            // sort layers by Z into buckets
-            for (Layer* layer : object.layers) {
-                if (layers.count(scale_(layer->print_z)) == 0) { // initialize bucket if empty
-
-                    layers[scale_(layer->print_z)] = std::map<size_t, LayerPtrs >();
-                    layers[scale_(layer->print_z)][idx] = LayerPtrs();
-                    z.emplace_back(scale_(layer->print_z));
-                }
-                layers[scale_(layer->print_z)][idx].emplace_back(layer);
-            }
-            for (Layer* layer : object.support_layers) { // don't use auto here to not have to cast later
-                if (layers.count(scale_(layer->print_z)) == 0) { // initialize bucket if empty
-                    layers[scale_(layer->print_z)] = std::map<size_t, LayerPtrs >();
-                    layers[scale_(layer->print_z)][idx] = LayerPtrs();
-                    z.emplace_back(scale_(layer->print_z)); // support-only heights are printed too
-                }
-                layers[scale_(layer->print_z)][idx].emplace_back(layer);
-            }
+            for (Layer* layer : object.layers)
+                layers[z_key(layer->print_z)][idx].emplace_back(layer);
+            for (Layer* layer : object.support_layers) // support-only heights are printed too
+                layers[z_key(layer->print_z)][idx].emplace_back(layer);
         }
 
-        // pass the comparator to leave no doubt.
-        std::sort(z.begin(), z.end(),  std::less<size_t>());
         //  call process_layers in the order given by obj_idx
-        for (const auto& print_z : z) {
+        for (auto& bucket : layers) {
             for (const auto& idx : obj_idx) {
-                for (const auto* layer : layers[print_z][idx] ) {
+                for (const auto* layer : bucket.second[idx] ) {
                     this->process_layer(idx, layer, layer->object()->_shifted_copies);
                 }
             }
-            _gcodegen.placeholder_parser->set("layer_z", unscale(print_z));
+            _gcodegen.placeholder_parser->set("layer_z", bucket.first);
             _gcodegen.placeholder_parser->set("layer_num", _gcodegen.layer_index);
         }
 
