@@ -1870,7 +1870,7 @@ M84     ; disable motors
 ; start_filament_gcode = "; Filament gcode\n"
 ; start_gcode = G28 ; home all axes\nG1 Z5 F5000 ; lift nozzle\n
 ; temperature = 200
-; threads = 16
+; threads = 4
 ; toolchange_gcode = 
 ; travel_speed = 130
 ; use_firmware_retraction = 0
