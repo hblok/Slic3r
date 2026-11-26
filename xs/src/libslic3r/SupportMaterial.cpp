@@ -340,9 +340,9 @@ SupportMaterial::contact_area(PrintObject *object)
                     // is not too high: in that case, $d will be very small (as we need to catch
                     // very short overhangs), and such contact area would be eaten by the
                     // enforced spacing, resulting in high threshold angles to be almost ignored
-                    if (d > fw / 2)
+                    if (d > fw / 2.0)
                         difference = diff(
-                            offset(difference, d - fw / 2),
+                            offset(difference, d - fw / 2.0),
                             lower_layer->slices);
 
                 }
@@ -354,7 +354,7 @@ SupportMaterial::contact_area(PrintObject *object)
                     );
 
                     // Collapse very tiny spots.
-                    difference = offset2(difference, -fw / 10, +fw / 10);
+                    difference = offset2(difference, -fw / 10.0, +fw / 10.0);
                     // $diff now contains the ring or stripe comprised between the boundary of
                     // lower slices and the centerline of the last perimeter in this overhanging layer.
                     // Void $diff means that there's no upper perimeter whose centerline is
@@ -434,7 +434,7 @@ SupportMaterial::contact_area(PrintObject *object)
                             auto w = *max_element(widths, widths + 4);
 
                             // Also apply safety offset to ensure no gaps are left in between.
-                            Polygons ps = offset(overhang_perimeters, w / 2 + 10);
+                            Polygons ps = offset(overhang_perimeters, w / 2.0 + 10);
                             bridged_perimeters = union_(ps);
                         }
                     }
@@ -488,7 +488,7 @@ SupportMaterial::contact_area(PrintObject *object)
                 //    We increment the area in steps because we don't want our support to overflow
                 // on the other side of the object (if it's very thin).
                 {
-                    Polygons slices_margin = offset(lower_layer->slices, +fw / 2);
+                    Polygons slices_margin = offset(lower_layer->slices, +fw / 2.0);
 
                     if (buildplate_only) {
                         // Trim the inflated contact surfaces by the top surfaces as well.
@@ -496,9 +496,9 @@ SupportMaterial::contact_area(PrintObject *object)
                         slices_margin = union_(slices_margin);
                     }
 
-                    vector<coord_t> scale_vector
+                    vector<float> scale_vector
                         (static_cast<unsigned long>(SUPPORT_MATERIAL_MARGIN / MARGIN_STEP), scale_(MARGIN_STEP));
-                    scale_vector.push_back(fw / 2);
+                    scale_vector.push_back(fw / 2.0);
                     for (int i = static_cast<int>(scale_vector.size()) - 1; i >= 0; i--) {
                         difference = diff(
                             offset(difference, scale_vector[i]),
@@ -654,12 +654,12 @@ SupportMaterial::generate_pillars_shape(const map<coordf_t, Polygons> &contact,
         Polygons contact_supported_by_capitals;
         for (auto capital : capitals) {
             // Enlarge capital tops.
-            auto capital_polygons = offset(Polygons({capital}), +(pillar_spacing - pillar_size) / 2);
+            auto capital_polygons = offset(Polygons({capital}), +(pillar_spacing - pillar_size) / 2.0);
             append_to(contact_supported_by_capitals, capital_polygons);
 
             // Shrink the capital step by step on the layers below.
             for (int j = static_cast<int>(i) - 1; j >= 0; j--) {
-                capital_polygons = offset(capital_polygons, -interface_flow.scaled_width() / 2);
+                capital_polygons = offset(capital_polygons, -interface_flow.scaled_width() / 2.0);
                 if (capital_polygons.empty()) break;
                 append_to(shape[j], capital_polygons);
             }
@@ -939,7 +939,7 @@ SupportMaterial::process_layer(int layer_id, toolpaths_params params)
     }
     else if (!contact.empty() && params.contact_loops > 0) { // Generate the outermost loop.
         // Find the centerline of the external loop (or any other kind of extrusions should the loop be skipped).
-        contact = offset(contact, -_interface_flow.scaled_width() / 2);
+        contact = offset(contact, -_interface_flow.scaled_width() / 2.0);
 
         Polygons loops0;
         {
@@ -948,7 +948,7 @@ SupportMaterial::process_layer(int layer_id, toolpaths_params params)
 
             // Only consider the loops facing the overhang.
             {
-                auto overhang_with_margin = offset(overhang, +_interface_flow.scaled_width() / 2);
+                auto overhang_with_margin = offset(overhang, +_interface_flow.scaled_width() / 2.0);
                 {
                     Polygons ps;
                     for (auto p : external_loops) {
@@ -1049,7 +1049,7 @@ SupportMaterial::process_layer(int layer_id, toolpaths_params params)
         fillers["interface"]->min_spacing = _interface_flow.spacing();
 
         // Find centerline of the external loop.
-        _interface = offset2(_interface, +SCALED_EPSILON, -(SCALED_EPSILON + _interface_flow.scaled_width() / 2));
+        _interface = offset2(_interface, +SCALED_EPSILON, -(SCALED_EPSILON + _interface_flow.scaled_width() / 2.0));
 
         // Join regions by offsetting them to ensure they're merged.
         {
@@ -1113,7 +1113,7 @@ SupportMaterial::process_layer(int layer_id, toolpaths_params params)
         Flow *base_flow = &_flow;
 
         // Find centerline of the external loop/extrusions.
-        Polygons to_infill = offset2(base, +SCALED_EPSILON, -(SCALED_EPSILON + _flow.scaled_width() / 2));
+        Polygons to_infill = offset2(base, +SCALED_EPSILON, -(SCALED_EPSILON + _flow.scaled_width() / 2.0));
         ExPolygons new_to_infill;
 
         ExtrusionPaths paths;
