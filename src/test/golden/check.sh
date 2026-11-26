@@ -38,6 +38,9 @@ check box_default $box
 check box_tuned $box --nozzle-diameter 0.4 --layer-height 0.2 --first-layer-height 0.2 \
     --fill-pattern gyroid --fill-density 20% --brim-width 5 --retract-length 5 \
     --center 110,110 --gcode-comments
+profiles=../../../profiles
+check ender5pro_box $box --load $profiles/printer/Ender-5-Pro.ini \
+    --load $profiles/filament/Ender-5-Pro-PLA.ini --load $profiles/print/Ender-5-Pro-0.20mm.ini
 # Overhang. The C++ CLI generates no support yet (plan/baseline.md): this records
 # the current output and must be updated when that is fixed.
 check table_support table.stl --support-material --gcode-comments
