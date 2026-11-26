@@ -109,6 +109,17 @@ The G-code still differs from Perl in cooling feedrates and fan commands (782 of
 lines on the table, 2 of 1769 on the box) and in one end-of-print `M140 S0` (C++ skips
 it when the first-layer bed temperature is 0). Not checked: raft, `support_material_
 enforce_layers`, `buildplate_only`, multiple objects.
+Since commit `dd5d415c`, C++ and Perl G-code are identical (comments aside) for the
+default box, the table with support, the box with the Ender-5 Pro profiles, two boxes
+(`--duplicate 2`) and a raft. (`--center` in C++ is `--print-center` in Perl.)
+
+Open: the table with the Ender-5 Pro profiles (0.2 mm layers) still differs in about
+40% of lines: the order of object and support layers at equal heights, and E values
+in the last digit. Cause found, not fixed: the support layer heights differ in the
+last bits between the pipelines (Perl gets 1.2 exactly, C++ 1.1999999), so the export
+buckets them differently. Next step: make `SupportMaterial::support_layers_z` compute
+heights the way `support_layers_z` in `SupportMaterial.pm` does, not change the export.
+
 `src/test/libslic3r/test_support_material.cpp` is still not part of the test build;
 the golden `table_support` output covers the default case.
 
