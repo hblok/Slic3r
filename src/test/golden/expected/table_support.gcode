@@ -226,7 +226,7 @@ G1 E0.91502 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1671.841
+G1 F2833.302
 G1 X110.450 Y88.500 E2.02798 ; support material
 G1 X108.500 Y88.500 E2.05595 ; support material
 G1 X108.500 Y90.450 E2.08393 ; support material
@@ -235,19 +235,19 @@ G1 E0.11191 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.450 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1671.841
+G1 F2833.302
 G1 X103.450 Y95.500 E2.00991 ; support material
 G1 X101.066 Y95.500 E2.04412 ; support material
 G1 X101.464 Y96.190 E2.05556 ; support material
 G1 X103.450 Y96.190 E2.08405 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1671.841
+G1 F2833.302
 G1 X102.825 Y97.175 E2.16511 ; support material
 G1 X102.825 Y102.825 E2.24618 ; support material
 G1 X97.175 Y102.825 E2.32724 ; support material
 G1 X97.175 Y97.175 E2.40830 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1671.841
+G1 F2833.302
 G1 X95.500 Y97.802 E2.43106 ; support material
 G1 X95.500 Y101.035 E2.47744 ; support material
 G1 X96.293 Y99.662 E2.50019 ; support material
@@ -258,13 +258,13 @@ G1 E0.51096 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1671.841
+G1 F2833.302
 G1 X90.450 Y98.500 E2.02798 ; support material
 G1 X88.500 Y98.500 E2.05595 ; support material
 G1 X88.500 Y100.450 E2.08393 ; support material
 G1 X90.450 Y100.450 E2.11191 ; support material
 G1 X89.700 Y99.699 F7800.000 ; move to first support material point
-G1 F1671.841
+G1 F2833.302
 G1 X89.700 Y99.250 E2.11836 ; support material
 G1 X89.250 Y99.250 E2.12482 ; support material
 G1 X89.250 Y99.662 E2.13072 ; support material
@@ -274,13 +274,13 @@ G1 E0.13750 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1671.841
+G1 F2833.302
 G1 X90.450 Y88.500 E2.02798 ; support material
 G1 X88.500 Y88.500 E2.05595 ; support material
 G1 X88.500 Y90.450 E2.08393 ; support material
 G1 X90.450 Y90.450 E2.11191 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1671.841
+G1 F2833.302
 G1 X100.450 Y88.500 E2.13989 ; support material
 G1 X98.500 Y88.500 E2.16786 ; support material
 G1 X98.500 Y90.450 E2.19584 ; support material
@@ -289,13 +289,13 @@ G1 E0.22382 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.700 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1671.841
+G1 F2833.302
 G1 X109.700 Y99.250 E2.00591 ; support material
 G1 X109.250 Y99.250 E2.01237 ; support material
 G1 X109.250 Y99.662 E2.01827 ; support material
 G1 X109.700 Y99.662 E2.02473 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1671.841
+G1 F2833.302
 G1 X110.450 Y98.500 E2.05271 ; support material
 G1 X108.500 Y98.500 E2.08069 ; support material
 G1 X108.500 Y100.450 E2.10866 ; support material
@@ -304,7 +304,7 @@ G1 E0.13664 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1671.841
+G1 F2833.302
 G1 X104.200 Y94.750 E2.13558 ; support material
 G1 X94.750 Y94.750 E2.27117 ; support material
 G1 X94.750 Y104.200 E2.40675 ; support material
@@ -313,7 +313,7 @@ G1 E0.54233 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1671.841
+G1 F2833.302
 G1 X100.450 Y108.500 E2.02798 ; support material
 G1 X98.500 Y108.500 E2.05595 ; support material
 G1 X98.500 Y110.450 E2.08393 ; support material
@@ -322,7 +322,7 @@ G1 E0.11191 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1671.841
+G1 F2833.302
 G1 X90.450 Y108.500 E2.02798 ; support material
 G1 X88.500 Y108.500 E2.05595 ; support material
 G1 X88.500 Y110.450 E2.08393 ; support material
@@ -331,7 +331,7 @@ G1 E0.11191 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1671.841
+G1 F2833.302
 G1 X110.450 Y108.500 E2.02798 ; support material
 G1 X108.500 Y108.500 E2.05595 ; support material
 G1 X108.500 Y110.450 E2.08393 ; support material
@@ -341,19 +341,19 @@ G1 E0.11191 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F708.326
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F708.326
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -364,7 +364,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -373,13 +373,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.738 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X109.738 Y99.212 E2.01119 ; support material
 G1 X109.212 Y99.212 E2.02427 ; support material
 G1 X109.212 Y99.662 E2.03546 ; support material
 G1 X109.738 Y99.662 E2.04855 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y98.500 E2.09712 ; support material
 G1 X108.500 Y98.500 E2.14569 ; support material
 G1 X108.500 Y100.450 E2.19427 ; support material
@@ -388,19 +388,19 @@ G1 E0.24284 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
 G1 X103.488 Y96.190 E2.15035 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X102.825 Y97.175 E2.29108 ; support material
 G1 X102.825 Y102.825 E2.43182 ; support material
 G1 X97.175 Y102.825 E2.57256 ; support material
 G1 X97.175 Y97.175 E2.71329 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X95.462 Y97.737 E2.75467 ; support material
 G1 X95.462 Y101.100 E2.83844 ; support material
 G1 X96.293 Y99.662 E2.87981 ; support material
@@ -411,13 +411,13 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y98.500 E2.04857 ; support material
 G1 X88.500 Y98.500 E2.09715 ; support material
 G1 X88.500 Y100.450 E2.14572 ; support material
 G1 X90.450 Y100.450 E2.19429 ; support material
 G1 X89.738 Y99.738 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X89.738 Y99.212 E2.20738 ; support material
 G1 X89.212 Y99.212 E2.22046 ; support material
 G1 X89.212 Y99.662 E2.23165 ; support material
@@ -427,19 +427,19 @@ G1 E0.24566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y88.500 E2.04857 ; support material
 G1 X88.500 Y88.500 E2.09715 ; support material
 G1 X88.500 Y90.450 E2.14572 ; support material
 G1 X90.450 Y90.450 E2.19429 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y88.500 E2.24286 ; support material
 G1 X98.500 Y88.500 E2.29144 ; support material
 G1 X98.500 Y90.450 E2.34001 ; support material
 G1 X100.450 Y90.450 E2.38858 ; support material
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y88.500 E2.43715 ; support material
 G1 X108.500 Y88.500 E2.48573 ; support material
 G1 X108.500 Y90.450 E2.53430 ; support material
@@ -448,7 +448,7 @@ G1 E0.58287 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y108.500 E2.04857 ; support material
 G1 X108.500 Y108.500 E2.09715 ; support material
 G1 X108.500 Y110.450 E2.14572 ; support material
@@ -457,7 +457,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y108.500 E2.04857 ; support material
 G1 X98.500 Y108.500 E2.09715 ; support material
 G1 X98.500 Y110.450 E2.14572 ; support material
@@ -466,7 +466,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y108.500 E2.04857 ; support material
 G1 X88.500 Y108.500 E2.09715 ; support material
 G1 X88.500 Y110.450 E2.14572 ; support material
@@ -476,19 +476,19 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F712.135
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -497,19 +497,19 @@ G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
 M106 S255 ; enable fan
 G1 Z1.250 F7800.000 ; move to next layer (6)
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X99.471 Y100.529 E2.67276 ; small perimeter
 G1 X99.471 Y99.471 E2.70129 ; small perimeter
 G1 X100.529 Y99.471 E2.72982 ; small perimeter
 G1 X100.529 Y100.454 E2.75632 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X98.836 Y101.164 E2.81914 ; small perimeter
 G1 X98.836 Y98.836 E2.88197 ; small perimeter
 G1 X101.164 Y98.836 E2.94479 ; small perimeter
 G1 X101.164 Y101.089 E3.00559 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E3.07669 ; external small perimeter
 G1 X98.275 Y98.275 E3.14780 ; external small perimeter
 G1 X101.725 Y98.275 E3.21890 ; external small perimeter
@@ -520,7 +520,7 @@ G1 E1.28846 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -529,13 +529,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.738 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X109.738 Y99.212 E2.01119 ; support material
 G1 X109.212 Y99.212 E2.02427 ; support material
 G1 X109.212 Y99.662 E2.03546 ; support material
 G1 X109.738 Y99.662 E2.04855 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y98.500 E2.09712 ; support material
 G1 X108.500 Y98.500 E2.14569 ; support material
 G1 X108.500 Y100.450 E2.19427 ; support material
@@ -544,19 +544,19 @@ G1 E0.24284 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
 G1 X103.488 Y96.190 E2.15035 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X102.825 Y97.175 E2.29108 ; support material
 G1 X102.825 Y102.825 E2.43182 ; support material
 G1 X97.175 Y102.825 E2.57256 ; support material
 G1 X97.175 Y97.175 E2.71329 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X95.462 Y97.737 E2.75467 ; support material
 G1 X95.462 Y101.100 E2.83844 ; support material
 G1 X96.293 Y99.662 E2.87981 ; support material
@@ -567,13 +567,13 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y98.500 E2.04857 ; support material
 G1 X88.500 Y98.500 E2.09715 ; support material
 G1 X88.500 Y100.450 E2.14572 ; support material
 G1 X90.450 Y100.450 E2.19429 ; support material
 G1 X89.738 Y99.738 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X89.738 Y99.212 E2.20738 ; support material
 G1 X89.212 Y99.212 E2.22046 ; support material
 G1 X89.212 Y99.662 E2.23165 ; support material
@@ -583,19 +583,19 @@ G1 E0.24566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y88.500 E2.04857 ; support material
 G1 X88.500 Y88.500 E2.09715 ; support material
 G1 X88.500 Y90.450 E2.14572 ; support material
 G1 X90.450 Y90.450 E2.19429 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y88.500 E2.24286 ; support material
 G1 X98.500 Y88.500 E2.29144 ; support material
 G1 X98.500 Y90.450 E2.34001 ; support material
 G1 X100.450 Y90.450 E2.38858 ; support material
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y88.500 E2.43715 ; support material
 G1 X108.500 Y88.500 E2.48573 ; support material
 G1 X108.500 Y90.450 E2.53430 ; support material
@@ -604,7 +604,7 @@ G1 E0.58287 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y108.500 E2.04857 ; support material
 G1 X108.500 Y108.500 E2.09715 ; support material
 G1 X108.500 Y110.450 E2.14572 ; support material
@@ -613,7 +613,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y108.500 E2.04857 ; support material
 G1 X98.500 Y108.500 E2.09715 ; support material
 G1 X98.500 Y110.450 E2.14572 ; support material
@@ -622,7 +622,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y108.500 E2.04857 ; support material
 G1 X88.500 Y108.500 E2.09715 ; support material
 G1 X88.500 Y110.450 E2.14572 ; support material
@@ -632,19 +632,19 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F712.135
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -655,7 +655,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -664,13 +664,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.738 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X109.738 Y99.212 E2.01119 ; support material
 G1 X109.212 Y99.212 E2.02427 ; support material
 G1 X109.212 Y99.662 E2.03546 ; support material
 G1 X109.738 Y99.662 E2.04855 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y98.500 E2.09712 ; support material
 G1 X108.500 Y98.500 E2.14569 ; support material
 G1 X108.500 Y100.450 E2.19427 ; support material
@@ -679,19 +679,19 @@ G1 E0.24284 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
 G1 X103.488 Y96.190 E2.15035 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X102.825 Y97.175 E2.29108 ; support material
 G1 X102.825 Y102.825 E2.43182 ; support material
 G1 X97.175 Y102.825 E2.57256 ; support material
 G1 X97.175 Y97.175 E2.71329 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X95.462 Y97.737 E2.75467 ; support material
 G1 X95.462 Y101.100 E2.83844 ; support material
 G1 X96.293 Y99.662 E2.87981 ; support material
@@ -702,13 +702,13 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y98.500 E2.04857 ; support material
 G1 X88.500 Y98.500 E2.09715 ; support material
 G1 X88.500 Y100.450 E2.14572 ; support material
 G1 X90.450 Y100.450 E2.19429 ; support material
 G1 X89.738 Y99.738 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X89.738 Y99.212 E2.20738 ; support material
 G1 X89.212 Y99.212 E2.22046 ; support material
 G1 X89.212 Y99.662 E2.23165 ; support material
@@ -718,19 +718,19 @@ G1 E0.24566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y88.500 E2.04857 ; support material
 G1 X88.500 Y88.500 E2.09715 ; support material
 G1 X88.500 Y90.450 E2.14572 ; support material
 G1 X90.450 Y90.450 E2.19429 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y88.500 E2.24286 ; support material
 G1 X98.500 Y88.500 E2.29144 ; support material
 G1 X98.500 Y90.450 E2.34001 ; support material
 G1 X100.450 Y90.450 E2.38858 ; support material
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y88.500 E2.43715 ; support material
 G1 X108.500 Y88.500 E2.48573 ; support material
 G1 X108.500 Y90.450 E2.53430 ; support material
@@ -739,7 +739,7 @@ G1 E0.58287 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y108.500 E2.04857 ; support material
 G1 X108.500 Y108.500 E2.09715 ; support material
 G1 X108.500 Y110.450 E2.14572 ; support material
@@ -748,7 +748,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y108.500 E2.04857 ; support material
 G1 X98.500 Y108.500 E2.09715 ; support material
 G1 X98.500 Y110.450 E2.14572 ; support material
@@ -757,7 +757,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y108.500 E2.04857 ; support material
 G1 X88.500 Y108.500 E2.09715 ; support material
 G1 X88.500 Y110.450 E2.14572 ; support material
@@ -767,19 +767,19 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F712.135
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -790,7 +790,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -799,13 +799,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.738 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X109.738 Y99.212 E2.01119 ; support material
 G1 X109.212 Y99.212 E2.02427 ; support material
 G1 X109.212 Y99.662 E2.03546 ; support material
 G1 X109.738 Y99.662 E2.04855 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y98.500 E2.09712 ; support material
 G1 X108.500 Y98.500 E2.14569 ; support material
 G1 X108.500 Y100.450 E2.19427 ; support material
@@ -814,19 +814,19 @@ G1 E0.24284 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
 G1 X103.488 Y96.190 E2.15035 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X102.825 Y97.175 E2.29108 ; support material
 G1 X102.825 Y102.825 E2.43182 ; support material
 G1 X97.175 Y102.825 E2.57256 ; support material
 G1 X97.175 Y97.175 E2.71329 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X95.462 Y97.737 E2.75467 ; support material
 G1 X95.462 Y101.100 E2.83844 ; support material
 G1 X96.293 Y99.662 E2.87981 ; support material
@@ -837,13 +837,13 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y98.500 E2.04857 ; support material
 G1 X88.500 Y98.500 E2.09715 ; support material
 G1 X88.500 Y100.450 E2.14572 ; support material
 G1 X90.450 Y100.450 E2.19429 ; support material
 G1 X89.738 Y99.738 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X89.738 Y99.212 E2.20738 ; support material
 G1 X89.212 Y99.212 E2.22046 ; support material
 G1 X89.212 Y99.662 E2.23165 ; support material
@@ -853,19 +853,19 @@ G1 E0.24566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y88.500 E2.04857 ; support material
 G1 X88.500 Y88.500 E2.09715 ; support material
 G1 X88.500 Y90.450 E2.14572 ; support material
 G1 X90.450 Y90.450 E2.19429 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y88.500 E2.24286 ; support material
 G1 X98.500 Y88.500 E2.29144 ; support material
 G1 X98.500 Y90.450 E2.34001 ; support material
 G1 X100.450 Y90.450 E2.38858 ; support material
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y88.500 E2.43715 ; support material
 G1 X108.500 Y88.500 E2.48573 ; support material
 G1 X108.500 Y90.450 E2.53430 ; support material
@@ -874,7 +874,7 @@ G1 E0.58287 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y108.500 E2.04857 ; support material
 G1 X108.500 Y108.500 E2.09715 ; support material
 G1 X108.500 Y110.450 E2.14572 ; support material
@@ -883,7 +883,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y108.500 E2.04857 ; support material
 G1 X98.500 Y108.500 E2.09715 ; support material
 G1 X98.500 Y110.450 E2.14572 ; support material
@@ -892,7 +892,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y108.500 E2.04857 ; support material
 G1 X88.500 Y108.500 E2.09715 ; support material
 G1 X88.500 Y110.450 E2.14572 ; support material
@@ -902,19 +902,19 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F712.135
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -925,7 +925,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -934,13 +934,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.738 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X109.738 Y99.212 E2.01119 ; support material
 G1 X109.212 Y99.212 E2.02427 ; support material
 G1 X109.212 Y99.662 E2.03546 ; support material
 G1 X109.738 Y99.662 E2.04855 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y98.500 E2.09712 ; support material
 G1 X108.500 Y98.500 E2.14569 ; support material
 G1 X108.500 Y100.450 E2.19427 ; support material
@@ -949,19 +949,19 @@ G1 E0.24284 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
 G1 X103.488 Y96.190 E2.15035 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X102.825 Y97.175 E2.29108 ; support material
 G1 X102.825 Y102.825 E2.43182 ; support material
 G1 X97.175 Y102.825 E2.57256 ; support material
 G1 X97.175 Y97.175 E2.71329 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X95.462 Y97.737 E2.75467 ; support material
 G1 X95.462 Y101.100 E2.83844 ; support material
 G1 X96.293 Y99.662 E2.87981 ; support material
@@ -972,13 +972,13 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y98.500 E2.04857 ; support material
 G1 X88.500 Y98.500 E2.09715 ; support material
 G1 X88.500 Y100.450 E2.14572 ; support material
 G1 X90.450 Y100.450 E2.19429 ; support material
 G1 X89.738 Y99.738 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X89.738 Y99.212 E2.20738 ; support material
 G1 X89.212 Y99.212 E2.22046 ; support material
 G1 X89.212 Y99.662 E2.23165 ; support material
@@ -988,19 +988,19 @@ G1 E0.24566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y88.500 E2.04857 ; support material
 G1 X88.500 Y88.500 E2.09715 ; support material
 G1 X88.500 Y90.450 E2.14572 ; support material
 G1 X90.450 Y90.450 E2.19429 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y88.500 E2.24286 ; support material
 G1 X98.500 Y88.500 E2.29144 ; support material
 G1 X98.500 Y90.450 E2.34001 ; support material
 G1 X100.450 Y90.450 E2.38858 ; support material
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y88.500 E2.43715 ; support material
 G1 X108.500 Y88.500 E2.48573 ; support material
 G1 X108.500 Y90.450 E2.53430 ; support material
@@ -1009,7 +1009,7 @@ G1 E0.58287 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y108.500 E2.04857 ; support material
 G1 X108.500 Y108.500 E2.09715 ; support material
 G1 X108.500 Y110.450 E2.14572 ; support material
@@ -1018,7 +1018,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y108.500 E2.04857 ; support material
 G1 X98.500 Y108.500 E2.09715 ; support material
 G1 X98.500 Y110.450 E2.14572 ; support material
@@ -1027,7 +1027,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y108.500 E2.04857 ; support material
 G1 X88.500 Y108.500 E2.09715 ; support material
 G1 X88.500 Y110.450 E2.14572 ; support material
@@ -1057,19 +1057,19 @@ G1 X101.725 Y101.650 E2.64423 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
 G1 Z2.750 F7800.000 ; move to next layer (15)
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X99.471 Y100.529 E2.67276 ; small perimeter
 G1 X99.471 Y99.471 E2.70129 ; small perimeter
 G1 X100.529 Y99.471 E2.72982 ; small perimeter
 G1 X100.529 Y100.454 E2.75632 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X98.836 Y101.164 E2.81914 ; small perimeter
 G1 X98.836 Y98.836 E2.88197 ; small perimeter
 G1 X101.164 Y98.836 E2.94479 ; small perimeter
 G1 X101.164 Y101.089 E3.00559 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E3.07669 ; external small perimeter
 G1 X98.275 Y98.275 E3.14780 ; external small perimeter
 G1 X101.725 Y98.275 E3.21890 ; external small perimeter
@@ -1080,7 +1080,7 @@ G1 E1.28846 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -1089,13 +1089,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.738 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X109.738 Y99.212 E2.01119 ; support material
 G1 X109.212 Y99.212 E2.02427 ; support material
 G1 X109.212 Y99.662 E2.03546 ; support material
 G1 X109.738 Y99.662 E2.04855 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y98.500 E2.09712 ; support material
 G1 X108.500 Y98.500 E2.14569 ; support material
 G1 X108.500 Y100.450 E2.19427 ; support material
@@ -1104,19 +1104,19 @@ G1 E0.24284 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
 G1 X103.488 Y96.190 E2.15035 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X102.825 Y97.175 E2.29108 ; support material
 G1 X102.825 Y102.825 E2.43182 ; support material
 G1 X97.175 Y102.825 E2.57256 ; support material
 G1 X97.175 Y97.175 E2.71329 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X95.462 Y97.737 E2.75467 ; support material
 G1 X95.462 Y101.100 E2.83844 ; support material
 G1 X96.293 Y99.662 E2.87981 ; support material
@@ -1127,13 +1127,13 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y98.500 E2.04857 ; support material
 G1 X88.500 Y98.500 E2.09715 ; support material
 G1 X88.500 Y100.450 E2.14572 ; support material
 G1 X90.450 Y100.450 E2.19429 ; support material
 G1 X89.738 Y99.738 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X89.738 Y99.212 E2.20738 ; support material
 G1 X89.212 Y99.212 E2.22046 ; support material
 G1 X89.212 Y99.662 E2.23165 ; support material
@@ -1143,19 +1143,19 @@ G1 E0.24566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y88.500 E2.04857 ; support material
 G1 X88.500 Y88.500 E2.09715 ; support material
 G1 X88.500 Y90.450 E2.14572 ; support material
 G1 X90.450 Y90.450 E2.19429 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y88.500 E2.24286 ; support material
 G1 X98.500 Y88.500 E2.29144 ; support material
 G1 X98.500 Y90.450 E2.34001 ; support material
 G1 X100.450 Y90.450 E2.38858 ; support material
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y88.500 E2.43715 ; support material
 G1 X108.500 Y88.500 E2.48573 ; support material
 G1 X108.500 Y90.450 E2.53430 ; support material
@@ -1164,7 +1164,7 @@ G1 E0.58287 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y108.500 E2.04857 ; support material
 G1 X108.500 Y108.500 E2.09715 ; support material
 G1 X108.500 Y110.450 E2.14572 ; support material
@@ -1173,7 +1173,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y108.500 E2.04857 ; support material
 G1 X98.500 Y108.500 E2.09715 ; support material
 G1 X98.500 Y110.450 E2.14572 ; support material
@@ -1182,7 +1182,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y108.500 E2.04857 ; support material
 G1 X88.500 Y108.500 E2.09715 ; support material
 G1 X88.500 Y110.450 E2.14572 ; support material
@@ -1192,19 +1192,19 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F712.135
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -1215,7 +1215,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -1224,13 +1224,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.738 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X109.738 Y99.212 E2.01119 ; support material
 G1 X109.212 Y99.212 E2.02427 ; support material
 G1 X109.212 Y99.662 E2.03546 ; support material
 G1 X109.738 Y99.662 E2.04855 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y98.500 E2.09712 ; support material
 G1 X108.500 Y98.500 E2.14569 ; support material
 G1 X108.500 Y100.450 E2.19427 ; support material
@@ -1239,19 +1239,19 @@ G1 E0.24284 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
 G1 X103.488 Y96.190 E2.15035 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X102.825 Y97.175 E2.29108 ; support material
 G1 X102.825 Y102.825 E2.43182 ; support material
 G1 X97.175 Y102.825 E2.57256 ; support material
 G1 X97.175 Y97.175 E2.71329 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X95.462 Y97.737 E2.75467 ; support material
 G1 X95.462 Y101.100 E2.83844 ; support material
 G1 X96.293 Y99.662 E2.87981 ; support material
@@ -1262,13 +1262,13 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y98.500 E2.04857 ; support material
 G1 X88.500 Y98.500 E2.09715 ; support material
 G1 X88.500 Y100.450 E2.14572 ; support material
 G1 X90.450 Y100.450 E2.19429 ; support material
 G1 X89.738 Y99.738 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X89.738 Y99.212 E2.20738 ; support material
 G1 X89.212 Y99.212 E2.22046 ; support material
 G1 X89.212 Y99.662 E2.23165 ; support material
@@ -1278,19 +1278,19 @@ G1 E0.24566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y88.500 E2.04857 ; support material
 G1 X88.500 Y88.500 E2.09715 ; support material
 G1 X88.500 Y90.450 E2.14572 ; support material
 G1 X90.450 Y90.450 E2.19429 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y88.500 E2.24286 ; support material
 G1 X98.500 Y88.500 E2.29144 ; support material
 G1 X98.500 Y90.450 E2.34001 ; support material
 G1 X100.450 Y90.450 E2.38858 ; support material
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y88.500 E2.43715 ; support material
 G1 X108.500 Y88.500 E2.48573 ; support material
 G1 X108.500 Y90.450 E2.53430 ; support material
@@ -1299,7 +1299,7 @@ G1 E0.58287 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y108.500 E2.04857 ; support material
 G1 X108.500 Y108.500 E2.09715 ; support material
 G1 X108.500 Y110.450 E2.14572 ; support material
@@ -1308,7 +1308,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y108.500 E2.04857 ; support material
 G1 X98.500 Y108.500 E2.09715 ; support material
 G1 X98.500 Y110.450 E2.14572 ; support material
@@ -1317,7 +1317,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y108.500 E2.04857 ; support material
 G1 X88.500 Y108.500 E2.09715 ; support material
 G1 X88.500 Y110.450 E2.14572 ; support material
@@ -1327,19 +1327,19 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F712.135
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -1350,7 +1350,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -1359,13 +1359,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.738 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X109.738 Y99.212 E2.01119 ; support material
 G1 X109.212 Y99.212 E2.02427 ; support material
 G1 X109.212 Y99.662 E2.03546 ; support material
 G1 X109.738 Y99.662 E2.04855 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y98.500 E2.09712 ; support material
 G1 X108.500 Y98.500 E2.14569 ; support material
 G1 X108.500 Y100.450 E2.19427 ; support material
@@ -1374,19 +1374,19 @@ G1 E0.24284 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
 G1 X103.488 Y96.190 E2.15035 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X102.825 Y97.175 E2.29108 ; support material
 G1 X102.825 Y102.825 E2.43182 ; support material
 G1 X97.175 Y102.825 E2.57256 ; support material
 G1 X97.175 Y97.175 E2.71329 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X95.462 Y97.737 E2.75467 ; support material
 G1 X95.462 Y101.100 E2.83844 ; support material
 G1 X96.293 Y99.662 E2.87981 ; support material
@@ -1397,13 +1397,13 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y98.500 E2.04857 ; support material
 G1 X88.500 Y98.500 E2.09715 ; support material
 G1 X88.500 Y100.450 E2.14572 ; support material
 G1 X90.450 Y100.450 E2.19429 ; support material
 G1 X89.738 Y99.738 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X89.738 Y99.212 E2.20738 ; support material
 G1 X89.212 Y99.212 E2.22046 ; support material
 G1 X89.212 Y99.662 E2.23165 ; support material
@@ -1413,19 +1413,19 @@ G1 E0.24566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y88.500 E2.04857 ; support material
 G1 X88.500 Y88.500 E2.09715 ; support material
 G1 X88.500 Y90.450 E2.14572 ; support material
 G1 X90.450 Y90.450 E2.19429 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y88.500 E2.24286 ; support material
 G1 X98.500 Y88.500 E2.29144 ; support material
 G1 X98.500 Y90.450 E2.34001 ; support material
 G1 X100.450 Y90.450 E2.38858 ; support material
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y88.500 E2.43715 ; support material
 G1 X108.500 Y88.500 E2.48573 ; support material
 G1 X108.500 Y90.450 E2.53430 ; support material
@@ -1434,7 +1434,7 @@ G1 E0.58287 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y108.500 E2.04857 ; support material
 G1 X108.500 Y108.500 E2.09715 ; support material
 G1 X108.500 Y110.450 E2.14572 ; support material
@@ -1443,7 +1443,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y108.500 E2.04857 ; support material
 G1 X98.500 Y108.500 E2.09715 ; support material
 G1 X98.500 Y110.450 E2.14572 ; support material
@@ -1452,7 +1452,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y108.500 E2.04857 ; support material
 G1 X88.500 Y108.500 E2.09715 ; support material
 G1 X88.500 Y110.450 E2.14572 ; support material
@@ -1462,19 +1462,19 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F712.135
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -1485,7 +1485,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -1494,13 +1494,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.738 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X109.738 Y99.212 E2.01119 ; support material
 G1 X109.212 Y99.212 E2.02427 ; support material
 G1 X109.212 Y99.662 E2.03546 ; support material
 G1 X109.738 Y99.662 E2.04855 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y98.500 E2.09712 ; support material
 G1 X108.500 Y98.500 E2.14569 ; support material
 G1 X108.500 Y100.450 E2.19427 ; support material
@@ -1509,19 +1509,19 @@ G1 E0.24284 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
 G1 X103.488 Y96.190 E2.15035 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X102.825 Y97.175 E2.29108 ; support material
 G1 X102.825 Y102.825 E2.43182 ; support material
 G1 X97.175 Y102.825 E2.57256 ; support material
 G1 X97.175 Y97.175 E2.71329 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X95.462 Y97.737 E2.75467 ; support material
 G1 X95.462 Y101.100 E2.83844 ; support material
 G1 X96.293 Y99.662 E2.87981 ; support material
@@ -1532,13 +1532,13 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y98.500 E2.04857 ; support material
 G1 X88.500 Y98.500 E2.09715 ; support material
 G1 X88.500 Y100.450 E2.14572 ; support material
 G1 X90.450 Y100.450 E2.19429 ; support material
 G1 X89.738 Y99.738 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X89.738 Y99.212 E2.20738 ; support material
 G1 X89.212 Y99.212 E2.22046 ; support material
 G1 X89.212 Y99.662 E2.23165 ; support material
@@ -1548,19 +1548,19 @@ G1 E0.24566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y88.500 E2.04857 ; support material
 G1 X88.500 Y88.500 E2.09715 ; support material
 G1 X88.500 Y90.450 E2.14572 ; support material
 G1 X90.450 Y90.450 E2.19429 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y88.500 E2.24286 ; support material
 G1 X98.500 Y88.500 E2.29144 ; support material
 G1 X98.500 Y90.450 E2.34001 ; support material
 G1 X100.450 Y90.450 E2.38858 ; support material
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y88.500 E2.43715 ; support material
 G1 X108.500 Y88.500 E2.48573 ; support material
 G1 X108.500 Y90.450 E2.53430 ; support material
@@ -1569,7 +1569,7 @@ G1 E0.58287 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y108.500 E2.04857 ; support material
 G1 X108.500 Y108.500 E2.09715 ; support material
 G1 X108.500 Y110.450 E2.14572 ; support material
@@ -1578,7 +1578,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y108.500 E2.04857 ; support material
 G1 X98.500 Y108.500 E2.09715 ; support material
 G1 X98.500 Y110.450 E2.14572 ; support material
@@ -1587,7 +1587,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y108.500 E2.04857 ; support material
 G1 X88.500 Y108.500 E2.09715 ; support material
 G1 X88.500 Y110.450 E2.14572 ; support material
@@ -1617,19 +1617,19 @@ G1 X101.725 Y101.650 E2.64423 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
 G1 Z4.250 F7800.000 ; move to next layer (24)
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X99.471 Y100.529 E2.67276 ; small perimeter
 G1 X99.471 Y99.471 E2.70129 ; small perimeter
 G1 X100.529 Y99.471 E2.72982 ; small perimeter
 G1 X100.529 Y100.454 E2.75632 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F712.135
 G1 X98.836 Y101.164 E2.81914 ; small perimeter
 G1 X98.836 Y98.836 E2.88197 ; small perimeter
 G1 X101.164 Y98.836 E2.94479 ; small perimeter
 G1 X101.164 Y101.089 E3.00559 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E3.07669 ; external small perimeter
 G1 X98.275 Y98.275 E3.14780 ; external small perimeter
 G1 X101.725 Y98.275 E3.21890 ; external small perimeter
@@ -1640,7 +1640,7 @@ G1 E1.28846 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -1649,13 +1649,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X109.738 Y99.662 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X109.738 Y99.212 E2.01119 ; support material
 G1 X109.212 Y99.212 E2.02427 ; support material
 G1 X109.212 Y99.662 E2.03546 ; support material
 G1 X109.738 Y99.662 E2.04855 ; support material
 G1 X110.450 Y100.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y98.500 E2.09712 ; support material
 G1 X108.500 Y98.500 E2.14569 ; support material
 G1 X108.500 Y100.450 E2.19427 ; support material
@@ -1664,19 +1664,19 @@ G1 E0.24284 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
 G1 X103.488 Y96.190 E2.15035 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X102.825 Y97.175 E2.29108 ; support material
 G1 X102.825 Y102.825 E2.43182 ; support material
 G1 X97.175 Y102.825 E2.57256 ; support material
 G1 X97.175 Y97.175 E2.71329 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X95.462 Y97.737 E2.75467 ; support material
 G1 X95.462 Y101.100 E2.83844 ; support material
 G1 X96.293 Y99.662 E2.87981 ; support material
@@ -1687,13 +1687,13 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y100.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y98.500 E2.04857 ; support material
 G1 X88.500 Y98.500 E2.09715 ; support material
 G1 X88.500 Y100.450 E2.14572 ; support material
 G1 X90.450 Y100.450 E2.19429 ; support material
 G1 X89.738 Y99.738 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X89.738 Y99.212 E2.20738 ; support material
 G1 X89.212 Y99.212 E2.22046 ; support material
 G1 X89.212 Y99.662 E2.23165 ; support material
@@ -1703,19 +1703,19 @@ G1 E0.24566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y90.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y88.500 E2.04857 ; support material
 G1 X88.500 Y88.500 E2.09715 ; support material
 G1 X88.500 Y90.450 E2.14572 ; support material
 G1 X90.450 Y90.450 E2.19429 ; support material
 G1 X100.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y88.500 E2.24286 ; support material
 G1 X98.500 Y88.500 E2.29144 ; support material
 G1 X98.500 Y90.450 E2.34001 ; support material
 G1 X100.450 Y90.450 E2.38858 ; support material
 G1 X110.450 Y90.450 F7800.000 ; move to first support material point
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y88.500 E2.43715 ; support material
 G1 X108.500 Y88.500 E2.48573 ; support material
 G1 X108.500 Y90.450 E2.53430 ; support material
@@ -1724,7 +1724,7 @@ G1 E0.58287 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X110.450 Y108.500 E2.04857 ; support material
 G1 X108.500 Y108.500 E2.09715 ; support material
 G1 X108.500 Y110.450 E2.14572 ; support material
@@ -1733,7 +1733,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X100.450 Y108.500 E2.04857 ; support material
 G1 X98.500 Y108.500 E2.09715 ; support material
 G1 X98.500 Y110.450 E2.14572 ; support material
@@ -1742,7 +1742,7 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.450 Y110.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1684.292
+G1 F2848.542
 G1 X90.450 Y108.500 E2.04857 ; support material
 G1 X88.500 Y108.500 E2.09715 ; support material
 G1 X88.500 Y110.450 E2.14572 ; support material
@@ -1752,19 +1752,19 @@ G1 E0.19429 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F751.782
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F751.782
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -1775,7 +1775,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1813.857
+G1 F3007.128
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -1784,13 +1784,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.625 Y100.625 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1813.857
+G1 F3007.128
 G1 X110.625 Y98.325 E2.05729 ; support material
 G1 X108.325 Y98.325 E2.11458 ; support material
 G1 X108.325 Y100.625 E2.17187 ; support material
 G1 X110.625 Y100.625 E2.22916 ; support material
 G1 X109.913 Y99.176 F7800.000 ; move to first support material point
-G1 F1813.857
+G1 F3007.128
 G1 X109.037 Y99.176 E2.25097 ; support material
 G1 X109.037 Y99.662 E2.26306 ; support material
 G1 X109.913 Y99.662 E2.28487 ; support material
@@ -1799,7 +1799,7 @@ G1 E0.29696 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1813.857
+G1 F3007.128
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
@@ -1808,7 +1808,7 @@ G1 E0.15035 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.625 Y90.625 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1813.857
+G1 F3007.128
 G1 X100.625 Y88.500 E2.05293 ; support material
 G1 X98.325 Y88.500 E2.11022 ; support material
 G1 X98.325 Y90.625 E2.16315 ; support material
@@ -1817,13 +1817,13 @@ G1 E0.22045 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1813.857
+G1 F3007.128
 G1 X102.825 Y97.175 E2.14074 ; support material
 G1 X102.825 Y102.825 E2.28147 ; support material
 G1 X97.175 Y102.825 E2.42221 ; support material
 G1 X97.175 Y97.175 E2.56294 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F1813.857
+G1 F3007.128
 G1 X95.462 Y97.737 E2.60432 ; support material
 G1 X95.462 Y101.100 E2.68809 ; support material
 G1 X96.293 Y99.662 E2.72947 ; support material
@@ -1834,13 +1834,13 @@ G1 E0.75002 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.625 Y100.625 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1813.857
+G1 F3007.128
 G1 X90.625 Y98.325 E2.05729 ; support material
 G1 X88.500 Y98.325 E2.11022 ; support material
 G1 X88.500 Y100.625 E2.16751 ; support material
 G1 X90.625 Y100.625 E2.22045 ; support material
 G1 X89.913 Y99.913 F7800.000 ; move to first support material point
-G1 F1813.857
+G1 F3007.128
 G1 X89.913 Y99.037 E2.24225 ; support material
 G1 X89.758 Y99.037 E2.24609 ; support material
 G1 X89.678 Y99.176 E2.25008 ; support material
@@ -1853,13 +1853,13 @@ G1 E0.29484 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.625 Y90.625 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1813.857
+G1 F3007.128
 G1 X90.625 Y88.500 E2.05293 ; support material
 G1 X88.500 Y88.500 E2.10586 ; support material
 G1 X88.500 Y90.625 E2.15880 ; support material
 G1 X90.625 Y90.625 E2.21173 ; support material
 G1 X110.625 Y90.625 F7800.000 ; move to first support material point
-G1 F1813.857
+G1 F3007.128
 G1 X110.625 Y88.500 E2.26466 ; support material
 G1 X108.325 Y88.500 E2.32195 ; support material
 G1 X108.325 Y90.625 E2.37488 ; support material
@@ -1868,7 +1868,7 @@ G1 E0.43217 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.625 Y110.625 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1813.857
+G1 F3007.128
 G1 X110.625 Y108.325 E2.05729 ; support material
 G1 X108.325 Y108.325 E2.11458 ; support material
 G1 X108.325 Y110.625 E2.17187 ; support material
@@ -1877,7 +1877,7 @@ G1 E0.22916 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.625 Y110.625 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1813.857
+G1 F3007.128
 G1 X100.625 Y108.325 E2.05729 ; support material
 G1 X98.325 Y108.325 E2.11458 ; support material
 G1 X98.325 Y110.625 E2.17187 ; support material
@@ -1886,7 +1886,7 @@ G1 E0.22916 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.625 Y110.625 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F1813.857
+G1 F3007.128
 G1 X90.625 Y108.325 E2.05729 ; support material
 G1 X88.500 Y108.325 E2.11022 ; support material
 G1 X88.500 Y110.625 E2.16751 ; support material
@@ -1896,19 +1896,19 @@ G1 E0.22045 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F813.535
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F813.535
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -1919,7 +1919,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2015.667
+G1 F3254.142
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -1928,13 +1928,13 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.900 Y100.900 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2015.667
+G1 F3254.142
 G1 X110.900 Y98.050 E2.07099 ; support material
 G1 X108.050 Y98.050 E2.14198 ; support material
 G1 X108.050 Y100.900 E2.21297 ; support material
 G1 X110.900 Y100.900 E2.28396 ; support material
 G1 X110.188 Y99.176 F7800.000 ; move to first support material point
-G1 F2015.667
+G1 F3254.142
 G1 X108.762 Y99.176 E2.31947 ; support material
 G1 X108.762 Y99.662 E2.33156 ; support material
 G1 X110.188 Y99.662 E2.36707 ; support material
@@ -1943,7 +1943,7 @@ G1 E0.37916 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2015.667
+G1 F3254.142
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
@@ -1952,7 +1952,7 @@ G1 E0.15035 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.900 Y90.900 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2015.667
+G1 F3254.142
 G1 X100.900 Y88.500 E2.05978 ; support material
 G1 X98.050 Y88.500 E2.13077 ; support material
 G1 X98.050 Y90.900 E2.19055 ; support material
@@ -1961,13 +1961,13 @@ G1 E0.26154 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2015.667
+G1 F3254.142
 G1 X102.825 Y97.175 E2.14074 ; support material
 G1 X102.825 Y102.825 E2.28147 ; support material
 G1 X97.175 Y102.825 E2.42221 ; support material
 G1 X97.175 Y97.175 E2.56294 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F2015.667
+G1 F3254.142
 G1 X95.462 Y97.737 E2.60432 ; support material
 G1 X95.462 Y101.100 E2.68809 ; support material
 G1 X96.293 Y99.662 E2.72947 ; support material
@@ -1978,13 +1978,13 @@ G1 E0.75002 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.900 Y100.900 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2015.667
+G1 F3254.142
 G1 X90.900 Y98.050 E2.07099 ; support material
 G1 X88.500 Y98.050 E2.13077 ; support material
 G1 X88.500 Y100.900 E2.20176 ; support material
 G1 X90.900 Y100.900 E2.26154 ; support material
 G1 X90.188 Y100.188 F7800.000 ; move to first support material point
-G1 F2015.667
+G1 F3254.142
 G1 X90.188 Y98.762 E2.29705 ; support material
 G1 X89.917 Y98.762 E2.30379 ; support material
 G1 X89.678 Y99.176 E2.31568 ; support material
@@ -1997,13 +1997,13 @@ G1 E0.37125 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.900 Y90.900 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2015.667
+G1 F3254.142
 G1 X90.900 Y88.500 E2.05978 ; support material
 G1 X88.500 Y88.500 E2.11956 ; support material
 G1 X88.500 Y90.900 E2.17935 ; support material
 G1 X90.900 Y90.900 E2.23913 ; support material
 G1 X110.900 Y90.900 F7800.000 ; move to first support material point
-G1 F2015.667
+G1 F3254.142
 G1 X110.900 Y88.500 E2.29891 ; support material
 G1 X108.050 Y88.500 E2.36990 ; support material
 G1 X108.050 Y90.900 E2.42968 ; support material
@@ -2012,7 +2012,7 @@ G1 E0.50067 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.900 Y110.900 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2015.667
+G1 F3254.142
 G1 X110.900 Y108.050 E2.07099 ; support material
 G1 X108.050 Y108.050 E2.14198 ; support material
 G1 X108.050 Y110.900 E2.21297 ; support material
@@ -2021,7 +2021,7 @@ G1 E0.28396 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.900 Y110.900 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2015.667
+G1 F3254.142
 G1 X100.900 Y108.050 E2.07099 ; support material
 G1 X98.050 Y108.050 E2.14198 ; support material
 G1 X98.050 Y110.900 E2.21297 ; support material
@@ -2030,7 +2030,7 @@ G1 E0.28396 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X90.900 Y110.900 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2015.667
+G1 F3254.142
 G1 X90.900 Y108.050 E2.07099 ; support material
 G1 X88.500 Y108.050 E2.13077 ; support material
 G1 X88.500 Y110.900 E2.20176 ; support material
@@ -2040,19 +2040,19 @@ G1 E0.26154 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F885.434
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F885.434
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -2063,7 +2063,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2250.632
+G1 F3541.737
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -2072,12 +2072,12 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.463 Y110.463 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2250.632
+G1 F3541.737
 G1 X100.463 Y110.353 E2.00273 ; support material
 G1 X100.399 Y110.463 E2.00588 ; support material
 G1 X100.463 Y110.463 E2.00746 ; support material
 G1 X101.175 Y111.175 F7800.000 ; move to first support material point
-G1 F2250.632
+G1 F3541.737
 G1 X101.175 Y107.775 E2.09215 ; support material
 G1 X97.775 Y107.775 E2.17684 ; support material
 G1 X97.775 Y111.175 E2.26153 ; support material
@@ -2086,13 +2086,13 @@ G1 E0.34622 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.175 Y111.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2250.632
+G1 F3541.737
 G1 X91.175 Y107.775 E2.08469 ; support material
 G1 X88.500 Y107.775 E2.15132 ; support material
 G1 X88.500 Y111.175 E2.23601 ; support material
 G1 X91.175 Y111.175 E2.30264 ; support material
 G1 X90.463 Y110.463 F7800.000 ; move to first support material point
-G1 F2250.632
+G1 F3541.737
 G1 X90.463 Y109.760 E2.32015 ; support material
 G1 X90.057 Y110.463 E2.34037 ; support material
 G1 X90.463 Y110.463 E2.35047 ; support material
@@ -2100,13 +2100,13 @@ G1 E0.35047 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.175 Y101.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2250.632
+G1 F3541.737
 G1 X91.175 Y97.775 E2.08469 ; support material
 G1 X88.500 Y97.775 E2.15132 ; support material
 G1 X88.500 Y101.175 E2.23601 ; support material
 G1 X91.175 Y101.175 E2.30264 ; support material
 G1 X90.463 Y100.463 F7800.000 ; move to first support material point
-G1 F2250.632
+G1 F3541.737
 G1 X90.463 Y98.487 E2.35185 ; support material
 G1 X90.076 Y98.487 E2.36148 ; support material
 G1 X89.678 Y99.176 E2.38129 ; support material
@@ -2119,7 +2119,7 @@ G1 E0.44766 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2250.632
+G1 F3541.737
 G1 X95.462 Y97.737 E2.04138 ; support material
 G1 X95.462 Y101.100 E2.12514 ; support material
 G1 X96.293 Y99.662 E2.16652 ; support material
@@ -2127,13 +2127,13 @@ G1 X96.463 Y99.662 E2.17075 ; support material
 G1 X96.463 Y99.176 E2.18285 ; support material
 G1 X96.293 Y99.176 E2.18708 ; support material
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
-G1 F2250.632
+G1 F3541.737
 G1 X102.825 Y97.175 E2.32781 ; support material
 G1 X102.825 Y102.825 E2.46855 ; support material
 G1 X97.175 Y102.825 E2.60928 ; support material
 G1 X97.175 Y97.175 E2.75002 ; support material
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
-G1 F2250.632
+G1 F3541.737
 G1 X103.488 Y95.462 E2.76815 ; support material
 G1 X101.044 Y95.462 E2.82902 ; support material
 G1 X101.464 Y96.190 E2.84996 ; support material
@@ -2142,19 +2142,19 @@ G1 E0.90037 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X101.175 Y91.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2250.632
+G1 F3541.737
 G1 X101.175 Y88.500 E2.06663 ; support material
 G1 X97.775 Y88.500 E2.15132 ; support material
 G1 X97.775 Y91.175 E2.21795 ; support material
 G1 X101.175 Y91.175 E2.30264 ; support material
 G1 X91.175 Y91.175 F7800.000 ; move to first support material point
-G1 F2250.632
+G1 F3541.737
 G1 X91.175 Y88.500 E2.36928 ; support material
 G1 X88.500 Y88.500 E2.43591 ; support material
 G1 X88.500 Y91.175 E2.50254 ; support material
 G1 X91.175 Y91.175 E2.56917 ; support material
 G1 X111.175 Y91.175 F7800.000 ; move to first support material point
-G1 F2250.632
+G1 F3541.737
 G1 X111.175 Y88.500 E2.63580 ; support material
 G1 X107.775 Y88.500 E2.72049 ; support material
 G1 X107.775 Y91.175 E2.78713 ; support material
@@ -2163,7 +2163,7 @@ G1 E0.87182 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.463 Y99.834 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2250.632
+G1 F3541.737
 G1 X110.463 Y99.004 E2.02067 ; support material
 G1 X110.363 Y99.176 E2.02563 ; support material
 G1 X108.487 Y99.176 E2.07235 ; support material
@@ -2171,7 +2171,7 @@ G1 X108.487 Y99.662 E2.08445 ; support material
 G1 X110.363 Y99.662 E2.13118 ; support material
 G1 X110.463 Y99.834 E2.13613 ; support material
 G1 X111.175 Y101.175 F7800.000 ; move to first support material point
-G1 F2250.632
+G1 F3541.737
 G1 X111.175 Y97.775 E2.22082 ; support material
 G1 X107.775 Y97.775 E2.30551 ; support material
 G1 X107.775 Y101.175 E2.39020 ; support material
@@ -2180,7 +2180,7 @@ G1 E0.47489 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.175 Y111.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2250.632
+G1 F3541.737
 G1 X111.175 Y107.775 E2.08469 ; support material
 G1 X107.775 Y107.775 E2.16938 ; support material
 G1 X107.775 Y111.175 E2.25407 ; support material
@@ -2208,21 +2208,22 @@ G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
 G1 X101.725 Y101.650 E2.64423 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
+M106 S252.45 ; enable fan
 G1 Z5.750 F7800.000 ; move to next layer (33)
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.67276 ; small perimeter
 G1 X99.471 Y99.471 E2.70129 ; small perimeter
 G1 X100.529 Y99.471 E2.72982 ; small perimeter
 G1 X100.529 Y100.454 E2.75632 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.81914 ; small perimeter
 G1 X98.836 Y98.836 E2.88197 ; small perimeter
 G1 X101.164 Y98.836 E2.94479 ; small perimeter
 G1 X101.164 Y101.089 E3.00559 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E3.07669 ; external small perimeter
 G1 X98.275 Y98.275 E3.14780 ; external small perimeter
 G1 X101.725 Y98.275 E3.21890 ; external small perimeter
@@ -2233,7 +2234,7 @@ G1 E1.28846 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -2242,12 +2243,12 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.738 Y110.738 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X100.738 Y109.877 E2.02145 ; support material
 G1 X100.241 Y110.738 E2.04621 ; support material
 G1 X100.738 Y110.738 E2.05859 ; support material
 G1 X101.450 Y111.450 F7800.000 ; move to first support material point
-G1 F2539.716
+G1 F3600.000
 G1 X101.450 Y107.500 E2.15698 ; support material
 G1 X97.500 Y107.500 E2.25537 ; support material
 G1 X97.500 Y111.450 E2.35376 ; support material
@@ -2256,12 +2257,12 @@ G1 E0.45215 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.738 Y110.738 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X110.738 Y110.470 E2.00667 ; support material
 G1 X110.583 Y110.738 E2.01437 ; support material
 G1 X110.738 Y110.738 E2.01822 ; support material
 G1 X111.450 Y111.450 F7800.000 ; move to first support material point
-G1 F2539.716
+G1 F3600.000
 G1 X111.450 Y107.500 E2.11661 ; support material
 G1 X107.500 Y107.500 E2.21500 ; support material
 G1 X107.500 Y111.450 E2.31340 ; support material
@@ -2270,13 +2271,13 @@ G1 E0.41179 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.450 Y101.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X111.450 Y97.500 E2.09839 ; support material
 G1 X107.500 Y97.500 E2.19678 ; support material
 G1 X107.500 Y101.450 E2.29517 ; support material
 G1 X111.450 Y101.450 E2.39356 ; support material
 G1 X110.738 Y100.310 F7800.000 ; move to first support material point
-G1 F2539.716
+G1 F3600.000
 G1 X110.738 Y98.527 E2.43797 ; support material
 G1 X110.363 Y99.176 E2.45662 ; support material
 G1 X108.212 Y99.176 E2.51020 ; support material
@@ -2287,7 +2288,7 @@ G1 E0.59452 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
@@ -2296,7 +2297,7 @@ G1 E0.15035 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X101.450 Y91.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X101.450 Y88.500 E2.07348 ; support material
 G1 X97.500 Y88.500 E2.17187 ; support material
 G1 X97.500 Y91.450 E2.24535 ; support material
@@ -2305,13 +2306,13 @@ G1 E0.34374 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X102.825 Y97.175 E2.14074 ; support material
 G1 X102.825 Y102.825 E2.28147 ; support material
 G1 X97.175 Y102.825 E2.42221 ; support material
 G1 X97.175 Y97.175 E2.56294 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F2539.716
+G1 F3600.000
 G1 X95.462 Y97.737 E2.60432 ; support material
 G1 X95.462 Y101.100 E2.68809 ; support material
 G1 X96.293 Y99.662 E2.72947 ; support material
@@ -2322,13 +2323,13 @@ G1 E0.75002 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.450 Y101.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X91.450 Y97.500 E2.09839 ; support material
 G1 X88.500 Y97.500 E2.17187 ; support material
 G1 X88.500 Y101.450 E2.27026 ; support material
 G1 X91.450 Y101.450 E2.34374 ; support material
 G1 X90.738 Y100.738 F7800.000 ; move to first support material point
-G1 F2539.716
+G1 F3600.000
 G1 X90.738 Y98.212 E2.40665 ; support material
 G1 X90.235 Y98.212 E2.41918 ; support material
 G1 X89.678 Y99.176 E2.44689 ; support material
@@ -2341,13 +2342,13 @@ G1 E0.52407 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.450 Y91.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X91.450 Y88.500 E2.07348 ; support material
 G1 X88.500 Y88.500 E2.14696 ; support material
 G1 X88.500 Y91.450 E2.22045 ; support material
 G1 X91.450 Y91.450 E2.29393 ; support material
 G1 X90.738 Y89.554 F7800.000 ; move to first support material point
-G1 F2539.716
+G1 F3600.000
 G1 X90.738 Y89.212 E2.30244 ; support material
 G1 X90.540 Y89.212 E2.30735 ; support material
 G1 X90.738 Y89.554 E2.31717 ; support material
@@ -2355,7 +2356,7 @@ G1 E0.31717 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.450 Y91.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X111.450 Y88.500 E2.07348 ; support material
 G1 X107.500 Y88.500 E2.17187 ; support material
 G1 X107.500 Y91.450 E2.24535 ; support material
@@ -2364,13 +2365,13 @@ G1 E0.34374 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.450 Y111.450 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2539.716
+G1 F3600.000
 G1 X91.450 Y107.500 E2.09839 ; support material
 G1 X88.500 Y107.500 E2.17187 ; support material
 G1 X88.500 Y111.450 E2.27026 ; support material
 G1 X91.450 Y111.450 E2.34374 ; support material
 G1 X90.738 Y110.738 F7800.000 ; move to first support material point
-G1 F2539.716
+G1 F3600.000
 G1 X90.738 Y109.284 E2.37997 ; support material
 G1 X89.898 Y110.738 E2.42179 ; support material
 G1 X90.738 Y110.738 E2.44270 ; support material
@@ -2379,19 +2380,19 @@ G1 E0.44270 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -2402,7 +2403,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -2411,12 +2412,12 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X101.013 Y110.788 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X101.013 Y109.400 E2.03456 ; support material
 G1 X100.212 Y110.788 E2.07446 ; support material
 G1 X101.013 Y110.788 E2.09441 ; support material
 G1 X101.725 Y111.500 F7800.000 ; move to first support material point
-G1 F2772.883
+G1 F3600.000
 G1 X101.725 Y107.225 E2.20089 ; support material
 G1 X97.225 Y107.225 E2.31298 ; support material
 G1 X97.225 Y111.500 E2.41947 ; support material
@@ -2425,12 +2426,12 @@ G1 E0.53156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.788 Y110.788 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X110.788 Y110.383 E2.01007 ; support material
 G1 X110.554 Y110.788 E2.02170 ; support material
 G1 X110.788 Y110.788 E2.02752 ; support material
 G1 X111.500 Y111.500 F7800.000 ; move to first support material point
-G1 F2772.883
+G1 F3600.000
 G1 X111.500 Y107.225 E2.13401 ; support material
 G1 X107.225 Y107.225 E2.24049 ; support material
 G1 X107.225 Y111.500 E2.34698 ; support material
@@ -2439,13 +2440,13 @@ G1 E0.45346 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.500 Y101.725 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X111.500 Y97.225 E2.11209 ; support material
 G1 X107.225 Y97.225 E2.21858 ; support material
 G1 X107.225 Y101.725 E2.33067 ; support material
 G1 X111.500 Y101.725 E2.43715 ; support material
 G1 X110.788 Y100.397 F7800.000 ; move to first support material point
-G1 F2772.883
+G1 F3600.000
 G1 X110.788 Y98.441 E2.48587 ; support material
 G1 X110.363 Y99.176 E2.50701 ; support material
 G1 X107.937 Y99.176 E2.56744 ; support material
@@ -2456,7 +2457,7 @@ G1 E0.66111 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
@@ -2465,13 +2466,13 @@ G1 E0.15035 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X101.725 Y91.725 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X101.725 Y88.500 E2.08033 ; support material
 G1 X97.225 Y88.500 E2.19242 ; support material
 G1 X97.225 Y91.725 E2.27275 ; support material
 G1 X101.725 Y91.725 E2.38484 ; support material
 G1 X101.013 Y89.437 F7800.000 ; move to first support material point
-G1 F2772.883
+G1 F3600.000
 G1 X101.013 Y89.212 E2.39044 ; support material
 G1 X100.883 Y89.212 E2.39367 ; support material
 G1 X101.013 Y89.437 E2.40014 ; support material
@@ -2479,13 +2480,13 @@ G1 E0.40014 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X102.825 Y97.175 E2.14074 ; support material
 G1 X102.825 Y102.825 E2.28147 ; support material
 G1 X97.175 Y102.825 E2.42221 ; support material
 G1 X97.175 Y97.175 E2.56294 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F2772.883
+G1 F3600.000
 G1 X95.462 Y97.737 E2.60432 ; support material
 G1 X95.462 Y101.100 E2.68809 ; support material
 G1 X96.293 Y99.662 E2.72947 ; support material
@@ -2496,13 +2497,13 @@ G1 E0.75002 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.725 Y101.725 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X91.725 Y97.225 E2.11209 ; support material
 G1 X88.500 Y97.225 E2.19242 ; support material
 G1 X88.500 Y101.725 E2.30451 ; support material
 G1 X91.725 Y101.725 E2.38484 ; support material
 G1 X91.013 Y101.013 F7800.000 ; move to first support material point
-G1 F2772.883
+G1 F3600.000
 G1 X91.013 Y97.937 E2.46145 ; support material
 G1 X90.393 Y97.937 E2.47687 ; support material
 G1 X89.678 Y99.176 E2.51250 ; support material
@@ -2515,15 +2516,15 @@ G1 E0.60048 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.013 Y107.944 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X91.013 Y107.944 E2.00000 ; support material
 G1 X91.013 Y110.788 F7800.000 ; move to first support material point
-G1 F2772.883
+G1 F3600.000
 G1 X91.013 Y108.807 E2.04933 ; support material
 G1 X89.869 Y110.788 E2.10629 ; support material
 G1 X91.013 Y110.788 E2.13478 ; support material
 G1 X91.725 Y111.500 F7800.000 ; move to first support material point
-G1 F2772.883
+G1 F3600.000
 G1 X91.725 Y107.225 E2.24126 ; support material
 G1 X88.500 Y107.225 E2.32159 ; support material
 G1 X88.500 Y111.500 E2.42808 ; support material
@@ -2532,18 +2533,18 @@ G1 E0.50841 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.725 Y91.725 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X91.725 Y88.500 E2.08033 ; support material
 G1 X88.500 Y88.500 E2.16066 ; support material
 G1 X88.500 Y91.725 E2.24099 ; support material
 G1 X91.725 Y91.725 E2.32133 ; support material
 G1 X91.013 Y91.013 F7800.000 ; move to first support material point
-G1 F2772.883
+G1 F3600.000
 G1 X91.013 Y90.894 E2.32429 ; support material
 G1 X90.944 Y91.013 E2.32772 ; support material
 G1 X91.013 Y91.013 E2.32944 ; support material
 G1 X91.013 Y90.030 F7800.000 ; move to first support material point
-G1 F2772.883
+G1 F3600.000
 G1 X91.013 Y89.212 E2.34981 ; support material
 G1 X90.540 Y89.212 E2.36157 ; support material
 G1 X91.013 Y90.030 E2.38510 ; support material
@@ -2551,29 +2552,30 @@ G1 E0.38510 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.500 Y91.725 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F2772.883
+G1 F3600.000
 G1 X111.500 Y88.500 E2.08033 ; support material
 G1 X107.225 Y88.500 E2.18682 ; support material
 G1 X107.225 Y91.725 E2.26715 ; support material
 G1 X111.500 Y91.725 E2.37364 ; support material
+M106 S249.9 ; enable fan
 G1 Z6.350 F7800.000 ; move to next layer (37)
 G1 E0.37364 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -2584,7 +2586,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -2593,17 +2595,17 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X101.288 Y107.827 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X101.288 Y107.662 E2.00410 ; support material
 G1 X101.193 Y107.662 E2.00647 ; support material
 G1 X101.288 Y107.827 E2.01121 ; support material
 G1 X101.288 Y110.788 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X101.288 Y108.924 E2.05763 ; support material
 G1 X100.212 Y110.788 E2.11123 ; support material
 G1 X101.288 Y110.788 E2.13803 ; support material
 G1 X102.000 Y111.500 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X102.000 Y106.950 E2.25137 ; support material
 G1 X96.950 Y106.950 E2.37716 ; support material
 G1 X96.950 Y111.500 E2.49050 ; support material
@@ -2612,12 +2614,12 @@ G1 E0.61629 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.788 Y110.788 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X110.788 Y110.383 E2.01007 ; support material
 G1 X110.554 Y110.788 E2.02170 ; support material
 G1 X110.788 Y110.788 E2.02752 ; support material
 G1 X111.500 Y111.500 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X111.500 Y106.950 E2.14086 ; support material
 G1 X106.950 Y106.950 E2.25419 ; support material
 G1 X106.950 Y111.500 E2.36753 ; support material
@@ -2626,13 +2628,13 @@ G1 E0.48086 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.500 Y102.000 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X111.500 Y96.950 E2.12579 ; support material
 G1 X106.950 Y96.950 E2.23913 ; support material
 G1 X106.950 Y102.000 E2.36492 ; support material
 G1 X111.500 Y102.000 E2.47825 ; support material
 G1 X110.788 Y100.397 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X110.788 Y98.441 E2.52697 ; support material
 G1 X110.363 Y99.176 E2.54811 ; support material
 G1 X107.662 Y99.176 E2.61539 ; support material
@@ -2643,7 +2645,7 @@ G1 E0.71591 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
@@ -2652,18 +2654,18 @@ G1 E0.15035 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X102.000 Y92.000 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X102.000 Y88.500 E2.08718 ; support material
 G1 X96.950 Y88.500 E2.21297 ; support material
 G1 X96.950 Y92.000 E2.30015 ; support material
 G1 X102.000 Y92.000 E2.42594 ; support material
 G1 X101.288 Y91.288 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X101.288 Y91.010 E2.43285 ; support material
 G1 X101.128 Y91.288 E2.44083 ; support material
 G1 X101.288 Y91.288 E2.44481 ; support material
 G1 X101.288 Y89.913 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X101.288 Y89.212 E2.46228 ; support material
 G1 X100.883 Y89.212 E2.47236 ; support material
 G1 X101.288 Y89.913 E2.49252 ; support material
@@ -2671,13 +2673,13 @@ G1 E0.49252 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X102.825 Y97.175 E2.14074 ; support material
 G1 X102.825 Y102.825 E2.28147 ; support material
 G1 X97.175 Y102.825 E2.42221 ; support material
 G1 X97.175 Y97.175 E2.56294 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X95.462 Y97.737 E2.60432 ; support material
 G1 X95.462 Y101.100 E2.68809 ; support material
 G1 X96.293 Y99.662 E2.72947 ; support material
@@ -2688,13 +2690,13 @@ G1 E0.75002 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X92.000 Y102.000 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X92.000 Y96.950 E2.12579 ; support material
 G1 X88.500 Y96.950 E2.21297 ; support material
 G1 X88.500 Y102.000 E2.33876 ; support material
 G1 X92.000 Y102.000 E2.42594 ; support material
 G1 X91.288 Y101.288 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X91.288 Y97.662 E2.51625 ; support material
 G1 X90.552 Y97.662 E2.53457 ; support material
 G1 X89.678 Y99.176 E2.57810 ; support material
@@ -2707,19 +2709,19 @@ G1 E0.67689 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.288 Y108.133 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X91.288 Y107.662 E2.01172 ; support material
 G1 X90.850 Y107.662 E2.02262 ; support material
 G1 X91.122 Y108.133 E2.03615 ; support material
 G1 X91.288 Y108.133 E2.04028 ; support material
 G1 X91.288 Y110.788 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X91.288 Y108.618 E2.09432 ; support material
 G1 X91.122 Y108.618 E2.09845 ; support material
 G1 X89.869 Y110.788 E2.16085 ; support material
 G1 X91.288 Y110.788 E2.19618 ; support material
 G1 X92.000 Y111.500 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X92.000 Y106.950 E2.30951 ; support material
 G1 X88.500 Y106.950 E2.39670 ; support material
 G1 X88.500 Y111.500 E2.51003 ; support material
@@ -2728,19 +2730,19 @@ G1 E0.59721 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X92.000 Y92.000 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X92.000 Y88.500 E2.08718 ; support material
 G1 X88.500 Y88.500 E2.17436 ; support material
 G1 X88.500 Y92.000 E2.26154 ; support material
 G1 X92.000 Y92.000 E2.34873 ; support material
 G1 X91.288 Y91.288 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X91.288 Y90.705 E2.36325 ; support material
 G1 X91.122 Y90.705 E2.36738 ; support material
 G1 X90.785 Y91.288 E2.38415 ; support material
 G1 X91.288 Y91.288 E2.39667 ; support material
 G1 X91.288 Y90.219 F7800.000 ; move to first support material point
-G1 F3033.160
+G1 F3600.000
 G1 X91.288 Y89.212 E2.42175 ; support material
 G1 X90.540 Y89.212 E2.44036 ; support material
 G1 X91.122 Y90.219 E2.46931 ; support material
@@ -2749,7 +2751,7 @@ G1 E0.47345 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.500 Y92.000 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3033.160
+G1 F3600.000
 G1 X111.500 Y88.500 E2.08718 ; support material
 G1 X106.950 Y88.500 E2.20052 ; support material
 G1 X106.950 Y92.000 E2.28770 ; support material
@@ -2759,19 +2761,19 @@ G1 E0.40104 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
@@ -2782,7 +2784,7 @@ G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -2791,19 +2793,19 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X101.563 Y108.133 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X101.563 Y107.387 E2.01857 ; support material
 G1 X101.034 Y107.387 E2.03174 ; support material
 G1 X101.464 Y108.133 E2.05318 ; support material
 G1 X101.563 Y108.133 E2.05564 ; support material
 G1 X101.563 Y110.788 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X101.563 Y108.618 E2.10967 ; support material
 G1 X101.464 Y108.618 E2.11212 ; support material
 G1 X100.212 Y110.788 E2.17452 ; support material
 G1 X101.563 Y110.788 E2.20817 ; support material
 G1 X102.275 Y111.500 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X102.275 Y106.675 E2.32836 ; support material
 G1 X96.675 Y106.675 E2.46785 ; support material
 G1 X96.675 Y111.500 E2.58803 ; support material
@@ -2812,12 +2814,12 @@ G1 E0.72752 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.788 Y110.788 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X110.788 Y110.383 E2.01007 ; support material
 G1 X110.554 Y110.788 E2.02170 ; support material
 G1 X110.788 Y110.788 E2.02752 ; support material
 G1 X111.500 Y111.500 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X111.500 Y106.675 E2.14771 ; support material
 G1 X106.675 Y106.675 E2.26789 ; support material
 G1 X106.675 Y111.500 E2.38808 ; support material
@@ -2826,13 +2828,13 @@ G1 E0.50826 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.500 Y102.275 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X111.500 Y96.675 E2.13949 ; support material
 G1 X106.675 Y96.675 E2.25968 ; support material
 G1 X106.675 Y102.275 E2.39917 ; support material
 G1 X111.500 Y102.275 E2.51935 ; support material
 G1 X110.788 Y100.397 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X110.788 Y98.441 E2.56807 ; support material
 G1 X110.363 Y99.176 E2.58921 ; support material
 G1 X107.387 Y99.176 E2.66334 ; support material
@@ -2843,7 +2845,7 @@ G1 E0.77071 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.500 Y92.275 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X111.500 Y88.500 E2.09403 ; support material
 G1 X106.675 Y88.500 E2.21422 ; support material
 G1 X106.675 Y92.275 E2.30825 ; support material
@@ -2852,7 +2854,7 @@ G1 E0.42844 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
@@ -2861,19 +2863,19 @@ G1 E0.15035 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X102.275 Y92.275 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X102.275 Y88.500 E2.09403 ; support material
 G1 X96.675 Y88.500 E2.23352 ; support material
 G1 X96.675 Y92.275 E2.32755 ; support material
 G1 X102.275 Y92.275 E2.46704 ; support material
 G1 X101.563 Y91.563 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X101.563 Y90.705 E2.48842 ; support material
 G1 X101.464 Y90.705 E2.49087 ; support material
 G1 X100.969 Y91.563 E2.51555 ; support material
 G1 X101.563 Y91.563 E2.53034 ; support material
 G1 X101.563 Y90.219 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X101.563 Y89.212 E2.55542 ; support material
 G1 X100.883 Y89.212 E2.57235 ; support material
 G1 X101.464 Y90.219 E2.60130 ; support material
@@ -2882,13 +2884,13 @@ G1 E0.60376 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X102.825 Y97.175 E2.14074 ; support material
 G1 X102.825 Y102.825 E2.28147 ; support material
 G1 X97.175 Y102.825 E2.42221 ; support material
 G1 X97.175 Y97.175 E2.56294 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X95.462 Y97.737 E2.60432 ; support material
 G1 X95.462 Y101.100 E2.68809 ; support material
 G1 X96.293 Y99.662 E2.72947 ; support material
@@ -2899,13 +2901,13 @@ G1 E0.75002 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X92.275 Y102.275 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X92.275 Y96.675 E2.13949 ; support material
 G1 X88.500 Y96.675 E2.23352 ; support material
 G1 X88.500 Y102.275 E2.37301 ; support material
 G1 X92.275 Y102.275 E2.46704 ; support material
 G1 X91.563 Y101.563 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X91.563 Y97.387 E2.57105 ; support material
 G1 X90.711 Y97.387 E2.59226 ; support material
 G1 X89.678 Y99.176 E2.64371 ; support material
@@ -2918,19 +2920,19 @@ G1 E0.75330 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.563 Y108.133 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X91.563 Y107.387 E2.01857 ; support material
 G1 X90.691 Y107.387 E2.04027 ; support material
 G1 X91.122 Y108.133 E2.06171 ; support material
 G1 X91.563 Y108.133 E2.07270 ; support material
 G1 X91.563 Y110.788 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X91.563 Y108.618 E2.12673 ; support material
 G1 X91.122 Y108.618 E2.13772 ; support material
 G1 X89.869 Y110.788 E2.20011 ; support material
 G1 X91.563 Y110.788 E2.24229 ; support material
 G1 X92.275 Y111.500 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X92.275 Y106.675 E2.36248 ; support material
 G1 X88.500 Y106.675 E2.45651 ; support material
 G1 X88.500 Y111.500 E2.57670 ; support material
@@ -2939,23 +2941,24 @@ G1 E0.67073 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X92.275 Y92.275 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3300.779
+G1 F3600.000
 G1 X92.275 Y88.500 E2.09403 ; support material
 G1 X88.500 Y88.500 E2.18806 ; support material
 G1 X88.500 Y92.275 E2.28209 ; support material
 G1 X92.275 Y92.275 E2.37613 ; support material
 G1 X91.563 Y91.563 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X91.563 Y90.705 E2.39750 ; support material
 G1 X91.122 Y90.705 E2.40848 ; support material
 G1 X90.626 Y91.563 E2.43316 ; support material
 G1 X91.563 Y91.563 E2.45648 ; support material
 G1 X91.563 Y90.219 F7800.000 ; move to first support material point
-G1 F3300.779
+G1 F3600.000
 G1 X91.563 Y89.212 E2.48156 ; support material
 G1 X90.540 Y89.212 E2.50702 ; support material
 G1 X91.122 Y90.219 E2.53598 ; support material
 G1 X91.563 Y90.219 E2.54696 ; support material
+M106 S255 ; enable fan
 G1 Z6.950 F7800.000 ; move to next layer (41)
 G1 E0.54696 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
@@ -2979,21 +2982,22 @@ G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
 G1 X101.725 Y101.650 E2.64423 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
+M106 S247.35 ; enable fan
 G1 Z7.250 F7800.000 ; move to next layer (42)
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.67276 ; small perimeter
 G1 X99.471 Y99.471 E2.70129 ; small perimeter
 G1 X100.529 Y99.471 E2.72982 ; small perimeter
 G1 X100.529 Y100.454 E2.75632 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.81914 ; small perimeter
 G1 X98.836 Y98.836 E2.88197 ; small perimeter
 G1 X101.164 Y98.836 E2.94479 ; small perimeter
 G1 X101.164 Y101.089 E3.00559 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E3.07669 ; external small perimeter
 G1 X98.275 Y98.275 E3.14780 ; external small perimeter
 G1 X101.725 Y98.275 E3.21890 ; external small perimeter
@@ -3004,7 +3008,7 @@ G1 E1.28846 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X104.200 Y104.200 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X104.200 Y94.750 E2.23539 ; support material
 G1 X94.750 Y94.750 E2.47078 ; support material
 G1 X94.750 Y104.200 E2.70617 ; support material
@@ -3013,19 +3017,19 @@ G1 E0.94156 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X101.838 Y108.133 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X101.838 Y107.112 E2.02542 ; support material
 G1 X100.875 Y107.112 E2.04940 ; support material
 G1 X101.464 Y108.133 E2.07875 ; support material
 G1 X101.838 Y108.133 E2.08805 ; support material
 G1 X101.838 Y110.788 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X101.838 Y108.618 E2.14209 ; support material
 G1 X101.464 Y108.618 E2.15139 ; support material
 G1 X100.212 Y110.788 E2.21378 ; support material
 G1 X101.838 Y110.788 E2.25428 ; support material
 G1 X102.550 Y111.500 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X102.550 Y106.400 E2.38132 ; support material
 G1 X96.400 Y106.400 E2.53451 ; support material
 G1 X96.400 Y111.500 E2.66155 ; support material
@@ -3034,12 +3038,12 @@ G1 E0.81474 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X110.788 Y110.788 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X110.788 Y110.383 E2.01007 ; support material
 G1 X110.554 Y110.788 E2.02170 ; support material
 G1 X110.788 Y110.788 E2.02752 ; support material
 G1 X111.500 Y111.500 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X111.500 Y106.400 E2.15456 ; support material
 G1 X106.400 Y106.400 E2.28159 ; support material
 G1 X106.400 Y111.500 E2.40863 ; support material
@@ -3048,13 +3052,13 @@ G1 E0.53566 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.500 Y102.550 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X111.500 Y96.400 E2.15319 ; support material
 G1 X106.400 Y96.400 E2.28023 ; support material
 G1 X106.400 Y102.550 E2.43342 ; support material
 G1 X111.500 Y102.550 E2.56045 ; support material
 G1 X110.788 Y100.397 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X110.788 Y98.441 E2.60917 ; support material
 G1 X110.363 Y99.176 E2.63031 ; support material
 G1 X107.112 Y99.176 E2.71129 ; support material
@@ -3065,7 +3069,7 @@ G1 E0.82551 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X111.500 Y92.550 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X111.500 Y88.500 E2.10088 ; support material
 G1 X106.400 Y88.500 E2.22792 ; support material
 G1 X106.400 Y92.550 E2.32880 ; support material
@@ -3074,7 +3078,7 @@ G1 E0.45584 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X103.488 Y96.190 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X103.488 Y95.462 E2.01813 ; support material
 G1 X101.044 Y95.462 E2.07901 ; support material
 G1 X101.464 Y96.190 E2.09994 ; support material
@@ -3083,19 +3087,19 @@ G1 E0.15035 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X102.550 Y92.550 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X102.550 Y88.500 E2.10088 ; support material
 G1 X96.400 Y88.500 E2.25407 ; support material
 G1 X96.400 Y92.550 E2.35495 ; support material
 G1 X102.550 Y92.550 E2.50814 ; support material
 G1 X101.838 Y91.838 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X101.838 Y90.705 E2.53637 ; support material
 G1 X101.464 Y90.705 E2.54567 ; support material
 G1 X100.810 Y91.838 E2.57826 ; support material
 G1 X101.838 Y91.838 E2.60385 ; support material
 G1 X101.838 Y90.219 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X101.838 Y89.212 E2.62893 ; support material
 G1 X100.883 Y89.212 E2.65271 ; support material
 G1 X101.464 Y90.219 E2.68167 ; support material
@@ -3104,13 +3108,13 @@ G1 E0.69097 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X97.175 Y97.175 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X102.825 Y97.175 E2.14074 ; support material
 G1 X102.825 Y102.825 E2.28147 ; support material
 G1 X97.175 Y102.825 E2.42221 ; support material
 G1 X97.175 Y97.175 E2.56294 ; support material
 G1 X96.293 Y99.176 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X95.462 Y97.737 E2.60432 ; support material
 G1 X95.462 Y101.100 E2.68809 ; support material
 G1 X96.293 Y99.662 E2.72947 ; support material
@@ -3121,13 +3125,13 @@ G1 E0.75002 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X92.550 Y102.550 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X92.550 Y96.400 E2.15319 ; support material
 G1 X88.500 Y96.400 E2.25407 ; support material
 G1 X88.500 Y102.550 E2.40726 ; support material
 G1 X92.550 Y102.550 E2.50814 ; support material
 G1 X91.838 Y101.838 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X91.838 Y97.112 E2.62585 ; support material
 G1 X90.870 Y97.112 E2.64996 ; support material
 G1 X89.678 Y99.176 E2.70931 ; support material
@@ -3140,19 +3144,19 @@ G1 E0.82971 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X91.838 Y108.133 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X91.838 Y107.112 E2.02542 ; support material
 G1 X90.533 Y107.112 E2.05793 ; support material
 G1 X91.122 Y108.133 E2.08728 ; support material
 G1 X91.838 Y108.133 E2.10511 ; support material
 G1 X91.838 Y110.788 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X91.838 Y108.618 E2.15915 ; support material
 G1 X91.122 Y108.618 E2.17698 ; support material
 G1 X89.869 Y110.788 E2.23938 ; support material
 G1 X91.838 Y110.788 E2.28841 ; support material
 G1 X92.550 Y111.500 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X92.550 Y106.400 E2.41544 ; support material
 G1 X88.500 Y106.400 E2.51632 ; support material
 G1 X88.500 Y111.500 E2.64336 ; support material
@@ -3161,19 +3165,19 @@ G1 E0.74424 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X92.550 Y92.550 F7800.000 ; move to first support material point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F3545.253
+G1 F3600.000
 G1 X92.550 Y88.500 E2.10088 ; support material
 G1 X88.500 Y88.500 E2.20176 ; support material
 G1 X88.500 Y92.550 E2.30264 ; support material
 G1 X92.550 Y92.550 E2.40353 ; support material
 G1 X91.838 Y91.838 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X91.838 Y90.705 E2.43175 ; support material
 G1 X91.122 Y90.705 E2.44958 ; support material
 G1 X90.468 Y91.838 E2.48217 ; support material
 G1 X91.838 Y91.838 E2.51630 ; support material
 G1 X91.838 Y90.219 F7800.000 ; move to first support material point
-G1 F3545.253
+G1 F3600.000
 G1 X91.838 Y89.212 E2.54137 ; support material
 G1 X90.540 Y89.212 E2.57369 ; support material
 G1 X91.122 Y90.219 E2.60264 ; support material
@@ -3183,25 +3187,24 @@ G1 E0.62048 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
 G1 X101.725 Y101.650 E2.64423 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
-M106 S252.45 ; enable fan
 G1 Z7.675 F7800.000 ; move to next layer (45)
 G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
@@ -3375,31 +3378,29 @@ G1 X92.113 Y89.212 E2.60119 ; support material
 G1 X90.540 Y89.212 E2.64035 ; support material
 G1 X91.122 Y90.219 E2.66931 ; support material
 G1 X92.113 Y90.219 E2.69399 ; support material
-M106 S255 ; enable fan
 G1 Z7.850 F7800.000 ; move to next layer (46)
 G1 E0.69399 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
 G1 X101.725 Y101.650 E2.64423 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
-M106 S252.45 ; enable fan
 G1 Z8.050 F7800.000 ; move to next layer (47)
 G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
@@ -3575,31 +3576,30 @@ G1 X92.388 Y89.212 E2.66100 ; support material
 G1 X90.540 Y89.212 E2.70702 ; support material
 G1 X91.122 Y90.219 E2.73597 ; support material
 G1 X92.388 Y90.219 E2.76751 ; support material
-M106 S255 ; enable fan
+M106 S244.8 ; enable fan
 G1 Z8.150 F7800.000 ; move to next layer (48)
 G1 E0.76751 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
 G1 X101.725 Y101.650 E2.64423 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
-M106 S249.9 ; enable fan
 G1 Z8.425 F7800.000 ; move to next layer (49)
 G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
@@ -3828,27 +3828,27 @@ G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
 G1 X101.725 Y101.650 E2.64423 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
+M106 S224.4 ; enable fan
 G1 Z8.750 F7800.000 ; move to next layer (51)
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.67276 ; small perimeter
 G1 X99.471 Y99.471 E2.70129 ; small perimeter
 G1 X100.529 Y99.471 E2.72982 ; small perimeter
 G1 X100.529 Y100.454 E2.75632 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.81914 ; small perimeter
 G1 X98.836 Y98.836 E2.88197 ; small perimeter
 G1 X101.164 Y98.836 E2.94479 ; small perimeter
 G1 X101.164 Y101.089 E3.00559 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E3.07669 ; external small perimeter
 G1 X98.275 Y98.275 E3.14780 ; external small perimeter
 G1 X101.725 Y98.275 E3.21890 ; external small perimeter
 G1 X101.725 Y101.650 E3.28846 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
-M106 S229.5 ; enable fan
 G1 Z8.800 F7800.000 ; move to next layer (52)
 G1 E1.28846 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
@@ -4166,31 +4166,30 @@ G1 X110.788 Y93.415 E3.41335 ; support material interface
 G1 X110.788 Y88.735 E3.52994 ; support material interface
 G1 X111.265 Y88.735 E3.54183 ; support material interface
 G1 X111.265 Y93.415 E3.65843 ; support material interface
-M106 S255 ; enable fan
+M106 S221.85 ; enable fan
 G1 Z9.050 F7800.000 ; move to next layer (53)
 G1 E1.65843 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
 G1 X101.725 Y101.650 E2.64423 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
-M106 S226.95 ; enable fan
 G1 Z9.175 F7800.000 ; move to next layer (54)
 G1 X103.060 Y103.020 F7800.000 ; move to first support material interface point
 G1 F3600.000
@@ -4511,31 +4510,30 @@ G1 X111.265 Y105.760 E3.78268 ; support material interface
 G1 X105.260 Y105.760 E3.93227 ; support material interface
 G1 X105.260 Y105.260 E3.94474 ; support material interface
 G1 X111.265 Y105.260 E4.09433 ; support material interface
-M106 S255 ; enable fan
+M106 S209.1 ; enable fan
 G1 Z9.350 F7800.000 ; move to next layer (55)
 G1 E2.09433 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
 G1 X100.529 Y100.529 F7800.000 ; move to first small perimeter point
 G1 E2.00000 F2400.00000 ; unretract extruder 0
-G1 F600.000
+G1 F900.000
 G1 X99.471 Y100.529 E2.02853 ; small perimeter
 G1 X99.471 Y99.471 E2.05706 ; small perimeter
 G1 X100.529 Y99.471 E2.08558 ; small perimeter
 G1 X100.529 Y100.454 E2.11209 ; small perimeter
 G1 X101.164 Y101.164 F7800.000 ; move to first small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.836 Y101.164 E2.17491 ; small perimeter
 G1 X98.836 Y98.836 E2.23773 ; small perimeter
 G1 X101.164 Y98.836 E2.30056 ; small perimeter
 G1 X101.164 Y101.089 E2.36135 ; small perimeter
 G1 X101.725 Y101.725 F7800.000 ; move to first external small perimeter point
-G1 F600.000
+G1 F900.000
 G1 X98.275 Y101.725 E2.43246 ; external small perimeter
 G1 X98.275 Y98.275 E2.50357 ; external small perimeter
 G1 X101.725 Y98.275 E2.57467 ; external small perimeter
 G1 X101.725 Y101.650 E2.64423 ; external small perimeter
 G1 X101.242 Y101.596 F7800.000 ; move inwards before travel
-M106 S216.75 ; enable fan
 G1 Z9.550 F7800.000 ; move to next layer (56)
 G1 E0.64423 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
@@ -5437,11 +5435,13 @@ G1 X91.860 Y107.646 E14.08528 ; infill
 G1 X92.354 Y108.140 E14.10420 ; infill
 G1 E12.10420 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
+M107 ; disable fan
 ; Filament-specific end gcode 
 ;END gcode for filament
 M104 S0 ; turn off temperature
 G28 X0  ; home X axis
 M84     ; disable motors
+M140 S0 ; set bed temperature
 ; cog_x = 99.802584
 ; cog_y = 99.908501
 ; cog_z = 7.968253

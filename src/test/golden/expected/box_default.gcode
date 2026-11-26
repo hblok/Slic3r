@@ -1780,11 +1780,13 @@ G1 X92.354 Y91.860 E14.08527
 G1 X91.860 Y92.354 E14.10420
 G1 E12.10420 F2400.00000
 G92 E0
+M107
 ; Filament-specific end gcode 
 ;END gcode for filament
 M104 S0 ; turn off temperature
 G28 X0  ; home X axis
 M84     ; disable motors
+M140 S0 ; set bed temperature
 ; cog_x = 99.994485
 ; cog_y = 99.994446
 ; cog_z = 5.128773

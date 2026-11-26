@@ -10541,11 +10541,13 @@ G1 X101.510 Y118.088 E13.63787 ; infill
 G1 X101.912 Y118.490 E13.64626 ; infill
 G1 E8.64626 F2400.00000 ; retract extruder 0
 G92 E0 ; reset extrusion distance
+M107 ; disable fan
 ; Filament-specific end gcode 
 ;END gcode for filament
 M104 S0 ; turn off temperature
 G28 X0  ; home X axis
 M84     ; disable motors
+M140 S0 ; set bed temperature
 ; cog_x = 110.055108
 ; cog_y = 109.891611
 ; cog_z = 4.753161

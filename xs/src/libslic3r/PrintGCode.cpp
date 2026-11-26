@@ -331,6 +331,7 @@ PrintGCode::output()
 
     // Write end commands to file.
     fh << _gcodegen.retract(); // TODO: process this retract through PressureRegulator in order to discharge fully
+    fh << _gcodegen.writer.set_fan(0);
 
     {
         auto filament_extruder = 0U;
@@ -343,7 +344,7 @@ PrintGCode::output()
     fh << apply_math(_gcodegen.placeholder_parser->process(config.end_gcode));
 
     // set bed temperature
-    if (config.has_heatbed && temp > 0 && !std::regex_search(config.end_gcode.getString(), bed_temp_regex)) {
+    if (config.has_heatbed && !std::regex_search(config.end_gcode.getString(), bed_temp_regex)) {
         fh << _gcodegen.writer.set_bed_temperature(0, 0);
     }
 
@@ -457,7 +458,7 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
                 mm3_per_mm.emplace_back(layerm->fills.min_mm3_per_mm());
             }
         }
-        if (typeid(layer) == typeid(SupportLayer*)) {
+        if (layer->is_support()) {
             const SupportLayer* slayer = dynamic_cast<const SupportLayer*>(layer);
             if (!(obj.config.get_abs_value("support_material_speed") > 0 &&
                   obj.config.get_abs_value("support_material_interface_speed") > 0))
@@ -531,7 +532,7 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
         || _skirt_done.size() == 0
         || (_skirt_done.rbegin())->first < scale_(_print.skirt_height_z))
         && _skirt_done.count(scale_(layer->print_z)) == 0
-        && typeid(layer) != typeid(SupportLayer*)) ) {
+        && !layer->is_support()) ) {
 
 
         _gcodegen.set_origin(Pointf(0,0));
@@ -749,7 +750,8 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
     // we apply spiral vase at this stage because it requires a full layer
     gcode = this->_spiral_vase.process_layer(gcode);
     // Apply the cooling logic.
-    gcode = this->_cooling_buffer.append(gcode, std::to_string(reinterpret_cast<long long unsigned int>(layer->object())) + std::string(typeid(layer).name()),
+    gcode = this->_cooling_buffer.append(gcode, // object and layer kind, so support layers are timed apart from object layers (as in Perl)
+                                         std::to_string(reinterpret_cast<long long unsigned int>(layer->object())) + (layer->is_support() ? "support" : "layer"),
                                          layer->id(), layer->print_z);
 
     // write the resulting gcode

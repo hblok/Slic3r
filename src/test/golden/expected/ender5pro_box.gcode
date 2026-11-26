@@ -2741,6 +2741,7 @@ G1 X101.510 Y118.088 E30.38477
 G1 X101.912 Y118.490 E30.40941
 G1 E25.40941 F2400.00000
 G92 E0
+M107
 ; Filament-specific end gcode 
 ;END gcode for filament
 M104 S0 ; hotend off
