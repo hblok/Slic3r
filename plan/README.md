@@ -1,6 +1,6 @@
 # Plan
 
-Started 2026-11-26. Status: **phase 1 in progress**.
+Started 2026-11-26. Status: **phases 0 and 1 mostly done; phase 2 is next**.
 Target: Debian 13, unmodified Creality Ender 5 Pro.
 
 | File | Content |
@@ -21,16 +21,14 @@ Each phase ends with something that can be checked.
 - [ ] GitHub repo description and homepage (homepage still says slic3r.org)
 - [ ] Fetch upstream tags (the fork has none, so `git describe` fails)
 
-### 1. C++ core builds, is verified, CI is ours
+### 1. C++ core builds, is verified, CI is ours (done 2026-11-26)
 - [x] Build on current toolchain and Boost
 - [x] Fix flaky test (uninitialised variable in the G-code writer)
 - [x] GitHub Actions ([build.yml](../.github/workflows/build.yml)): build and test in a
       `debian:13` container, daily plus manual dispatch, not on every commit
 - [x] Golden G-code check ([check.sh](../src/test/golden/check.sh)): box with default
       and tuned settings, and an overhang model; runs in CI
-- [ ] Push, merge `modernize` into `master`, enable Actions for the fork, run it once
-- Done when: a clean CI run is green (56 test cases, 3 expected failures) and the
-  golden check passes
+- [x] First green run on GitHub: 56 test cases (3 expected failures), golden check passes
 
 ### 2. The GUI runs
 The biggest unknown. Time-box it to one or two sessions.

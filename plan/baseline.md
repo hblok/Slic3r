@@ -35,12 +35,16 @@ Verified with the GUI off:
 |---|---|---|
 | Debian 13.8 (chroot) | GCC 14.2, 1.83 | builds, tests as below, golden G-code recorded here |
 | Ubuntu 26.04 | GCC 15.2, 1.90 | builds, tests as below, golden check matches Debian's output |
+| GitHub Actions, `debian:13` | as Debian 13 | green |
 
 Tests: 56 cases, 53 pass and 3 fail as expected.
 
-Not verified: the GitHub Actions run itself, GCodeSender against a
+Not verified: GCodeSender against a
 serial port (changed), Perl XS build, Perl GUI, Perl tests, C++ GUI
 (`-DEnable_GUI=ON`).
+
+The G-code records the thread count, which defaults to the number of cores; the golden
+check passes `--threads 4`.
 
 ## Support material is broken in the C++ CLI
 
