@@ -427,7 +427,20 @@ GCode::extrude(ExtrusionLoop loop, std::string description, double speed)
         // detect angle between last and first segment
         // the side depends on the original winding order of the polygon (left for contours, right for holes)
         Point a = paths.front().polyline.points[1];  // second point
-        Point b = *(paths.back().polyline.points.end()-3);       // second to last point
+        // Third point from the end of the whole loop. Taking it from the last path alone
+        // read before the start of its points when that path is short (a loop split
+        // into bridge and non-bridge paths), which made the move random. Consecutive
+        // paths share their joining point, so it is counted once.
+        Point b = paths.back().polyline.points.front();
+        {
+            size_t back = 3;
+            for (auto path = paths.rbegin(); path != paths.rend(); ++path) {
+                const Points &pts = path->polyline.points;
+                const size_t usable = (path == paths.rbegin()) ? pts.size() : pts.size() - 1; // skip the shared point
+                if (back <= usable) { b = pts[usable - back]; break; }
+                back -= usable;
+            }
+        }
         if (was_clockwise) {
             // swap points
             Point c = a; a = b; b = c;
