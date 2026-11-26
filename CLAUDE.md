@@ -46,6 +46,22 @@ The first build downloads Catch2. CMake writes `src/test/test_options.hpp`
 
 Support material does not work in the C++ CLI (see `plan/baseline.md`).
 
+## Build and test (Perl application and GUI)
+
+Packages are listed in README and in the `perl` job of
+[build.yml](.github/workflows/build.yml). The XS module compiles the same
+`xs/src/libslic3r` sources, so C++ changes reach the Perl program after `./Build`.
+
+```sh
+(cd xs && perl Build.PL && ./Build && ./Build test)
+export PERL5LIB=$PWD/xs/blib/arch:$PWD/xs/blib/lib
+prove -j$(nproc) t/
+utils/gui_smoke.sh /tmp/gui-smoke   # needs xvfb xdotool imagemagick
+```
+
+The smoke test drives the GUI with clicks at fixed window coordinates (no window
+manager under Xvfb). A layout change breaks it; check its screenshots, re-measure.
+
 ## Rules
 
 - License is AGPL-3.0 and stays so. Keep existing copyright and attribution.

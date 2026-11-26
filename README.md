@@ -59,9 +59,26 @@ The core parts of Slic3r are written in C++11, with multithreading. The graphica
 
 ### How to install?
 
-No packages are provided yet. The C++ command line tool builds from source on Debian 13
-style systems; the graphical interface is not verified yet, and support material does not
-work in the command line tool. See [plan/baseline.md](plan/baseline.md).
+No packages are provided yet. Both programs build from source on Debian 13.
+
+**The Perl application** has the graphical interface and working support material.
+Use it for printing.
+
+```sh
+sudo apt install g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev \
+  perl liblocal-lib-perl libdevel-checklib-perl libextutils-cppguess-perl \
+  libextutils-typemaps-default-perl libextutils-xspp-perl libmodule-build-withxspp-perl \
+  libmoo-perl libencode-locale-perl libio-stringy-perl libclass-xsaccessor-perl \
+  libclass-accessor-perl libwww-perl libwx-perl libwx-glcanvas-perl libopengl-perl
+(cd xs && perl Build.PL && ./Build && ./Build test)
+export PERL5LIB=$PWD/xs/blib/arch:$PWD/xs/blib/lib
+prove -j$(nproc) t/
+perl slic3r.pl            # graphical interface
+perl slic3r.pl --help     # command line
+```
+
+**The C++ command line tool** is the future core. Support material does not work in it
+yet. See [plan/baseline.md](plan/baseline.md).
 
 ```sh
 sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev
@@ -81,11 +98,11 @@ Please read [CONTRIBUTING](.github/CONTRIBUTING.md) first.
 * `src/`: the C++ source of the `slic3r` executable and the CMake definition file for compiling it
 * `src/GUI`: The C++ GUI.
 * `src/test`: New test suite for libslic3r and the GUI. Implemented with [Catch2](https://github.com/catchorg/Catch2)
-* `t/`: the test suite (deprecated)
-* `utils/`: various useful scripts
+* `t/`: test suite for the Perl application
+* `utils/`: various useful scripts, including the GUI smoke test `gui_smoke.sh`
 * `xs/src/libslic3r/`: C++ sources for libslic3r
-* `xs/t/`: test suite for libslic3r (deprecated)
-* `xs/xsp/`: bindings for calling libslic3r from Perl (XS) (deprecated)
+* `xs/t/`: test suite for the Perl bindings
+* `xs/xsp/`: bindings for calling libslic3r from Perl (XS)
 
 ### Acknowledgements
 
