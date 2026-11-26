@@ -45,7 +45,8 @@ The first build downloads Catch2. CMake writes `src/test/test_options.hpp`
 (ignored by git).
 
 C++ support material was fixed on 2026-11-26 to match Perl (see `plan/baseline.md`).
-When changing either pipeline, compare its output with the other one.
+When changing either pipeline, compare its output with the other one:
+`src/test/golden/compare_perl.sh build/slic3r` (needs the XS module built too).
 
 ## Build and test (Perl application and GUI)
 
