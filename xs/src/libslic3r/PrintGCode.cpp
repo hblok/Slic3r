@@ -651,6 +651,11 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
             return bbox.contains(point) && layer->slices.at(i).contour.contains(point);
         };
         const size_t n_slices { layer->slices.size() };
+        // Perl's ->empty: a collection's length() is 0 whatever it holds
+        auto is_empty = [] (const ExtrusionEntity* e) {
+            if (const auto* c = dynamic_cast<const ExtrusionEntityCollection*>(e)) return c->entities.empty();
+            return e->length() == 0;
+        };
 
         for (auto region_id = 0U; region_id < _print.regions.size(); ++region_id) {
             const LayerRegion* layerm;
@@ -664,9 +669,11 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
             {
                 auto extruder_id = region->config.perimeter_extruder-1;
                 // Casting away const just to avoid double dereferences
-                for(const auto* perimeter_coll : layerm->perimeters.flatten().entities) {
+                // As in Perl: each top-level entity is the collection of one slice; it goes
+                // to the island holding its first point, as a whole.
+                for(const auto* perimeter_coll : layerm->perimeters.entities) {
 
-                    if(perimeter_coll->length() == 0) continue;  // this shouldn't happen but first_point() would fail
+                    if(is_empty(perimeter_coll)) continue;  // this shouldn't happen but first_point() would fail
 
                     // perimeter_coll is an ExtrusionPath::Collection object representing a single slice
                     for(auto i = 0U; i < n_slices; i++){
@@ -674,7 +681,11 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
                             i == n_slices - 1
                             // perimeter_coll->first_point fits inside ith slice
                             || point_inside_surface(i, perimeter_coll->first_point())) {
-                            std::get<0>(by_extruder[extruder_id][i])[region_id].append(*perimeter_coll);
+                            auto &island_perimeters = std::get<0>(by_extruder[extruder_id][i])[region_id];
+                            if (const auto* coll = dynamic_cast<const ExtrusionEntityCollection*>(perimeter_coll))
+                                island_perimeters.append(coll->entities);
+                            else
+                                island_perimeters.append(*perimeter_coll);
                             break;
                         }
                     }
@@ -686,10 +697,14 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
             // the ExtrusionPath objects of a certain infill "group" (also called "surface"
             // throughout the code). We can redefine the order of such Collections but we have to
             // do each one completely at once.
-            for(auto* fill : layerm->fills.flatten(true).entities) {
-                if(fill->length() == 0) continue;  // this shouldn't happen but first_point() would fail
+            // As in Perl: each top-level fill collection (one surface) is kept whole.
+            for(auto* fill : layerm->fills.entities) {
+                if(is_empty(fill)) continue;  // this shouldn't happen but first_point() would fail
 
-                auto extruder_id = fill->is_solid_infill()
+                // the first path decides, as in Perl ($fill->[0]->is_solid_infill)
+                const auto* fill_coll = dynamic_cast<const ExtrusionEntityCollection*>(fill);
+                const ExtrusionEntity* first = (fill_coll && !fill_coll->entities.empty()) ? fill_coll->entities.front() : fill;
+                auto extruder_id = first->is_solid_infill()
                     ? region->config.solid_infill_extruder-1
                     : region->config.infill_extruder-1;
 
@@ -776,7 +791,14 @@ PrintGCode::_extrude_infill(std::map<size_t,ExtrusionEntityCollection> &by_regio
         ExtrusionEntityCollection tmp;
         pair.second.chained_path_from(this->_gcodegen.last_pos(),&tmp);
         for(auto& ee : tmp){
-            gcode += this->_gcodegen.extrude(*ee, "infill");
+            if (const auto* coll = dynamic_cast<const ExtrusionEntityCollection*>(ee)) {
+                ExtrusionEntityCollection paths;
+                coll->chained_path_from(this->_gcodegen.last_pos(), &paths);
+                for (auto& path : paths)
+                    gcode += this->_gcodegen.extrude(*path, "infill");
+            } else {
+                gcode += this->_gcodegen.extrude(*ee, "infill");
+            }
         }
     }
     return gcode;
