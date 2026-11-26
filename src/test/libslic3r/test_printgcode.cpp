@@ -207,6 +207,36 @@ SCENARIO( "PrintGCode basic functionality") {
                 REQUIRE(exported.find("M107") != std::string::npos);
             }
         }
+        WHEN("a bed temperature is set and the start and end gcode do not set it") {
+            config->set("first_layer_bed_temperature", 60);
+            config->set("bed_temperature", 60);
+            config->set("start_gcode", "G28");
+            config->set("end_gcode", "M84");
+            Slic3r::Model model;
+            auto print {Slic3r::Test::init_print({TestMesh::cube_20x20x20}, model, config)};
+            Slic3r::Test::gcode(gcode, print);
+            auto exported {gcode.str()};
+            THEN("the bed is heated before the start gcode and switched off after the end gcode") {
+                REQUIRE(exported.find("M190 S60") != std::string::npos);
+                REQUIRE(exported.find("M190 S60") < exported.find("G28"));
+                REQUIRE(exported.find("M140 S0") != std::string::npos);
+                REQUIRE(exported.find("M140 S0") > exported.find("M84"));
+            }
+        }
+        WHEN("the start and end gcode set the bed temperature themselves") {
+            config->set("first_layer_bed_temperature", 60);
+            config->set("bed_temperature", 60);
+            config->set("start_gcode", "M190 S55");
+            config->set("end_gcode", "M140 S0 ; own");
+            Slic3r::Model model;
+            auto print {Slic3r::Test::init_print({TestMesh::cube_20x20x20}, model, config)};
+            Slic3r::Test::gcode(gcode, print);
+            auto exported {gcode.str()};
+            THEN("no bed temperature commands are added") {
+                REQUIRE(exported.find("M190 S60") == std::string::npos);
+                REQUIRE(exported.find("M140 S0 ; set bed temperature") == std::string::npos);
+            }
+        }
         WHEN("end_gcode exists with layer_num and layer_z") {
             config->set("end_gcode", "; Layer_num [layer_num]\n; Layer_z [layer_z]");
             config->set("layer_height", 0.1);

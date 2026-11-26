@@ -108,7 +108,7 @@ PrintGCode::output()
 
     // set bed temperature
     const auto temp = config.first_layer_bed_temperature.getInt();
-    if (config.has_heatbed && temp > 0 && std::regex_search(config.start_gcode.getString(), bed_temp_regex)) {
+    if (config.has_heatbed && temp > 0 && !std::regex_search(config.start_gcode.getString(), bed_temp_regex)) {
         fh << _gcodegen.writer.set_bed_temperature(temp, 1);
     }
 
@@ -239,11 +239,11 @@ PrintGCode::output()
                     if (layer->id() == 0 && finished_objects > 0) {
                         if (config.first_layer_bed_temperature > 0 &&
                                 config.has_heatbed &&
-                                std::regex_search(config.between_objects_gcode.getString(), bed_temp_regex))
+                                !std::regex_search(config.between_objects_gcode.getString(), bed_temp_regex))
                         {
                             fh << _gcodegen.writer.set_bed_temperature(config.first_layer_bed_temperature);
                         }
-                        if (std::regex_search(config.between_objects_gcode.getString(), ex_temp_regex)) {
+                        if (!std::regex_search(config.between_objects_gcode.getString(), ex_temp_regex)) {
                             _print_first_layer_temperature(false);
                         }
                     }
@@ -316,7 +316,7 @@ PrintGCode::output()
     fh << apply_math(_gcodegen.placeholder_parser->process(config.end_gcode));
 
     // set bed temperature
-    if (config.has_heatbed && temp > 0 && std::regex_search(config.end_gcode.getString(), bed_temp_regex)) {
+    if (config.has_heatbed && temp > 0 && !std::regex_search(config.end_gcode.getString(), bed_temp_regex)) {
         fh << _gcodegen.writer.set_bed_temperature(0, 0);
     }
 
