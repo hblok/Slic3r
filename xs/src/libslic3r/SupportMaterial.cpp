@@ -385,16 +385,19 @@ SupportMaterial::contact_area(PrintObject *object)
                         // Get all perimeters as polylines.
                         // TODO: split_at_first_point() (called by as_polyline() for ExtrusionLoops)
                         // could split a bridge mid-way.
+                        // All perimeters, loops included, as Perl's as_polyline on each
+                        // entity. (Converting to ExtrusionPaths kept only open paths, so
+                        // loops were never seen as bridged.)
                         Polylines overhang_perimeters;
-                        for (auto extr_path : ExtrusionPaths(layer_m->perimeters.flatten())) {
-                            overhang_perimeters.push_back(extr_path.as_polyline());
-                        }
+                        for (const auto* entity : layer_m->perimeters.flatten().entities)
+                            overhang_perimeters.push_back(entity->as_polyline());
 
                         // Only consider the overhang parts of such perimeters,
                         // overhangs being those parts not supported by
                         // workaround for Clipper bug, see Slic3r::Polygon::clip_as_polyline()
+                        // (Perl moves only the first point)
                         for (auto &overhang_perimeter : overhang_perimeters)
-                            overhang_perimeter.translate(1, 0);
+                            overhang_perimeter.points.front().translate(1, 0);
                         overhang_perimeters = diff_pl(overhang_perimeters, lower_grown_slices);
 
                         // Only consider straight overhangs.
@@ -413,8 +416,8 @@ SupportMaterial::contact_area(PrintObject *object)
 
                         new_overhangs_perimeters_polylines = Polylines();
                         for (const auto &p : overhang_perimeters) {
-                            if (layer->slices.contains_b(p.first_point())
-                                && layer->slices.contains_b(p.last_point())) {
+                            if (layer->slices.contains(p.first_point())
+                                && layer->slices.contains(p.last_point())) {
                                 new_overhangs_perimeters_polylines.push_back(p);
                             }
                         }
