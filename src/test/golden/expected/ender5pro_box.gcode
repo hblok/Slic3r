@@ -1,5 +1,9 @@
 
 
+; input_file = ../inputs/test_cli/20mmbox.stl
+; input_file_size = 3053
+; input_file_crc32 = af1f8c2f
+
 ; Printer Config Notes: 
 ; Creality Ender-5 Pro, stock: 220 x 220 x 300 mm, 0.4 mm nozzle, Bowden, Marlin.
 ; 

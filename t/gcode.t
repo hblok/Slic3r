@@ -1,4 +1,4 @@
-use Test::More tests => 27;
+use Test::More tests => 29;
 use strict;
 use warnings;
 
@@ -284,6 +284,17 @@ use Slic3r::Test;
     });
     
     ok $had_gcode, 'M190/M140 codes are generated if has_heatbed = 1';
+}
+
+{
+    # two objects from one input file: the file is named once, with size and CRC-32
+    my $file = "$FindBin::Bin/../src/test/inputs/test_cli/20mmbox.stl";
+    my $print = Slic3r::Test::init_print(['20mm_cube', '20mm_cube']);
+    $_->model_object->set_input_file($file) for @{$print->print->objects};
+    my $gcode = Slic3r::Test::gcode($print);
+    my @names = $gcode =~ /^; input_file = (.*)$/mg;
+    is_deeply \@names, [$file], 'input file is named once';
+    like $gcode, qr/^; input_file_size = 3053\n; input_file_crc32 = af1f8c2f$/m, 'input file size and CRC-32';
 }
 
 __END__

@@ -1,5 +1,9 @@
 
 
+; input_file = ../inputs/test_cli/20mmbox.stl
+; input_file_size = 3053
+; input_file_crc32 = af1f8c2f
+
 ; external perimeters extrusion width = 0.44mm (2.38mm^3/s)
 ; perimeters extrusion width = 0.56mm (6.20mm^3/s)
 ; infill extrusion width = 0.50mm (7.31mm^3/s)

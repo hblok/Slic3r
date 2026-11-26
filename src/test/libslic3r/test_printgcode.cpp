@@ -2,6 +2,7 @@
 
 #include <regex>
 #include "test_data.hpp"
+#include <test_options.hpp>
 #include "libslic3r.h"
 #include "GCodeReader.hpp"
 
@@ -235,6 +236,19 @@ SCENARIO( "PrintGCode basic functionality") {
             THEN("no bed temperature commands are added") {
                 REQUIRE(exported.find("M190 S60") == std::string::npos);
                 REQUIRE(exported.find("M140 S0 ; set bed temperature") == std::string::npos);
+            }
+        }
+        WHEN("two objects come from the same input file") {
+            Slic3r::Model model;
+            auto print {Slic3r::Test::init_print({TestMesh::cube_20x20x20, TestMesh::cube_20x20x20}, model, config)};
+            for (auto* object : model.objects) object->input_file = testfile("test_cli/20mmbox.stl");
+            Slic3r::Test::gcode(gcode, print);
+            auto exported {gcode.str()};
+            THEN("the file is named once, with its size and CRC-32") {
+                const auto first = exported.find("; input_file = ");
+                REQUIRE(first != std::string::npos);
+                REQUIRE(exported.find("; input_file = ", first + 1) == std::string::npos);
+                REQUIRE(exported.find("20mmbox.stl\n; input_file_size = 3053\n; input_file_crc32 = af1f8c2f\n") != std::string::npos);
             }
         }
         WHEN("end_gcode exists with layer_num and layer_z") {

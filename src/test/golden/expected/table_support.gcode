@@ -1,5 +1,9 @@
 
 
+; input_file = table.stl
+; input_file_size = 2245
+; input_file_crc32 = e2ae83e8
+
 ; external perimeters extrusion width = 0.55mm (4.37mm^3/s)
 ; perimeters extrusion width = 0.70mm (11.44mm^3/s)
 ; infill extrusion width = 0.62mm (13.45mm^3/s)

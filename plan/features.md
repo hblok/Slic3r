@@ -22,7 +22,7 @@ Open for discussion; nothing here is decided.
 | Adaptive pressure advance | OrcaSlicer 2.2: calibrate PA at several flow rates and accelerations, fit a model, and the slicer emits a PA value per feature. | Needs pressure advance in the firmware (Marlin `M900` linear advance or Klipper). Stock Ender-5 Pro firmware (Creality Marlin 1.1.x) very likely lacks it; `M503` will tell (phase 3). Blocked unless the firmware changes. |
 | GPU slicing and support generation | No mainstream open-source slicer does this. Research prototypes and a commercial kernel (Dyndrite) exist. | Low value: our slices take well under a second for test parts, and the expensive steps (polygon clipping, support area propagation) are branchy CPU work. Revisit only if a real model is slow; measure first, then multithreading before GPU. |
 | Drop Perl, new GUI | PrusaSlicer, OrcaSlicer and Bambu Studio are C++ with wxWidgets; Cura uses Qt/QML with a Python front end. | Order matters: C++ support generation first (Perl is the only working one), then G-code export parity (golden check against Perl), then the GUI. GUI: the Perl GUI is 17,800 lines, the C++ skeleton in `src/GUI` is 7,500 with many stubs. A plater with 3D view, preview, preset editor and export is weeks, not days. |
-| G-code metadata to get back to the project | PrusaSlicer and Orca write the full config as comments and a thumbnail; Orca also writes the 3MF project name. | Small. We already write the full config and the commit. Missing: input file names and hashes, and the project file. See "Small" below. |
+| G-code metadata to get back to the project | PrusaSlicer and Orca write the full config as comments and a thumbnail; Orca also writes the 3MF project name. | Small. Full config and commit were already written; input file names, sizes and CRC-32 added 2026-11-26 (both pipelines). Missing: object placement from the GUI. No project format besides 3MF/AMF export. |
 
 Sources: OrcaSlicer wiki (adaptive pressure advance calibration), Prusa help center
 (organic supports), Marlin-E5P and DREMC firmware notes for the Ender-5 Pro.
@@ -35,7 +35,7 @@ Sources: OrcaSlicer wiki (adaptive pressure advance calibration), Prusa help cen
 | Better time estimate in the G-code | Planning; an estimator exists |
 | Fuzzy skin | Simple perimeter jitter |
 | Calibration generators (flow, temperature, retraction) | Faster tuning, matters on a Bowden extruder |
-| Input files and their hashes in the G-code header | Find the model and settings again from a print |
+| ~~Input files and their hashes in the G-code header~~ done 2026-11-26 | Find the model and settings again from a print. Still missing: object positions, rotations and scales set in the GUI |
 
 ## Medium
 

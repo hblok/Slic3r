@@ -109,6 +109,8 @@ CLI for prints that need support.** The Perl application uses its own
 - G2/G3 arc fitting exists in Perl but is disabled as incomplete
   (`lib/Slic3r/GCode/ArcFitting.pm`). Pressure advance and vibration limit filters
   also exist in Perl.
+- The C++ CLI does not know `--merge` (or `-m`): it aborts with `UnknownOptionException` and an
+  unreadable message. Perl handles it.
 - `src/test/inputs/20mmbox.stl` is an 84-byte empty STL; use `test_cli/20mmbox.stl`.
 - `src/CMakeLists.txt` has `target_compile_options(libslic3r -DBOOST_INCLUDE_NOWIDE)`
   behind a misspelled variable, so it never runs.
