@@ -44,7 +44,8 @@ Expected output is recorded on Debian 13.
 The first build downloads Catch2. CMake writes `src/test/test_options.hpp`
 (ignored by git).
 
-Support material does not work in the C++ CLI (see `plan/baseline.md`).
+C++ support material was fixed on 2026-11-26 to match Perl (see `plan/baseline.md`).
+When changing either pipeline, compare its output with the other one.
 
 ## Build and test (Perl application and GUI)
 

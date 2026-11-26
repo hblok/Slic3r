@@ -77,7 +77,7 @@ Perl and C++ output, default settings:
 | Model | Perl | C++ |
 |---|---|---|
 | 20 mm box | 1142 extrusion moves, 339.3 mm filament | 1142 moves; coordinates differ in the third decimal |
-| table, `--support-material` | 3916 moves, 327.9 mm (142.5 mm without support) | 977 moves, no support |
+| table, `--support-material` | 3916 moves, 327.9 mm (142.5 mm without support) | 977 moves, no support (fixed since: same filament as Perl) |
 
 ## C++ temperature commands (fixed 2026-11-26)
 
@@ -91,14 +91,26 @@ Still different from Perl in sequential printing (`complete_objects`), not fixed
 never writes `between_objects_gcode`, and its sort by `sequential_print_priority`
 compares an object with itself.
 
-## Support material is broken in the C++ CLI
+## C++ support material (fixed 2026-11-26)
 
-A table-shaped model (20 x 20 mm top on a 4 x 4 mm post) sliced with
-`--support-material` gets no support: the log says `Empty contact_areas` and filament
-use is unchanged. `src/test/libslic3r/test_support_material.cpp` is not part of the
-test build; added by hand it passes, so it does not cover this. **Do not use the C++
-CLI for prints that need support.** The Perl application uses its own
-`lib/Slic3r/Print/SupportMaterial.pm`, which works (see above).
+Until this date the C++ CLI printed no support at all. Twelve bugs between contact
+detection and export, each found by comparing a stage with
+`lib/Slic3r/Print/SupportMaterial.pm`; listed in commit `62d63148`. Now, on the table
+model (20 x 20 mm top on a 4 x 4 mm post), C++ and Perl extrude the same filament per
+role for all three patterns:
+
+| Pattern | Total filament | Support | Interface |
+|---|---|---|---|
+| pillars (default) | 327.9 mm | 116.2 mm | 67.1 mm |
+| rectilinear | 379.9 mm | 155.7 mm | 79.5 mm |
+| honeycomb | 413.5 mm | 189.3 mm | 79.5 mm |
+
+The G-code still differs from Perl in cooling feedrates and fan commands (782 of 5417
+lines on the table, 2 of 1769 on the box) and in one end-of-print `M140 S0` (C++ skips
+it when the first-layer bed temperature is 0). Not checked: raft, `support_material_
+enforce_layers`, `buildplate_only`, multiple objects.
+`src/test/libslic3r/test_support_material.cpp` is still not part of the test build;
+the golden `table_support` output covers the default case.
 
 ## Other findings
 

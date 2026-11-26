@@ -67,12 +67,13 @@ One at a time from [features.md](features.md), each with a test and a test print
 | Option | For | Against |
 |---|---|---|
 | **A. Keep Perl now, replace it in stages** | Early usable program; Perl is the reference for each port | wxPerl is barely maintained; two pipelines for a while |
-| B. Go straight to C++ | One language | No working GUI for a long time; supports are broken in C++ |
-| C. New UI over the C++ CLI | Modern, testable | Largest change in look and feel; supports still broken |
+| B. Go straight to C++ | One language | No working GUI for a long time |
+| C. New UI over the C++ CLI | Modern, testable | Largest change in look and feel |
 
 Recommendation: **A**.
 1. Get the Perl program running (phase 2).
-2. Fix C++ support generation, compare output with Perl, retire Perl logic.
+2. Fix C++ support generation (done 2026-11-26: same output as Perl), compare the rest
+   of the output with Perl, retire Perl logic.
 3. Finish the C++ GUI (or replace it), then remove Perl.
 
 If phase 2 turns out to be hopeless, go to B. (It did not: see phase 2.)

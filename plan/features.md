@@ -18,7 +18,7 @@ Open for discussion; nothing here is decided.
 
 | Wish | What the others do | Fit for this fork |
 |---|---|---|
-| Tree supports | PrusaSlicer 2.6 "organic supports" build on Thomas Rahm's improved version of Cura's tree supports; OrcaSlicer has tree supports from Bambu Studio. All AGPL-3.0 (CuraEngine too); check each file. | Large. Our C++ support generation does not work at all yet, so the support pipeline has to be fixed or replaced first. Porting PrusaSlicer's organic supports is probably cheaper than writing our own, but it expects their geometry types. |
+| Tree supports | PrusaSlicer 2.6 "organic supports" build on Thomas Rahm's improved version of Cura's tree supports; OrcaSlicer has tree supports from Bambu Studio. All AGPL-3.0 (CuraEngine too); check each file. | Large. C++ support generation works since 2026-11-26 (matches Perl), so tree supports can be added beside it in C++. Porting PrusaSlicer's organic supports is probably cheaper than writing our own, but it expects their geometry types. |
 | Adaptive pressure advance | OrcaSlicer 2.2: calibrate PA at several flow rates and accelerations, fit a model, and the slicer emits a PA value per feature. | Needs pressure advance in the firmware (Marlin `M900` linear advance or Klipper). Stock Ender-5 Pro firmware (Creality Marlin 1.1.x) very likely lacks it; `M503` will tell (phase 3). Blocked unless the firmware changes. |
 | GPU slicing and support generation | No mainstream open-source slicer does this. Research prototypes and a commercial kernel (Dyndrite) exist. | Low value: our slices take well under a second for test parts, and the expensive steps (polygon clipping, support area propagation) are branchy CPU work. Revisit only if a real model is slow; measure first, then multithreading before GPU. |
 | Drop Perl, new GUI | PrusaSlicer, OrcaSlicer and Bambu Studio are C++ with wxWidgets; Cura uses Qt/QML with a Python front end. | Order matters: C++ support generation first (Perl is the only working one), then G-code export parity (golden check against Perl), then the GUI. GUI: the Perl GUI is 17,800 lines, the C++ skeleton in `src/GUI` is 7,500 with many stubs. A plater with 3D view, preview, preset editor and export is weeks, not days. |
@@ -51,7 +51,7 @@ Sources: OrcaSlicer wiki (adaptive pressure advance calibration), Prusa help cen
 | Feature | Why | Cost |
 |---|---|---|
 | Variable-width perimeters (Arachne) | Thin walls and fine detail | Touches the perimeter core and geometry libraries |
-| Working C++ support generation | Prerequisite for retiring Perl, see baseline | Debugging an unfinished port |
+| ~~Working C++ support generation~~ done 2026-11-26 | Prerequisite for retiring Perl, see baseline | |
 | Tree / organic supports | Less material, cleaner removal | Big module; two support pipelines today |
 | STEP import | Common CAD exchange format | Heavy dependency (OpenCASCADE) |
 | Paint-on supports and seams | Precise control | Mostly GUI work |

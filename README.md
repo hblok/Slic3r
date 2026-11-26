@@ -77,8 +77,8 @@ perl slic3r.pl            # graphical interface
 perl slic3r.pl --help     # command line
 ```
 
-**The C++ command line tool** is the future core. Support material does not work in it
-yet. See [plan/baseline.md](plan/baseline.md).
+**The C++ command line tool** is the future core. Its support material matches the Perl
+program's since 2026-11-26; see [plan/baseline.md](plan/baseline.md).
 
 ```sh
 sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev
