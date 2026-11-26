@@ -900,6 +900,10 @@ DynamicConfig::read_cli(int argc, char** argv, t_config_option_keys* extra, t_co
         } else if (ConfigOptionPoints* opt = this->opt<ConfigOptionPoints>(opt_key, true)) {
             if (!existing) opt->values.clear(); // remove the default values
             opt->deserialize(value, true);
+        } else if (ConfigOptionInts* opt = this->opt<ConfigOptionInts>(opt_key, true)) {
+            // e.g. --temperature 210 replaces the default instead of adding an extruder
+            if (!existing) opt->values.clear(); // remove the default values
+            opt->deserialize(value, true);
         } else {
             this->set_deserialize(opt_key, value, true);
         }

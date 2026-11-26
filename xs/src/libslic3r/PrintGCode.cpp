@@ -153,12 +153,12 @@ PrintGCode::output()
     if (include_start_extruder_temp) this->_print_first_layer_temperature(0);
 
     // Apply gcode math to start gcode
-    fh << apply_math(_gcodegen.placeholder_parser->process(config.start_gcode.value));
+    fh << apply_math(_gcodegen.placeholder_parser->process(config.start_gcode.value)) << "\n"; // newline as Perl's printf "%s\n"
     {
         auto filament_extruder = 0U;
         for(const auto& start_gcode : config.start_filament_gcode.values) {
             _gcodegen.placeholder_parser->set("filament_extruder_id", filament_extruder++);
-            fh << apply_math(_gcodegen.placeholder_parser->process(start_gcode));
+            fh << apply_math(_gcodegen.placeholder_parser->process(start_gcode)) << "\n"; // newline as Perl's printf "%s\n"
         }
     }
 
@@ -328,17 +328,24 @@ PrintGCode::output()
         auto filament_extruder = 0U;
         for(const auto& end_gcode : config.end_filament_gcode.values) {
             _gcodegen.placeholder_parser->set("filament_extruder_id", filament_extruder++);
-            fh << apply_math(_gcodegen.placeholder_parser->process(end_gcode));
+            fh << apply_math(_gcodegen.placeholder_parser->process(end_gcode)) << "\n"; // newline as Perl's printf "%s\n"
         }
     }
 
-    fh << apply_math(_gcodegen.placeholder_parser->process(config.end_gcode));
+    fh << apply_math(_gcodegen.placeholder_parser->process(config.end_gcode)) << "\n"; // newline as Perl's printf "%s\n"
+
+    // switch the extruders off unless the end G-code does (as Perl's _print_off_temperature)
+    if (include_end_extruder_temp)
+        for (auto& t : _print.extruders())
+            fh << _gcodegen.writer.set_temperature(0, false, t);
 
     // set bed temperature
     if (config.has_heatbed && !std::regex_search(config.end_gcode.getString(), bed_temp_regex)) {
         fh << _gcodegen.writer.set_bed_temperature(0, 0);
     }
 
+    fh << _gcodegen.writer.update_progress(_gcodegen.layer_count, _gcodegen.layer_count, true); // 100%
+    fh << _gcodegen.writer.postamble();
     fh << _gcodegen.cog_stats();
 
     // Get filament stats

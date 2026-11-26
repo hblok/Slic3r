@@ -16,7 +16,9 @@ G92 E0 ; reset extrusion distance
 M104 S200 ; set temperature
 G28 ; home all axes
 G1 Z5 F5000 ; lift nozzle
+
 ; Filament gcode
+
 M109 S200 ; set temperature and wait for it to be reached
 G21 ; set units to millimeters
 G90 ; use absolute coordinates
@@ -10544,9 +10546,11 @@ G92 E0 ; reset extrusion distance
 M107 ; disable fan
 ; Filament-specific end gcode 
 ;END gcode for filament
+
 M104 S0 ; turn off temperature
 G28 X0  ; home X axis
 M84     ; disable motors
+
 M140 S0 ; set bed temperature
 ; cog_x = 110.055108
 ; cog_y = 109.891611

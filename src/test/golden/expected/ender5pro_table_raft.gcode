@@ -30,7 +30,9 @@ G1 X2.4 Y200 Z0.3 F5000
 G1 X2.4 Y20 Z0.3 F1500 E30
 G92 E0
 G1 Z2 F3000
+
 ; Filament gcode
+
 G21 ; set units to millimeters
 G90 ; use absolute coordinates
 M82 ; use absolute distances for extrusion
@@ -8509,6 +8511,7 @@ G92 E0
 M107
 ; Filament-specific end gcode 
 ;END gcode for filament
+
 M104 S0 ; hotend off
 M140 S0 ; bed off
 M107 ; fan off
@@ -8517,6 +8520,7 @@ G1 E-2 F2400 ; retract
 G1 Z10 F600 ; lower the bed
 G90
 M84 X Y E ; motors off except Z
+
 ; cog_x = 109.987832
 ; cog_y = 110.060931
 ; cog_z = 8.334150
