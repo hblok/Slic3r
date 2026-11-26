@@ -1,9 +1,24 @@
-![](var/Slic3r_128px.png) Slic3r [![Build Status](https://travis-ci.org/slic3r/Slic3r.svg?branch=master)](https://travis-ci.org/slic3r/Slic3r) [![Build status](https://ci.appveyor.com/api/projects/status/8iqmeat6cj158vo6?svg=true)](https://ci.appveyor.com/project/lordofhyphens/slic3r) [![Build Status](http://osx-build.slic3r.org:8080/buildStatus/icon?job=Slic3r)](http://osx-build.slic3r.org:8080/job/Slic3r)![Coverity Status](https://scan.coverity.com/projects/17257/badge.svg)
+![](var/Slic3r_128px.png) Slic3r
 ======
 
-We have automated builds for Windows (64-bit) and OSX (>= 10.7). [Get a fresh build now](http://dl.slic3r.org/dev/) and stay up-to-date with the development!
+> **This is an unofficial fork** of [Slic3r](https://github.com/slic3r/Slic3r), modified and
+> maintained independently since November 2026, starting from upstream commit `026c1380`.
+> It is not affiliated with or endorsed by the original authors. Please report problems
+> here, not upstream.
 
-The MacOS X build server is kindly sponsored by: <img width=150 src=https://cloud.githubusercontent.com/assets/31754/22719818/09998c92-ed6d-11e6-9fa0-09de638f3a36.png />
+The aim is to keep Slic3r building on current systems and to add useful slicing features
+developed in recent years. Work is at an early stage: see the [plan](plan/README.md).
+There are no releases yet.
+
+### AI disclosure
+
+This fork is maintained and extended with substantial help from AI coding assistants
+(Anthropic's Claude Code), including code, tests and documentation. AI-assisted commits
+carry a `Co-Authored-By` trailer. The history up to `026c1380` is the upstream project's.
+
+### License
+
+[GNU Affero General Public License v3](LICENSE), the same as the original.
 
 ### So, what's this Slic3r?
 
@@ -16,13 +31,13 @@ Slic3r is:
 * **Open:** it is totally **open source** and it's **independent from any commercial company** or printer manufacturer. We want to keep 3D printing open and free.
 * **Compatible:** it supports all the known G-code dialects (Marlin, Repetier, Mach3, LinuxCNC, Machinekit, Smoothie, Makerware, Sailfish).
 * **Advanced:** many configuration options allow for fine-tuning and full control. While novice users often need just few options, Slic3r is mostly used by advanced users.
-* **Community-driven:** new features or issues are discussed in the [GitHub repository](https://github.com/slic3r/Slic3r/issues). Join our collaborative effort and help improve it!
+* **Community-driven:** new features or issues are discussed openly. Help improve it!
 * **Robust:** the codebase includes more than 1,000 unit and regression tests, collected in 6 years of development.
 * **Modular:** the core of Slic3r is libslic3r, a C++ library that provides a granular API and reusable components.
 * **Embeddable:** a complete and powerful command line interface allows Slic3r to be used from the shell or integrated with server-side applications.
 * **Powerful:** see the list below!
 
-See the [project homepage](https://slic3r.org/) at slic3r.org for more information.
+See [slic3r.org](https://slic3r.org/), the original project's homepage, for background.
 
 ### <a name="features"></a>Features
 
@@ -44,22 +59,24 @@ The core parts of Slic3r are written in C++11, with multithreading. The graphica
 
 ### How to install?
 
-You can download a precompiled package from [slic3r.org](https://slic3r.org/) (releases) or from [dl.slicr3r.org](https://dl.slic3r.org/dev/) (automated builds).
+No packages are provided yet. The C++ command line tool builds from source on Debian 13
+style systems; the graphical interface is not verified yet, and support material does not
+work in the command line tool. See [plan/baseline.md](plan/baseline.md).
 
-If you want to compile the source yourself follow the instructions on one of these wiki pages:
-* [Linux](https://github.com/slic3r/Slic3r/wiki/Running-Slic3r-from-git-on-GNU-Linux)
-* [Windows](https://github.com/slic3r/Slic3r/wiki/Running-Slic3r-from-git-on-Windows)
-* [Mac OSX](https://github.com/slic3r/Slic3r/wiki/Running-Slic3r-from-git-on-OS-X)
+```sh
+sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev
+cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc)
+./build/slic3r --help
+```
 
 ### Can I help?
 
-Sure, but please read the
-[CONTRIBUTING](https://github.com/slic3r/Slic3r/blob/master/.github/CONTRIBUTING.md)
-document first!
+Please read [CONTRIBUTING](.github/CONTRIBUTING.md) first.
 
 ### Directory structure
 
-* `package/`: the scripts used for packaging the executables
+* `package/`: Linux desktop entry (packaging is to be rebuilt)
 * `src/`: the C++ source of the `slic3r` executable and the CMake definition file for compiling it
 * `src/GUI`: The C++ GUI.
 * `src/test`: New test suite for libslic3r and the GUI. Implemented with [Catch2](https://github.com/catchorg/Catch2)
@@ -73,10 +90,10 @@ document first!
 
 The main author of Slic3r is Alessandro Ranellucci (@alranel, *Sound* in IRC, [@alranel](http://twitter.com/alranel) on Twitter), who started the project in 2011.
 
-Joseph Lenox (@lordofhyphens, *LoH* in IRC, [@LenoxPlay](http://twitter.com/LenoxPlay) on Twitter) is the current co-maintainer.
+Joseph Lenox (`@lordofhyphens`, *LoH* in IRC, [@LenoxPlay](http://twitter.com/LenoxPlay) on Twitter) was co-maintainer of the original project.
 
 Contributions by Henrik Brix Andersen, Vojtech Bubnik, Nicolas Dandrimont, Mark Hindess, Petr Ledvina, Y. Sapir, Mike Sheldrake, Kliment Yanev and numerous others. Original manual by Gary Hodgson. Slic3r logo designed by Corey Daniels, <a href="http://www.famfamfam.com/lab/icons/silk/">Silk Icon Set</a> designed by Mark James, stl and gcode file icons designed by Akira Yasuda.
 
 ### How can I invoke Slic3r using the command line?
 
-The command line is documented in the relevant [manual page](https://manual.slic3r.org/advanced/command-line).
+Run `slic3r --help`. The original [manual page](https://manual.slic3r.org/advanced/command-line) has more detail.
