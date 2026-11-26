@@ -105,20 +105,33 @@ role for all three patterns:
 | rectilinear | 379.9 mm | 155.7 mm | 79.5 mm |
 | honeycomb | 413.5 mm | 189.3 mm | 79.5 mm |
 
-The G-code still differs from Perl in cooling feedrates and fan commands (782 of 5417
-lines on the table, 2 of 1769 on the box) and in one end-of-print `M140 S0` (C++ skips
-it when the first-layer bed temperature is 0). Not checked: raft, `support_material_
-enforce_layers`, `buildplate_only`, multiple objects.
-Since commit `dd5d415c`, C++ and Perl G-code are identical (comments aside) for the
-default box, the table with support, the box with the Ender-5 Pro profiles, two boxes
-(`--duplicate 2`) and a raft. (`--center` in C++ is `--print-center` in Perl.)
+## C++ and Perl G-code: identical (2026-11-27)
 
-Open: the table with the Ender-5 Pro profiles (0.2 mm layers) still differs in about
-40% of lines: the order of object and support layers at equal heights, and E values
-in the last digit. Cause found, not fixed: the support layer heights differ in the
-last bits between the pipelines (Perl gets 1.2 exactly, C++ 1.1999999), so the export
-buckets them differently. Next step: make `SupportMaterial::support_layers_z` compute
-heights the way `support_layers_z` in `SupportMaterial.pm` does, not change the export.
+`src/test/golden/compare_perl.sh build/slic3r` slices 74 setups with both pipelines
+and compares the G-code without comments: all 74 are identical. They cover the 9 test
+meshes of `lib/Slic3r/Test.pm`, all 13 infill patterns, perimeters, retraction, all
+G-code flavors, seams, cooling, spiral vase, rafts, the support options and patterns,
+sequential printing, custom G-code and the Ender-5 Pro profiles.
+
+Getting there took about 40 fixes in C++, in 19 commits since phase 1. Besides plain bugs
+(support layers never printed, a constructor ignoring its arguments, inverted checks,
+loops over copies) many were numeric: integer division and `scale_()` truncation where
+Perl keeps fractions, `float` where Perl has `double`, and heights as hash keys, which
+Perl compares at 15 significant digits (`z_key` in `SupportMaterial.cpp`).
+
+Also found on the way, in code both pipelines share: an out-of-bounds read in the move
+inwards after a loop made G-code differ from run to run (bridge mesh); fixed.
+
+Known, deliberate difference: with `avoid_crossing_perimeters` Perl uses the external
+motion planner for the first travel of almost every layer, because it detects a new
+object copy by the memory address of a Point (commit `30d45e10`). C++ compares
+positions.
+
+Different option names: `--center` in C++ is `--print-center` in Perl; C++ has no
+`--merge`.
+
+Not yet compared: multiple different objects, modifier volumes, several extruders,
+transforms (`--scale`, `--rotate`), AMF and 3MF input, the GUI-only steps.
 
 `src/test/libslic3r/test_support_material.cpp` is still not part of the test build;
 the golden `table_support` output covers the default case.
