@@ -60,10 +60,18 @@ my %cli_options = ();
         'no-plater'             => \$opt{no_plater},
         'gui-mode=s'            => \$opt{gui_mode},
     );
-    foreach my $opt_key (keys %{$Slic3r::Config::Options}) {
+    # Names already taken: a config option must not redefine them (Getopt::Long warns
+    # and picks a winner in hash order, e.g. for --threads).
+    my %taken = map { $_ => 1 } map { split /\|/, s/[=:!+].*//r } keys %options;
+    foreach my $opt_key (sort keys %{$Slic3r::Config::Options}) {
         my $cli = $Slic3r::Config::Options->{$opt_key}->{cli} or next;
+        my ($names, $type) = $cli =~ /^([^=:!+]*)(.*)$/;
         # allow both the dash-separated option name and the full opt_key
-        $options{ "$opt_key|$cli" } = \$cli_options{$opt_key};
+        my %seen;
+        my @names = grep { !$taken{$_} && !$seen{$_}++ } $opt_key, split /\|/, $names;
+        next if !@names;
+        $taken{$_} = 1 for @names;
+        $options{ join('|', @names) . $type } = \$cli_options{$opt_key};
     }
     
     @ARGV = grep !/^-psn_\d/, @ARGV if $^O eq 'darwin';
