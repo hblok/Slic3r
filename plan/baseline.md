@@ -29,12 +29,16 @@ Unmodified upstream failed at CMake configure. Fixed:
 | Catch 2.4.2 signal handler does not compile with current glibc | `CATCH_CONFIG_NO_POSIX_SIGNALS` (a crashing test gets no Catch report; replace when Catch is upgraded) |
 | `GCode::_extrusion_length` uninitialised; centre-of-gravity test failed about half the time | initialised to 0 |
 
-Verified on Ubuntu 26.04 (GCC 15.2, CMake 4.2) with Boost 1.90 and with Debian 13's
-Boost 1.83 packages, GUI off: builds, 56 test cases with 53 passing and 3 failing as
-expected, stable over 30 runs each; the 20 mm test box slices to identical G-code
-(comments ignored) with both.
+Verified with the GUI off:
 
-Not verified: a real Debian 13 system (GCC 14.2, CMake 3.31), GCodeSender against a
+| System | Compiler, Boost | Result |
+|---|---|---|
+| Debian 13.8 (chroot) | GCC 14.2, 1.83 | builds, tests as below, golden G-code recorded here |
+| Ubuntu 26.04 | GCC 15.2, 1.90 | builds, tests as below, golden check matches Debian's output |
+
+Tests: 56 cases, 53 pass and 3 fail as expected.
+
+Not verified: the GitHub Actions run itself, GCodeSender against a
 serial port (changed), Perl XS build, Perl GUI, Perl tests, C++ GUI
 (`-DEnable_GUI=ON`).
 

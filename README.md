@@ -1,4 +1,4 @@
-![](var/Slic3r_128px.png) Slic3r
+![](var/Slic3r_128px.png) Slic3r [![build](https://github.com/hblok/Slic3r/actions/workflows/build.yml/badge.svg)](https://github.com/hblok/Slic3r/actions/workflows/build.yml)
 ======
 
 > **This is an unofficial fork** of [Slic3r](https://github.com/slic3r/Slic3r), modified and
@@ -67,6 +67,7 @@ work in the command line tool. See [plan/baseline.md](plan/baseline.md).
 sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev
 cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
+./build/slic3r_test
 ./build/slic3r --help
 ```
 

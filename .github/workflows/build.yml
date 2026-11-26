@@ -1,0 +1,33 @@
+name: build
+
+# Daily and on demand, not on every commit.
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  debian13:
+    runs-on: ubuntu-latest
+    container: debian:13
+    timeout-minutes: 30
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git cmake make g++ \
+            libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev
+      - uses: actions/checkout@v7
+      - name: Configure
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
+      - name: Test
+        run: ./build/slic3r_test
+      - name: Golden G-code check
+        run: src/test/golden/check.sh build/slic3r

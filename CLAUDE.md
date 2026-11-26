@@ -34,8 +34,12 @@ sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-
 cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
 ./build/slic3r_test
-./build/slic3r -g src/test/inputs/test_cli/20mmbox.stl -o /tmp/box.gcode
+src/test/golden/check.sh build/slic3r
 ```
+
+Run both the tests and the golden check before committing C++ changes. If the golden
+output changes on purpose, run `check.sh build/slic3r --update` and review the diff.
+Expected output is recorded on Debian 13.
 
 The first build downloads Catch2. CMake writes `src/test/test_options.hpp`
 (ignored by git).
