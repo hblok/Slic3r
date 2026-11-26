@@ -79,6 +79,18 @@ Perl and C++ output, default settings:
 | 20 mm box | 1142 extrusion moves, 339.3 mm filament | 1142 moves; coordinates differ in the third decimal |
 | table, `--support-material` | 3916 moves, 327.9 mm (142.5 mm without support) | 977 moves, no support |
 
+## C++ temperature commands (fixed 2026-11-26)
+
+`PrintGCode.cpp` had four inverted checks: it added the bed temperature before the
+start G-code, and bed and hotend temperatures between objects, only when the custom
+G-code *already* set them, and switched the bed off after an end G-code that did so
+itself. Profiles with a heated bed got no `M190` at all. Now as in Perl; covered by
+`test_printgcode.cpp` and the `ender5pro_box` golden output.
+
+Still different from Perl in sequential printing (`complete_objects`), not fixed: C++
+never writes `between_objects_gcode`, and its sort by `sequential_print_priority`
+compares an object with itself.
+
 ## Support material is broken in the C++ CLI
 
 A table-shaped model (20 x 20 mm top on a 4 x 4 mm post) sliced with

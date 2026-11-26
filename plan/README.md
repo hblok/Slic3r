@@ -1,6 +1,6 @@
 # Plan
 
-Started 2026-11-26. Status: **phases 0 to 2 mostly done; phase 3 is next**.
+Started 2026-11-26. Status: **phases 0 to 2 mostly done; phase 3 started, needs the printer**.
 Target: Debian 13, unmodified Creality Ender 5 Pro.
 
 | File | Content |
@@ -43,9 +43,9 @@ Each phase ends with something that can be checked.
 - Result: the Perl program works, including support material. Supports option A below.
 
 ### 3. Printer baseline
-- [ ] Ender 5 Pro config bundle (printer, filament, print profiles)
+- [x] Ender 5 Pro profiles (printer, PLA, 0.20 mm): [profiles/](../profiles/README.md); values not yet checked on the machine
 - [ ] Read the firmware version and capabilities from the printer (`M115`, `M503`)
-- [ ] Add the profiles to the golden check
+- [x] Add the profiles to the golden check (`ender5pro_box`)
 - [ ] Print one reference part on the real printer
 
 ### 4. Features
