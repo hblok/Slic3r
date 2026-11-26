@@ -16,6 +16,14 @@ using boost::placeholders::_1;
 /// (lib/Slic3r/Print/SupportMaterial.pm) keys hashes by heights, which Perl turns into
 /// strings of 15 digits, so 1.1999999999999998 and 1.2 are the same layer there.
 /// Doing the same keeps every lookup consistent and the output identical to Perl's.
+/// A distance in scaled units, in floating point like Perl's scale(); scale_() truncates
+/// to an integer (scale_(0.01) is 9999), which moved offsets by one unit.
+static coordf_t
+scaled(coordf_t v)
+{
+    return v / SCALING_FACTOR;
+}
+
 static coordf_t
 z_key(coordf_t z)
 {
@@ -229,11 +237,12 @@ SupportMaterial::contact_area(PrintObject *object)
     PrintObjectConfig &conf = *this->object_config;
 
     // If user specified a custom angle threshold, convert it to radians.
-    float threshold_rad = 0.0;
+    // double, as in Perl: a float angle moved the overhang offset d
+    double threshold_rad = 0.0;
 
     if (!conf.support_material_threshold.percent) {
-        threshold_rad = static_cast<float>(Geometry::deg2rad(
-            conf.support_material_threshold + 1)); // +1 makes the threshold inclusive
+        threshold_rad = Geometry::deg2rad(
+            conf.support_material_threshold + 1); // +1 makes the threshold inclusive
 
 #ifdef SLIC3R_DEBUG
         printf("Threshold angle = %d°\n", static_cast<int>(Geometry::rad2deg(threshold_rad)));
@@ -291,7 +300,7 @@ SupportMaterial::contact_area(PrintObject *object)
                 // with the polygons collected before,
                 // but don't apply the safety offset during the union operation as it would
                 // inflate the polygons over and over.
-                append_to(buildplate_only_top_surfaces, offset(projection_new, scale_(0.01)));
+                append_to(buildplate_only_top_surfaces, offset(projection_new, scaled(0.01)));
 
                 buildplate_only_top_surfaces = union_(buildplate_only_top_surfaces, 0);
             }
@@ -306,7 +315,7 @@ SupportMaterial::contact_area(PrintObject *object)
             for (auto const &contour : layer->slices.contours())
                 tmp_overhang.push_back(contour);
 
-            Polygons polygons = offset(tmp_overhang, scale_(+SUPPORT_MATERIAL_MARGIN));
+            Polygons polygons = offset(tmp_overhang, scaled(+SUPPORT_MATERIAL_MARGIN));
             append_to(tmp_contact, polygons);
         }
         else {
@@ -320,15 +329,17 @@ SupportMaterial::contact_area(PrintObject *object)
                     || layer_id <= conf.support_material_enforce_layers
                     || (conf.raft_layers > 0 && layer_id
                         == 0)) { // TODO ASK @Samir why layer_id ==0 check , layer_id will never equal to zero
-                    float d = 0;
-                    float layer_threshold_rad = threshold_rad;
+                    double d = 0;
+                    double layer_threshold_rad = threshold_rad;
                     if (layer_id <= conf.support_material_enforce_layers) {
                         // Use ~45 deg number for enforced supports if we are in auto.
-                        layer_threshold_rad = static_cast<float>(Geometry::deg2rad(89));
+                        layer_threshold_rad = Geometry::deg2rad(89);
                     }
                     if (layer_threshold_rad > 0) {
-                        d = scale_(lower_layer->height
-                                       * (cos(layer_threshold_rad) / sin(layer_threshold_rad)));
+                        // As Perl's "scale $h * $cot", which is scale($h) * $cot (scale() is a
+                        // unary operator) in floating point; scale_() would truncate to an integer.
+                        d = lower_layer->height / SCALING_FACTOR
+                            * (cos(layer_threshold_rad) / sin(layer_threshold_rad));
                     }
 
                     difference = diff(
@@ -377,7 +388,7 @@ SupportMaterial::contact_area(PrintObject *object)
 
                             lower_grown_slices = offset(
                                 lower_layer->slices,
-                                scale_(nozzle_diameter / 2)
+                                scaled(nozzle_diameter / 2)
                             );
                         }
 
@@ -463,7 +474,7 @@ SupportMaterial::contact_area(PrintObject *object)
                         append_to(difference,
                                   intersection(
                                       offset(layer_m->unsupported_bridge_edges.polylines,
-                                             +scale_(SUPPORT_MATERIAL_MARGIN)), to_polygons(bridges)));
+                                             +scaled(SUPPORT_MATERIAL_MARGIN)), to_polygons(bridges)));
                     }
                     else {
                         // just remove bridged areas.
@@ -500,7 +511,7 @@ SupportMaterial::contact_area(PrintObject *object)
                     }
 
                     vector<float> scale_vector
-                        (static_cast<unsigned long>(SUPPORT_MATERIAL_MARGIN / MARGIN_STEP), scale_(MARGIN_STEP));
+                        (static_cast<unsigned long>(SUPPORT_MATERIAL_MARGIN / MARGIN_STEP), scaled(MARGIN_STEP));
                     scale_vector.push_back(fw / 2.0);
                     for (int i = static_cast<int>(scale_vector.size()) - 1; i >= 0; i--) {
                         difference = diff(
@@ -999,7 +1010,7 @@ SupportMaterial::process_layer(int layer_id, toolpaths_params params)
 
         auto new_loops = intersection_pl(
             ps,
-            offset(overhang, scale_(SUPPORT_MATERIAL_MARGIN))
+            offset(overhang, scaled(SUPPORT_MATERIAL_MARGIN))
         );
 
         // Add the contact infill area to the interface area
@@ -1135,7 +1146,7 @@ SupportMaterial::process_layer(int layer_id, toolpaths_params params)
 
             // Subtract brim so that it goes around the object fully (and support gets its own brim).
             if (config->brim_width.value > 0) {
-                float d = +scale_(config->brim_width.value * 2);
+                float d = +scaled(config->brim_width.value) * 2; // as Perl: scale($brim_width) * 2
 
                 new_to_infill = diff_ex(
                     to_infill,
