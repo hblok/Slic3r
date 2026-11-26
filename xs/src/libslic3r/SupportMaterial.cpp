@@ -1,5 +1,7 @@
 #include "SupportMaterial.hpp"
 #include "Log.hpp"
+#include <cstdio>
+#include <cstdlib>
 
 
 namespace Slic3r
@@ -8,6 +10,19 @@ namespace Slic3r
 #if BOOST_VERSION >= 107300
 using boost::placeholders::_1;
 #endif
+
+/// A height as the key of the height-indexed maps (contact, overhang, top) and in the
+/// list of support layer heights: rounded to 15 significant digits. The Perl version
+/// (lib/Slic3r/Print/SupportMaterial.pm) keys hashes by heights, which Perl turns into
+/// strings of 15 digits, so 1.1999999999999998 and 1.2 are the same layer there.
+/// Doing the same keeps every lookup consistent and the output identical to Perl's.
+static coordf_t
+z_key(coordf_t z)
+{
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%.15g", z);
+    return strtod(buf, nullptr);
+}
 
 PolylineCollection _fill_surface(Fill *fill, Surface *surface)
 {
@@ -141,7 +156,7 @@ SupportMaterial::support_layers_z(vector<coordf_t> contact_z,
 {
     // Quick table to check whether a given Z is a top surface.
     map<coordf_t, bool> is_top;
-    for (auto z : top_z) is_top[z] = true;
+    for (auto z : top_z) is_top[z_key(z)] = true;
 
     // determine layer height for any non-contact layer
     // we use max() to prevent many ultra-thin layers to be inserted in case
@@ -174,8 +189,11 @@ SupportMaterial::support_layers_z(vector<coordf_t> contact_z,
         // raft_layers-2 more
         int idx = 1;
         for (int j = 1; j <= object_config->raft_layers - 2; j++) {
-            float z_new =
-                roundf(static_cast<float>((z[0] + height * idx) * 100)) / 100; // round it to 2 decimal places.
+            // round to 2 decimal places with "%.2f" like Perl: it rounds the exact binary
+            // value (0.7249999 -> 0.72), where round(x * 100) / 100 gives 0.73
+            char buf[32];
+            snprintf(buf, sizeof(buf), "%.2f", z[0] + height * idx);
+            coordf_t z_new = strtod(buf, nullptr);
             z.insert(z.begin() + idx, z_new);
             idx++;
         }
@@ -184,7 +202,7 @@ SupportMaterial::support_layers_z(vector<coordf_t> contact_z,
     // Create other layers (skip raft layers as they're already done and use thicker layers).
     for (auto i = static_cast<int>(z.size()) - 1; i >= object_config->raft_layers; i--) {
         coordf_t target_height = support_material_height;
-        if (i > 0 && is_top.count(z[i - 1]) > 0 && is_top[z[i - 1]]) {
+        if (i > 0 && is_top.count(z_key(z[i - 1])) > 0) {
             target_height = nozzle_diameter;
         }
         // Enforce first layer height.
@@ -195,12 +213,12 @@ SupportMaterial::support_layers_z(vector<coordf_t> contact_z,
         }
     }
 
-    // Remove duplicates, keeping the values unchanged: the contact and top maps are
-    // looked up by these exact keys later. (Truncating them to 3 decimals made every
-    // lookup miss, so no support was generated.) Perl merges values equal to 15
-    // significant digits; 1e-9 mm is the same for any printable height.
+    // Remove duplicates. The heights are map keys later, so they go through z_key()
+    // like the keys of the contact and top maps. (Truncating them to 3 decimals, as
+    // before, made every lookup miss, so no support was generated.)
+    for (auto &el : z) el = z_key(el);
     sort(z.begin(), z.end());
-    z.erase(unique(z.begin(), z.end(), [](coordf_t a, coordf_t b) { return fabs(a - b) < 1e-9; }), z.end());
+    z.erase(unique(z.begin(), z.end()), z.end());
 
     return z;
 }
@@ -520,8 +538,8 @@ SupportMaterial::contact_area(PrintObject *object)
             if (contact_z < conf.first_layer_height - EPSILON)
                 continue;
 
-            contact[contact_z] = tmp_contact;
-            overhang[contact_z] = tmp_overhang;
+            contact[z_key(contact_z)] = tmp_contact;
+            overhang[z_key(contact_z)] = tmp_overhang;
         }
     }
 
@@ -567,7 +585,7 @@ SupportMaterial::object_top(PrintObject *object, map<coordf_t, Polygons> *contac
             // Grow top surfaces so that interface and support generation are generated
             // with some spacing from object - it looks we don't need the actual
             // top shapes so this can be done here.
-            top[layer->print_z] = offset(touching, flow.scaled_width());
+            top[z_key(layer->print_z)] = offset(touching, flow.scaled_width());
         }
 
         // Remove the areas that touched from the projection that will continue on
@@ -819,7 +837,7 @@ SupportMaterial::generate_bottom_interface_layers(const vector<coordf_t> &suppor
 coordf_t
 SupportMaterial::contact_distance(coordf_t layer_height, coordf_t nozzle_diameter)
 {
-    coordf_t extra = static_cast<float>(object_config->support_material_contact_distance.value);
+    coordf_t extra = object_config->support_material_contact_distance.value;
     if (extra == 0) {
         return layer_height;
     }
