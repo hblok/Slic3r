@@ -103,11 +103,11 @@ SupportMaterial::generate(PrintObject *object)
     map<coordf_t, Polygons> &contact = contact_overhang.first;
     map<coordf_t, Polygons> &overhang = contact_overhang.second;
 
-    //bugfix: do not try to generate overhang if there is no contact area 
-    if( contact.empty() ){
-	Slic3r::Log::error("Support material") << "Empty contact_areas of SupportMaterial for object "
-	    <<"[" << object->model_object()->name << "]" << std::endl;
-    	return;
+    // No contact area: carry on like Perl, which then makes one empty support layer
+    // at the first layer height (an extra layer change in the G-code, no extrusion).
+    if (contact.empty()) {
+        Slic3r::Log::info("Support material") << "No contact areas for object "
+            << "[" << object->model_object()->name << "]" << std::endl;
     }
 	
     // Determine the top surfaces of the object. We need these to determine
@@ -584,7 +584,9 @@ SupportMaterial::object_top(PrintObject *object, map<coordf_t, Polygons> *contac
         // first add all the 'new' contact areas to the current projection
         // ('new' means all the areas that are lower than the last top layer
         // we considered).
-        double min_top = (!top.empty() ? top.begin()->first : contact->rbegin()->first);
+        // (no contact areas: nothing to project; rbegin() of an empty map is undefined)
+        double min_top = !top.empty() ? top.begin()->first
+                       : (!contact->empty() ? contact->rbegin()->first : 0);
 
         // Use <= instead of just < because otherwise we'd ignore any contact regions
         // having the same Z of top layers.
