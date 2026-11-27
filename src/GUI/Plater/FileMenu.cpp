@@ -71,7 +71,7 @@ void Plater::select_external_config(const wxString& file) {
 
 void Plater::config_wizard() {
     DynamicPrintConfig print, printer, material;
-    const Slic3r::Config current {this->_presets->full_config()};
+    const Slic3r::Config current {this->full_config()};
     if (!show_config_wizard(this, current.config(), print, printer, material)) return;
     const wxString name {"My Settings"};
     const std::pair<preset_t, const DynamicPrintConfig*> files[] {
@@ -167,8 +167,15 @@ bool Plater::prompt_unsaved_changes() {
     return true;
 }
 
-void Plater::load_config_file() {
-    const wxString file {ask_open(this, _("Select configuration to load:"), FILE_WILDCARDS.at("ini"), ui_settings->config_directory)};
+void Plater::load_config_file(const wxString& given) {
+    wxString file {given};
+    if (file.IsEmpty()) {
+        file = ask_open(this, _("Select configuration to load:"), FILE_WILDCARDS.at("ini"), ui_settings->config_directory);
+    } else {
+        wxFileName path(file);
+        path.MakeAbsolute();
+        file = path.GetFullPath();
+    }
     if (file.IsEmpty()) return;
     used_config_file(file);
     try {
@@ -180,7 +187,7 @@ void Plater::load_config_file() {
 }
 
 void Plater::export_config() {
-    const Slic3r::Config config {this->_presets->full_config()};
+    const Slic3r::Config config {this->full_config()};
     const wxString directory {ui_settings->config_directory.IsEmpty() ? ui_settings->skein_directory : ui_settings->config_directory};
     const wxString file {ask_save(this, _("Save configuration as:"),
         wxFileName(directory, "config.ini"), FILE_WILDCARDS.at("ini"))};

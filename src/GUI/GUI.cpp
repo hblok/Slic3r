@@ -66,6 +66,7 @@ bool App::OnInit()
     // Load gui settings from slic3r.ini (the Perl GUI's file and format)
     ui_settings->ini_file = slic3r_ini;
     ui_settings->load_settings();
+    if (this->threads > 0) ui_settings->threads = this->threads;
 
     ui_settings->save_settings();
 
@@ -83,6 +84,8 @@ bool App::OnInit()
     this->CallAfter([frame, this, first_start, init_bundle]() {
         if (wxFileExists(init_bundle)) frame->get_plater()->load_config_bundle(init_bundle, true);
         else if (first_start) frame->get_plater()->config_wizard();
+        for (const auto& file : this->config_files) frame->get_plater()->load_config_file(wxString::FromUTF8(file.c_str()));
+        if (!this->overrides.empty()) frame->get_plater()->set_overrides(this->overrides);
         if (!this->input_files.empty()) frame->get_plater()->load_files(this->input_files);
     });
     

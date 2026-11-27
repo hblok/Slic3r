@@ -313,20 +313,21 @@ void Plate2D::nudge_key(wxKeyEvent& e) {
     const auto key = e.GetKeyCode();
 
     switch( key ) {
-        case WXK_LEFT:
+        case WXK_LEFT: case 'a': case 'A':
             this->nudge(MoveDirection::Left);
             break;
-        case WXK_RIGHT:
+        case WXK_RIGHT: case 'd': case 'D':
             this->nudge(MoveDirection::Right);
             break;
-        case WXK_DOWN:
+        case WXK_DOWN: case 's': case 'S':
             this->nudge(MoveDirection::Down);
             break;
-        case WXK_UP:
+        case WXK_UP: case 'w': case 'W':
             this->nudge(MoveDirection::Up);
             break;
         default:
-            break; // do nothing
+            e.Skip();
+            break;
     }
 
 }

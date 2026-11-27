@@ -24,5 +24,17 @@ struct HttpAnswer {
 HttpAnswer http_request(const std::string& host, const std::string& path, const std::string& api_key = "",
     const std::string& body = "", const std::string& content_type = "", int timeout = 10);
 
+/// POST the G-code to OctoPrint's local files; `print`: start printing it.
+HttpAnswer upload_octoprint(const std::string& host, const std::string& api_key, const std::string& name,
+    const std::string& gcode, bool print);
+
+/// Upload to a Duet board's SD card, and (when `print`) start it.
+HttpAnswer upload_duet(const std::string& host, const std::string& name, const std::string& gcode, bool print);
+
+class Settings;
+/// "Send to Server": the file's name on the server, overwriting and starting (kept in
+/// the settings). False when cancelled.
+bool ask_upload_options(wxWindow* parent, Settings& settings, wxString& name);
+
 }} // namespace Slic3r::GUI
 #endif

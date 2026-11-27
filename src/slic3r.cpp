@@ -461,12 +461,12 @@ int CLI::run(int argc, char **argv) {
     if (actions.empty()) {
 #ifdef USE_WX
         GUI::App *gui = new GUI::App();
-        try {
-            gui->autosave = this->config.getString("autosave");
-        } catch(Slic3r::UnknownOptionException &e) {
-            // if no autosave, set a sensible default.
-            gui->autosave = wxFileName::CreateTempFileName("slic3r_autosave_").ToStdString();
-        }
+        gui->autosave = this->config.getString("autosave", "");
+        gui->config_files = this->config.getStrings("load", {});
+        gui->threads = this->config.has("threads") ? this->config.getInt("threads") : 0;
+        // the print options on the command line itself; those of --load files come with them
+        gui->overrides.apply(this->config, true);
+        gui->overrides.erase("threads");
         try {
             gui->datadir  = this->config.getString("datadir");
         } catch(Slic3r::UnknownOptionException &e) {

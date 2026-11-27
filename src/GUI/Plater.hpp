@@ -55,6 +55,10 @@ struct SliceJob {
     std::string output_file;    ///< file to write; empty: slice only, for the preview
     bool svg {false};           ///< write the slices as SVG, not G-code
     bool for_plate {true};      ///< false: a quick slice of a file, not what the preview shows
+    /// Where the exported G-code goes next.
+    enum class Then { Nothing, Send, Print };
+    Then then {Then::Nothing};
+    bool send_start {false};    ///< start printing after sending
 };
 
 class PlaterObject;
@@ -146,7 +150,14 @@ public:
 
     // The File menu and the wizard (Plater/FileMenu.cpp)
     void config_wizard();
-    void load_config_file();
+    /// `file`: empty to ask for one.
+    void load_config_file(const wxString& file = "");
+    /// Print options given on the command line: on top of the presets until another print
+    /// preset is chosen (they show with the shortcuts).
+    void set_overrides(const DynamicPrintConfig& overrides);
+    /// Export the G-code to a temporary file and upload it to the print server; without
+    /// asking about the name and the options when `skip_dialog`.
+    void send_to_printer(bool skip_dialog);
     void export_config();
     void import_config_from_gcode();
     /// `file`: empty to ask for one. `only_with_id`: of the bundle's presets those that
@@ -191,6 +202,7 @@ private:
     wxBoxSizer* right_sizer {new wxBoxSizer(wxVERTICAL)};
 
     wxToolBar* htoolbar {nullptr}; //< toolbar for non-MSW platforms.
+    std::vector<int> _rotate_tools {}; //< the optional 90° rotation tools
     wxBoxSizer* btoolbar {nullptr}; //< button-based toolbar for Windows
 
     Plate2D* canvas2D {nullptr}; //< 2D plater canvas
@@ -203,6 +215,21 @@ private:
 
     wxStaticBoxSizer* object_info_size {nullptr};
     wxButton* btn_export_gcode {nullptr};
+    wxButton* btn_export_stl {nullptr};
+    wxButton* btn_print {nullptr};  ///< shown when the printer has a serial port
+    wxButton* btn_send {nullptr};   ///< shown when the printer has a print server
+    wxStaticBoxSizer* print_info_sizer {nullptr};
+    wxStaticText* print_info_filament {nullptr};
+    wxStaticText* print_info_cost {nullptr};
+    wxStaticText* print_info_time {nullptr};
+    /// The summary of the last export; hidden once the plate or the settings change.
+    void show_print_summary(const Slic3r::Print* print);
+    DynamicPrintConfig _overrides {};
+    /// The selected presets and the command line's overrides on top.
+    Slic3r::Config full_config();
+    /// Write the G-code of the plate to `output_file`, then send or print it.
+    void export_to(std::shared_ptr<SliceJob> job, const std::string& output_file);
+    void upload(const std::string& file, bool start);
     
     /// Background slicing: one SliceJob at a time runs on this thread.
     std::thread slicing_thread;

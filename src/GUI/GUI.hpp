@@ -28,6 +28,12 @@ public:
     std::vector<std::string> input_files {};
     /// --output from the command line: the G-code export writes there without asking
     std::string output_file {""};
+    /// --load from the command line: configuration files to load and select
+    std::vector<std::string> config_files {};
+    /// print options from the command line, on top of the selected presets
+    DynamicPrintConfig overrides {};
+    /// --threads from the command line (0: not given)
+    unsigned int threads {0};
     
     virtual bool OnInit() override;
     App() : wxApp() {}

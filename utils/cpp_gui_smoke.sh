@@ -48,7 +48,8 @@ click() { xdotool mousemove --window "$main" "$1" "$2" click 1; sleep 1; }
 run() { # name datadir cli-options...   ($edit, if set, runs before the export)
     name=$1 datadir=$2
     shift 2
-    "$gui_bin" --datadir "$datadir" -o "$out/$name.gui.gcode" "$model" >"$out/$name.gui.log" 2>&1 & gui=$!
+    # shellcheck disable=SC2086
+    "$gui_bin" --datadir "$datadir" -o "$out/$name.gui.gcode" ${gui_options:-} "$model" >"$out/$name.gui.log" 2>&1 & gui=$!
     sleep 10
     import -window root "$out/$name.loaded.png"
     kill -0 "$gui" 2>/dev/null || fail "$name: the GUI exited (see $out/$name.gui.log)"
@@ -88,6 +89,11 @@ printf '[presets]\nprint = Ender-5-Pro-0.20mm\nfilament = Ender-5-Pro-PLA\nprint
 run ender "$out/data-ender" --load "$p/printer/Ender-5-Pro.ini" \
     --load "$p/filament/Ender-5-Pro-PLA.ini" --load "$p/print/Ender-5-Pro-0.20mm.ini"
 grep -q '^print = Ender-5-Pro-0.20mm' "$out/data-ender/slic3r.ini" || fail "slic3r.ini lost the presets"
+
+# options on the GUI's command line apply on top of the presets
+cp -r "$out/data-ender" "$out/data-options"
+gui_options="--fill-density 40% --skirts 3" run options "$out/data-options" --load "$p/printer/Ender-5-Pro.ini" \
+    --load "$p/filament/Ender-5-Pro-PLA.ini" --load "$p/print/Ender-5-Pro-0.20mm.ini" --fill-density 40% --skirts 3
 
 # the preset editor: layer height 0.3 in the Print Settings tab, then "Save as" My-Print
 edit_layer_height() {

@@ -58,6 +58,9 @@ class Settings {
         wxString skein_directory {}; //< Recently-opened skien directory.
         wxString config_directory {}; //< Directory of the last configuration file.
 
+        bool octoprint_overwrite {false};  //< upload without asking about a file of that name
+        bool octoprint_start {false};      //< start printing after the upload
+
         /// slic3r.ini in the data directory, in the Perl GUI's format ([_] general
         /// settings, [presets] selected presets); keys this GUI does not use are kept.
         wxString ini_file {};

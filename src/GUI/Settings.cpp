@@ -80,6 +80,8 @@ void Settings::load_settings() {
     auto& recent = this->_ini["recent"];
     if (recent.count("skein_directory")) this->skein_directory = wxString::FromUTF8(recent["skein_directory"]);
     if (recent.count("config_directory")) this->config_directory = wxString::FromUTF8(recent["config_directory"]);
+    this->octoprint_overwrite = this->_ini["octoprint"]["overwrite"] == "1";
+    this->octoprint_start = this->_ini["octoprint"]["start"] == "1";
     
     auto& presets = this->_ini["presets"];
     for (size_t group = 0; group < preset_types; ++group) {
@@ -116,6 +118,8 @@ void Settings::save_settings() {
     auto& recent = this->_ini["recent"];
     recent["skein_directory"] = this->skein_directory.ToUTF8().data();
     recent["config_directory"] = this->config_directory.ToUTF8().data();
+    this->_ini["octoprint"]["overwrite"] = this->octoprint_overwrite ? "1" : "0";
+    this->_ini["octoprint"]["start"] = this->octoprint_start ? "1" : "0";
     
     auto& presets = this->_ini["presets"];
     for (size_t group = 0; group < preset_types; ++group) {

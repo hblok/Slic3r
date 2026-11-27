@@ -44,7 +44,7 @@ jobs:
           apt-get install -y --no-install-recommends ca-certificates git cmake make g++ \
             libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev \
             libwxgtk3.2-dev libgl-dev libglu1-mesa-dev \
-            xvfb xauth xdotool imagemagick libgl1-mesa-dri
+            xvfb xauth xdotool imagemagick libgl1-mesa-dri python3
       - uses: actions/checkout@v7
       - name: Build
         run: |

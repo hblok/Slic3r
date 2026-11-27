@@ -1,4 +1,6 @@
 #include <fstream>
+#include <iterator>
+#include <fstream>
 #include <memory>
 #include <climits>
 #include <cmath>
@@ -10,6 +12,8 @@
 
 #include "Plater.hpp"
 #include "OptionsGroup/OverridePanel.hpp"
+#include "OptionsGroup/OptionControl.hpp"
+#include "octoprint.hpp"
 #include "ProgressStatusBar.hpp"
 #include "Log.hpp"
 #include "MainFrame.hpp"
@@ -40,6 +44,7 @@ const auto TB_SPLIT         {wxNewId()};
 const auto TB_CUT           {wxNewId()};
 const auto TB_LAYERS        {wxNewId()};
 const auto TB_SETTINGS      {wxNewId()};
+const auto TB_ROTFACE       {wxNewId()};
 
 const auto PROGRESS_BAR_EVENT = wxNewEventType();
 
@@ -57,6 +62,7 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     _presets->load();
     _presets->on_settings = [this](preset_t group, size_t index) { this->show_preset_editor(group, index); };
     _presets->on_preset_selected = [this](preset_t group, wxString name, size_t index) {
+        if (group == preset_t::Print) this->_overrides.clear();
         auto& editors {this->GetFrame()->preset_editor_tabs};
         if (editors.count(group) > 0 && editors[group]->chooser_index == index)
             editors[group]->select_preset_by_name(name, true);
@@ -244,8 +250,31 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     this->btn_export_gcode = new wxButton(this, wxID_ANY, _(L"Export G-code…"));
     this->btn_export_gcode->SetFont(ui_settings->small_font());
     this->btn_export_gcode->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { this->export_gcode(); });
+    auto button = [this](const wxString& label, const wxString& icon) {
+        auto* out {new wxButton(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT)};
+        out->SetFont(ui_settings->small_font());
+        out->SetBitmap(wxBitmap(var(icon), wxBITMAP_TYPE_PNG));
+        return out;
+    };
+    this->btn_export_stl = button(_(L"Export STL…"), "brick_go.png");
+    this->btn_export_stl->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { this->export_plate(IO::STL); });
+    this->btn_print = button(_(L"Print…"), "arrow_up.png");
+    this->btn_send = button(_("Send to printer"), "arrow_up.png");
+    this->btn_send->SetToolTip(_("Hold Shift to send without asking."));
+    this->btn_send->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        const bool skip {wxGetKeyState(WXK_SHIFT)};
+        this->CallAfter([this, skip]() { this->send_to_printer(skip); });
+    });
+    this->btn_print->Hide();
+    this->btn_send->Hide();
     buttons_sizer->AddStretchSpacer(1);
+    buttons_sizer->Add(this->btn_export_stl, 0, 0, 0);
     buttons_sizer->Add(this->btn_export_gcode, 0, 0, 0);
+    // a second row for the printer, when the printer preset has a port or a server
+    auto* printer_sizer {new wxBoxSizer(wxHORIZONTAL)};
+    printer_sizer->AddStretchSpacer(1);
+    printer_sizer->Add(this->btn_print, 0, 0, 0);
+    printer_sizer->Add(this->btn_send, 0, 0, 0);
 
     // the print preset's shortcuts, scrolling when there are many
     this->_shortcuts_window = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 0), wxVSCROLL);
@@ -264,8 +293,30 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     auto* right_sizer {this->right_sizer};
     right_sizer->Add(this->_presets, 0, wxEXPAND | wxTOP, 10);
     right_sizer->Add(buttons_sizer, 0, wxEXPAND | wxBOTTOM, 5);
+    right_sizer->Add(printer_sizer, 0, wxEXPAND, 0);
     right_sizer->Add(this->_shortcuts_window, 1, wxEXPAND, 5);
     right_sizer->Add(object_info_sizer, 0, wxEXPAND, 0);
+    {
+        this->print_info_sizer = new wxStaticBoxSizer(wxVERTICAL, this, _("Print Summary"));
+        auto* grid {new wxFlexGridSizer(2, 5, 5)};
+        grid->AddGrowableCol(1, 1);
+        wxWindow* box {this->print_info_sizer->GetStaticBox()};
+        auto field = [grid, box](const wxString& label) {
+            auto* name {new wxStaticText(box, wxID_ANY, label + ":")};
+            name->SetFont(ui_settings->small_font());
+            auto* value {new wxStaticText(box, wxID_ANY, "")};
+            value->SetFont(ui_settings->small_font());
+            grid->Add(name);
+            grid->Add(value);
+            return value;
+        };
+        this->print_info_filament = field(_("Used Filament"));
+        this->print_info_cost = field(_("Cost"));
+        this->print_info_time = field(_("Time"));
+        this->print_info_sizer->Add(grid, 0, wxEXPAND);
+        right_sizer->Add(this->print_info_sizer, 0, wxEXPAND);
+        right_sizer->Show(this->print_info_sizer, false, true);
+    }
 //    $right_sizer->Add($object_info_sizer, 0, wxEXPAND, 0);
 //    $right_sizer->Add($print_info_sizer, 0, wxEXPAND, 0);
 //    $right_sizer->Hide($print_info_sizer);
@@ -302,7 +353,8 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
             return true;
         }
     };
-    this->SetDropTarget(new DropTarget(this));
+    for (wxWindow* window : std::initializer_list<wxWindow*>{this, canvas2D, canvas3D, preview3D, preview2D})
+        window->SetDropTarget(new DropTarget(this));
     this->update_shortcuts();
 }
 
@@ -316,7 +368,7 @@ Preset* Plater::selected_print_preset() {
 void Plater::update_shortcuts() {
     if (this->_shortcuts == nullptr) return;
     // first: it stores a value being typed, which comes back here
-    const DynamicPrintConfig full {this->_presets->full_config().config()};
+    const DynamicPrintConfig full {this->full_config().config()};
     Preset* preset {this->selected_print_preset()};
     this->_shortcut_config.clear();
     this->_shortcuts->fixed.clear();
@@ -329,6 +381,7 @@ void Plater::update_shortcuts() {
         }
         this->_shortcuts->fixed.insert(keys.begin(), keys.end());
         for (const auto& key : preset->dirty_options()) keys.push_back(key);
+        for (const auto& key : this->_overrides.keys()) keys.push_back(key);
         for (const auto& key : keys) {
             if (key == "shortcuts" || !print_config_def.has(key) || !full.has(key)) continue;
             this->_shortcut_config.set_deserialize(key, full.serialize(key));
@@ -341,6 +394,7 @@ void Plater::update_shortcuts() {
 void Plater::shortcut_changed(const std::string& key) {
     Preset* preset {this->selected_print_preset()};
     if (preset == nullptr) return;
+    this->_overrides.erase(key);  // from here on it is the preset's
     if (!this->_shortcut_config.has(key)) {
         preset->revert(key);  // taken out of the list: the preset's own value again
     } else {
@@ -362,14 +416,35 @@ void Plater::add() {
     if (!files.empty()) this->load_files(files);
 }
 
+Slic3r::Config Plater::full_config() {
+    Slic3r::Config config {this->_presets->full_config()};
+    config.config().apply(this->_overrides);
+    return config;
+}
+
+void Plater::set_overrides(const DynamicPrintConfig& overrides) {
+    this->_overrides.apply(overrides);
+    this->refresh_config();
+    this->invalidate_slices();
+    this->update_shortcuts();
+}
+
 void Plater::refresh_config() {
-    auto full {std::make_shared<Slic3r::Config>(this->_presets->full_config())};
+    auto full {std::make_shared<Slic3r::Config>(this->full_config())};
     // only the keys the presets have: some of the plater's (e.g. shortcuts) are not in a
     // preset loaded from a file, and applying a missing key crashed (null option)
     t_config_option_keys keys;
     for (const auto& key : this->config->config().keys())
         if (full->has(key)) keys.push_back(key);
+    const std::string bed_before {this->config->config().serialize("bed_shape")};
     this->config->apply(full, keys);
+    // a bed of another shape: the objects stay in its middle
+    if (ui_settings->autocenter && !this->objects.empty() && this->config->config().serialize("bed_shape") != bed_before)
+        this->model->center_instances_around_point(this->bed_centerf());
+    this->btn_print->Show(this->config->config().has("serial_port") && !this->config->config().serialize("serial_port").empty());
+    const bool server {this->config->config().has("print_host") && !this->config->config().serialize("print_host").empty()};
+    if (server != this->btn_send->IsShown()) this->btn_send->Show(server);
+    this->Layout();
     this->canvas2D->update_bed_size();
     this->canvas3D->update();
 }
@@ -382,10 +457,19 @@ void Plater::load_files(const std::vector<std::string>& files) {
 
 std::shared_ptr<SliceJob> Plater::make_job(const Slic3r::Model& what) {
     this->refresh_config();
-    const Slic3r::Config config {this->_presets->full_config()};
+    const Slic3r::Config config {this->full_config()};
     auto job {std::make_shared<SliceJob>(what)};
     job->revision = this->revision;
     job->print.apply_config(config.config());
+    // [print_preset], [filament_preset] and [printer_preset] in file names and custom G-code
+    const std::pair<const char*, preset_t> placeholders[] {{"print_preset", preset_t::Print},
+        {"filament_preset", preset_t::Material}, {"printer_preset", preset_t::Printer}};
+    for (const auto& placeholder : placeholders) {
+        std::vector<std::string> names;
+        for (size_t i = 0; !this->_presets->selected(placeholder.second, i).IsEmpty(); ++i)
+            names.push_back(this->_presets->selected(placeholder.second, i).ToUTF8().data());
+        if (!names.empty()) job->print.placeholder_parser.set(placeholder.first, names);
+    }
     if (ui_settings->threads > 0) job->print.config.threads.value = ui_settings->threads;
     for (auto* object : job->model.objects) {
         job->print.auto_assign_extruders(object);
@@ -430,8 +514,92 @@ void Plater::export_gcode() {
         ui_settings->last_output_path = wxFileName(dialog.GetPath()).GetPath();
         ui_settings->save_settings();
     }
-    job->output_file = job->print.output_filepath(output_file);
+    this->export_to(job, job->print.output_filepath(output_file));
+}
+
+void Plater::export_to(std::shared_ptr<SliceJob> job, const std::string& output_file) {
+    job->output_file = output_file;
     this->run_job(job);
+}
+
+void Plater::send_to_printer(bool skip_dialog) {
+    if (this->objects.empty() || this->running != nullptr) return;
+    std::shared_ptr<SliceJob> job;
+    try {
+        job = this->make_job(*this->model);
+    } catch (std::exception& e) {
+        show_error(this, e.what());
+        return;
+    }
+    const auto* app {dynamic_cast<App*>(wxTheApp)};
+    wxString name {wxFileName(wxString::FromUTF8(job->print.output_filepath(app != nullptr ? app->output_file : "").c_str())).GetFullName()};
+    const std::string host {this->config->config().serialize("print_host")};
+    const bool octoprint {this->config->config().serialize("host_type") == "octoprint"};
+    const wxString server {octoprint ? "OctoPrint" : "Duet"};
+    if (!skip_dialog && !ask_upload_options(this, *ui_settings, name)) return;
+    if (name.IsEmpty() || name.Contains("/")) return;
+    if (!ui_settings->octoprint_overwrite) {
+        const HttpAnswer files {http_request(host, octoprint ? "/api/files/local" : "/rr_files",
+            option_text(this->config->config(), "octoprint_apikey"))};
+        if (!files.ok()) {
+            show_error(this, wxString::Format(_("Error while connecting to the %s server: %s"), server, files.status_text()));
+            return;
+        }
+        const wxString body {wxString::FromUTF8(files.body.c_str())};
+        const bool exists {octoprint
+            ? (body.Contains("\"name\": \"" + name + "\"") || body.Contains("\"name\":\"" + name + "\""))
+            : body.Contains("\"" + name + "\"")};
+        if (exists && wxMessageBox(_("It looks like a file with the same name already exists in the server. Shall I overwrite it?"),
+                server, wxYES_NO | wxICON_WARNING, this) != wxYES) return;
+    }
+    // the server names the file after the one uploaded: its own directory
+    const wxString directory {wxFileName::CreateTempFileName("slic3r_upload_")};
+    wxRemoveFile(directory);
+    if (!wxMkdir(directory, 0700)) {
+        show_error(this, _("Could not create a temporary directory."));
+        return;
+    }
+    job->then = SliceJob::Then::Send;
+    job->send_start = ui_settings->octoprint_start;
+    this->export_to(job, std::string((directory + "/" + name).ToUTF8().data()));
+}
+
+void Plater::upload(const std::string& file, bool start) {
+    const std::string host {this->config->config().serialize("print_host")};
+    const bool octoprint {this->config->config().serialize("host_type") == "octoprint"};
+    const wxString server {octoprint ? "OctoPrint" : "Duet"};
+    std::ifstream in(file, std::ios::binary);
+    const std::string gcode {std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
+    in.close();
+    const std::string name {wxFileName(wxString::FromUTF8(file.c_str())).GetFullName().ToUTF8().data()};
+    GetFrame()->statusbar->SetStatusText(wxString::Format(_("Sending G-code file to the %s server..."), server));
+    HttpAnswer answer {octoprint
+        ? upload_octoprint(host, option_text(this->config->config(), "octoprint_apikey"), name, gcode, start)
+        : upload_duet(host, name, gcode, start)};
+    wxRemoveFile(wxString::FromUTF8(file.c_str()));
+    wxRmdir(wxFileName(wxString::FromUTF8(file.c_str())).GetPath());
+    if (answer.ok()) {
+        GetFrame()->statusbar->SetStatusText(wxString::Format(_("G-code file successfully uploaded to the %s server"), server));
+    } else {
+        const wxString message {wxString::Format(_("Error while uploading to the %s server: %s"), server, answer.status_text())};
+        GetFrame()->statusbar->SetStatusText(message);
+        show_error(this, message);
+    }
+}
+
+void Plater::show_print_summary(const Slic3r::Print* print) {
+    if (print != nullptr) {
+        wxString filament {wxString::Format(_(L"%.2fcm (%.2fcm³"), print->total_used_filament / 10,
+            print->total_extruded_volume / 1000)};
+        if (print->total_weight > 0) filament << wxString::Format(", %.2fg", print->total_weight);
+        this->print_info_filament->SetLabel(filament + ")");
+        this->print_info_cost->SetLabel(print->total_cost > 0 ? wxString::Format("%.2f", print->total_cost) : wxString("n.a."));
+        const int time {static_cast<int>(print->estimated_print_time)};
+        this->print_info_time->SetLabel(wxString::Format(_("%d hours, %d minutes and %d seconds"),
+            time / 3600, time % 3600 / 60, time % 60));
+    }
+    this->right_sizer->Show(this->print_info_sizer, print != nullptr, true);
+    this->Layout();
 }
 
 void Plater::run_job(std::shared_ptr<SliceJob> job) {
@@ -512,12 +680,22 @@ void Plater::on_job_done(std::shared_ptr<SliceJob> job, const std::string& error
                     wxString(GCodeTimeEstimator::format_time(job->print.estimated_print_time)));
         }
         statusbar->SetStatusText(message);
+        if (exporting && !job->svg) {
+            if (job->for_plate && current) this->show_print_summary(&job->print);
+            if (!GetFrame()->IsActive()) GetFrame()->RequestUserAttention();
+        }
         if (current) {
             this->sliced = job;
             const std::shared_ptr<Slic3r::Print> result {job, &job->print};  // keeps the whole job
             this->preview3D->set_print(result);
             this->preview2D->set_print(result);
         }
+    }
+    if (exporting && !cancelled && error.empty()) {
+        if (!job->for_plate)
+            show_info(this, wxString::Format(_("%s was successfully sliced."),
+                wxFileName(wxString::FromUTF8(job->output_file.c_str())).GetFullName()), _("Slicing Done!"));
+        if (job->then == SliceJob::Then::Send) this->upload(job->output_file, job->send_start);
     }
     if (this->export_pending) {
         this->export_pending = false;
@@ -528,6 +706,15 @@ void Plater::on_job_done(std::shared_ptr<SliceJob> job, const std::string& error
 
 void Plater::invalidate_slices() {
     ++this->revision;
+    if (this->print_info_sizer != nullptr) this->show_print_summary(nullptr);
+    const auto* app {dynamic_cast<App*>(wxTheApp)};
+    if (app != nullptr && !app->autosave.empty()) {
+        // --autosave: the configuration, whenever something changes
+        try {
+            Slic3r::Config config {this->full_config()};
+            config.config().save(app->autosave.ToUTF8().data());
+        } catch (std::exception&) {}
+    }
     this->sliced.reset();
     this->preview3D->set_print(nullptr);
     this->preview2D->set_print(nullptr);
@@ -678,7 +865,7 @@ void Plater::object_settings_dialog() {
     const int idx {this->selected_index()};
     if (idx < 0) return;
     this->refresh_config();
-    const Slic3r::Config presets {this->_presets->full_config()};
+    const Slic3r::Config presets {this->full_config()};
     ModelObject* object {this->model->objects.at(idx)};
     bool edited {false};
     ObjectSettingsDialog dialog(this, object, presets.config(), [this, idx, &edited]() {
@@ -732,9 +919,10 @@ void Plater::selection_changed() {
     }
 
     if (this->htoolbar != nullptr) {
-        for (auto tb : {TB_REMOVE, TB_MORE, TB_FEWER, TB_45CW, TB_45CCW, TB_SCALE, TB_SPLIT, TB_CUT, TB_LAYERS, TB_SETTINGS}) {
+        for (auto tb : {TB_REMOVE, TB_MORE, TB_FEWER, TB_45CW, TB_45CCW, TB_ROTFACE, TB_SCALE, TB_SPLIT, TB_CUT, TB_LAYERS, TB_SETTINGS}) {
             this->htoolbar->EnableTool(tb, have_sel);
         }
+        for (const int tool : this->_rotate_tools) this->htoolbar->EnableTool(tool, have_sel);
     }
     // object info (as the Perl GUI)
     auto& info {this->object_info};
@@ -793,8 +981,24 @@ void Plater::build_toolbar() {
     toolbar->AddTool(TB_MORE, _("More"), wxBitmap(var("add.png"), wxBITMAP_TYPE_PNG));
     toolbar->AddTool(TB_FEWER, _("Fewer"), wxBitmap(var("delete.png"), wxBITMAP_TYPE_PNG));
     toolbar->AddSeparator();
+    // preferences: also rotations around X, Y and Z by 90°
+    if (ui_settings->rotation_controls == "xyz" || ui_settings->rotation_controls == "xyz-big") {
+        const struct { Axis axis; double angle; wxString label, icon; } turns[] {
+            {X, 90, _(L"90° X ccw"), "arrow_rotate_x_anticlockwise.png"}, {X, -90, _(L"90° X cw"), "arrow_rotate_x_clockwise.png"},
+            {Y, 90, _(L"90° Y ccw"), "arrow_rotate_y_anticlockwise.png"}, {Y, -90, _(L"90° Y cw"), "arrow_rotate_y_clockwise.png"},
+            {Z, 90, _(L"90° Z ccw"), "arrow_rotate_z_anticlockwise.png"}, {Z, -90, _(L"90° Z cw"), "arrow_rotate_z_clockwise.png"}};
+        for (const auto& turn : turns) {
+            const int id {wxNewId()};
+            const double angle {turn.angle};
+            const Axis axis {turn.axis};
+            toolbar->AddTool(id, turn.label, wxBitmap(var(turn.icon), wxBITMAP_TYPE_PNG));
+            toolbar->Bind(wxEVT_TOOL, [this, angle, axis](wxCommandEvent&) { this->rotate(angle, axis); }, id);
+            this->_rotate_tools.push_back(id);
+        }
+    }
     toolbar->AddTool(TB_45CCW, _(L"45° ccw"), wxBitmap(var("arrow_rotate_anticlockwise.png"), wxBITMAP_TYPE_PNG));
     toolbar->AddTool(TB_45CW, _(L"45° cw"), wxBitmap(var("arrow_rotate_clockwise.png"), wxBITMAP_TYPE_PNG));
+    toolbar->AddTool(TB_ROTFACE, _("Rotate face"), wxBitmap(var("rotate_face.png"), wxBITMAP_TYPE_PNG));
     toolbar->AddTool(TB_SCALE, _(L"Scale…"), wxBitmap(var("arrow_out.png"), wxBITMAP_TYPE_PNG));
     toolbar->AddTool(TB_SPLIT, _("Split"), wxBitmap(var("shape_ungroup.png"), wxBITMAP_TYPE_PNG));
     toolbar->AddTool(TB_CUT, _(L"Cut…"), wxBitmap(var("package.png"), wxBITMAP_TYPE_PNG));
@@ -813,6 +1017,7 @@ void Plater::build_toolbar() {
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->decrease(); }, TB_FEWER);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->rotate(-45.); }, TB_45CW);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->rotate(45.); }, TB_45CCW);
+    toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->rotate_face(); }, TB_ROTFACE);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->changescale(); }, TB_SCALE);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->split_object(); }, TB_SPLIT);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->object_cut_dialog(); }, TB_CUT);
@@ -872,8 +1077,19 @@ wxMenu* Plater::object_menu() {
                 [action, axis](wxCommandEvent&) { action(axis); }, wxID_ANY, bullets[axis]);
         append_submenu(menu, title, help, sub, wxID_ANY, icon);
     };
-    submenu(_("Rotate"), _("Rotate the selected object by an arbitrary angle"), "textfield.png", false, _(L"Around %s axis…"),
-        [this](int axis) { this->rotate(static_cast<Axis>(axis)); });
+    {
+        auto* rotations {new wxMenu()};
+        for (int axis = 0; axis < 3; ++axis)
+            append_menu_item(rotations, wxString::Format(_(L"180° around %s axis"), axes[axis]),
+                _(L"Rotate the selected object by 180°"),
+                [this, axis](wxCommandEvent&) { this->rotate(180., static_cast<Axis>(axis)); }, wxID_ANY, bullets[axis]);
+        rotations->AppendSeparator();
+        for (int axis = 0; axis < 3; ++axis)
+            append_menu_item(rotations, wxString::Format(_(L"Around %s axis…"), axes[axis]),
+                _("Rotate the selected object by an arbitrary angle"),
+                [this, axis](wxCommandEvent&) { this->rotate(static_cast<Axis>(axis)); }, wxID_ANY, bullets[axis]);
+        append_submenu(menu, _("Rotate"), _("Rotate the selected object"), rotations, wxID_ANY, "arrow_rotate_anticlockwise.png");
+    }
     submenu(_("Mirror"), _("Mirror the selected object"), "shape_flip_horizontal.png", false, _("Along %s axis"),
         [this](int axis) { this->mirror(static_cast<Axis>(axis)); });
     submenu(_("Scale"), _("Scale the selected object by a given factor"), "arrow_out.png", true, _(L"Along %s axis…"),
@@ -952,7 +1168,7 @@ void Plater::show_preset_editor(preset_t group, unsigned int idx) {
         this->invalidate_slices();
         this->update_shortcuts();
     };
-    editor->plater_config = [this]() { return DynamicPrintConfig(this->_presets->full_config().config()); };
+    editor->plater_config = [this]() { return DynamicPrintConfig(this->full_config().config()); };
     editors[group] = editor;
     editor->chooser_index = idx;
     const wxString chosen {this->_presets->selected(group, idx)};

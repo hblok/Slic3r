@@ -33,8 +33,8 @@ echo "shortcuts = fill_density;support_material" >>"$print"
 cp "$print" "$data/print/Draft.ini"
 sed "s/^temperature = .*/temperature = 215/" "$data/filament/Ender-5-Pro-PLA.ini" >"$data/filament/PLA-green.ini"
 printf '[presets]\nprint = Ender-5-Pro-0.20mm\nfilament = Ender-5-Pro-PLA\nprinter = Ender-5-Pro\n' >"$data/slic3r.ini"
-gui= xvfb=
-trap 'kill $gui $xvfb 2>/dev/null || :' EXIT
+gui= xvfb= server=
+trap 'kill $gui $xvfb $server 2>/dev/null || :' EXIT
 
 shot() { import -window root "$out/$1.png"; }
 fail() { echo "FAIL: $*"; shot fail; exit 1; }
@@ -120,6 +120,36 @@ kill -0 "$gui" 2>/dev/null || fail "the GUI exited (see $out/gui.log)"
 if grep -q "wx assertion" "$out/gui.log"; then
     grep "wx assertion" "$out/gui.log" | sort | uniq -c
     fail "wx assertions"
+fi
+
+# "Send to printer": checks the server for the name, uploads the G-code and starts it
+if command -v python3 >/dev/null; then
+    kill "$gui" 2>/dev/null || :
+    wait "$gui" 2>/dev/null || :
+    python3 -I "$root/utils/fake_print_server.py" 18321 "$out/requests.log" 2>"$out/server.log" & server=$!
+    mkdir -p "$out/data-send"
+    cp -r "$root/profiles/print" "$root/profiles/filament" "$root/profiles/printer" "$out/data-send/"
+    printf 'print_host = 127.0.0.1:18321\noctoprint_apikey = KEY123\n' >>"$out/data-send/printer/Ender-5-Pro.ini"
+    cp "$data/slic3r.ini" "$out/data-send/slic3r.ini"
+    printf '[presets]\nprint = Ender-5-Pro-0.20mm\nfilament = Ender-5-Pro-PLA\nprinter = Ender-5-Pro\n' \
+        >"$out/data-send/slic3r.ini"
+    "$gui_bin" --datadir "$out/data-send" "$root/src/test/golden/table.stl" >"$out/send.log" 2>&1 & gui=$!
+    sleep 7
+    click 699 283; sleep 1                               # "Send to printer"
+    shot send-options
+    click 316 258                                        # "Start print"
+    click 559 311                                        # "OK"
+    for i in $(seq 1 30); do grep -q '^POST' "$out/requests.log" 2>/dev/null && break; sleep 1; done
+    sleep 1
+    shot sent
+    has "$out/requests.log" 'GET /api/files/local key=KEY123'
+    has "$out/requests.log" 'POST /api/files/local key=KEY123'
+    grep -q 'filename="table.gcode"' "$out/requests.log" || fail "the upload lacks the file name"
+    grep -q '^; estimated printing time' "$out/requests.log" || fail "the upload lacks the G-code"
+    grep -A2 'name="print"' "$out/requests.log" | tr -d '\r' | grep -qx 1 || fail "the print is not started"
+    ok "send to a print server"
+else
+    echo "skip send to a print server: no python3 for the stand-in server"
 fi
 
 # the first start, with an empty data directory: the configuration wizard

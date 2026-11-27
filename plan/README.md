@@ -156,6 +156,11 @@ The Perl GUI is the reference for behaviour and layout.
       stay in the preset lists; reload from disk keeps transformations and added parts
       (its dialog); "Open 2.5D TIN mesh"; window positions; every Perl preference
       (editors in windows, controller tab, colour scheme) (2026-11-27)
+- [x] Plater (2026-11-28): print summary, "Export STL…", "Send to printer" (OctoPrint and
+      Duet, with its dialog; checked against `utils/fake_print_server.py`), "Rotate face"
+      and optional 90° buttons, 180° rotations, `--load`, print options, `--threads` and
+      `--autosave` for the GUI, preset names as placeholders, "successfully sliced"
+      message, re-centering on a new bed shape, WASD nudging, drop targets on the views
 - [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps

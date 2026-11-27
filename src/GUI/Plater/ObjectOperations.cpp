@@ -607,7 +607,7 @@ void Plater::layer_heights_dialog() {
     ModelObject* object {this->selected_model_object()};
     if (object == nullptr) return;
     this->refresh_config();
-    LayerHeightsDialog dialog(this, *object, this->_presets->full_config().config());
+    LayerHeightsDialog dialog(this, *object, this->full_config().config());
     if (dialog.ShowModal() != wxID_OK) return;
     dialog.apply(*object);
     this->on_model_change();
