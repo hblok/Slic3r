@@ -4,6 +4,7 @@
     #include <wx/display.h>
     #include <wx/filefn.h> 
     #include <wx/dir.h>
+    #include <wx/filename.h>
 #endif
 #include <iostream>
 #include <string>
@@ -140,37 +141,24 @@ void App::restore_window_pos(wxTopLevelWindow* window, const wxString& name ) {
 }
 
 void App::load_presets() {
+    // Rebuilt from the data directory on every call (also after a save or delete): the
+    // default preset first, then the files sorted by name. It used to drop dirty presets
+    // (the comment said "keep"), compare full paths with names, and prepend another
+    // default preset on every call.
     for (size_t group = 0; group < preset_types; ++group) {
         Presets& preset_list = this->presets.at(group);
-        wxString& ini = this->preset_ini.at(group);
-        // keep external or dirty presets
-        preset_list.erase(std::remove_if(preset_list.begin(), preset_list.end(), 
-                    [](const Preset& t) -> bool { return (t.external && t.file_exists()) || t.dirty(); }),
-                preset_list.end());
-        if (wxDirExists(ini)) {
-            auto sink { wxDirTraverserSimple() };
-            sink.file_cb = ([&preset_list, group] (const wxString& filename) {
-
-                    // skip if we already have it
-                    if (std::find_if(preset_list.begin(), preset_list.end(), 
-                            [filename] (const Preset& t) 
-                                { return filename.ToStdString() == t.name; }) != preset_list.end()) return;
-                    wxString path, name, ext;
-                    wxFileName::SplitPath(filename, &path, &name, &ext);
-
-                    preset_list.push_back(Preset(path.ToStdString(), (name + wxString(".") + ext).ToStdString(), static_cast<preset_t>(group)));
-                    });
-
-            wxDir dir(ini);
-            dir.Traverse(sink, "*.ini");
-
-            // Sort the list by name
-            std::sort(preset_list.begin(), preset_list.end(), [] (const Preset& x, const Preset& y) -> bool { return x.name < y.name; });
-
-            // Prepend default Preset
-            preset_list.emplace(preset_list.begin(), Preset(true, "- default -"s, static_cast<preset_t>(group)));
+        preset_list.clear();
+        preset_list.push_back(Preset(true, "- default -"s, static_cast<preset_t>(group)));
+        const wxString& ini = this->preset_ini.at(group);
+        if (!wxDirExists(ini)) continue;
+        wxArrayString files;
+        wxDir::GetAllFiles(ini, &files, "*.ini", wxDIR_FILES);
+        files.Sort();
+        for (const auto& file : files) {
+            wxString path, name, ext;
+            wxFileName::SplitPath(file, &path, &name, &ext);
+            preset_list.push_back(Preset(path.ToStdString(), (name + "." + ext).ToStdString(), static_cast<preset_t>(group)));
         }
-
     }
 }
 

@@ -39,6 +39,9 @@ PresetChooser::PresetChooser(wxWindow* parent, std::weak_ptr<Print> print, Setti
         this->_local_sizer->Add(text, 0, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
         this->_local_sizer->Add(choice, 1, wxALIGN_CENTER_VERTICAL | wxEXPAND | wxBOTTOM, 0);
         this->_local_sizer->Add(settings_btn, 0, wxALIGN_CENTER_VERTICAL | wxEXPAND | wxLEFT, 3);
+        settings_btn->Bind(wxEVT_BUTTON, [this, group](wxCommandEvent&) {
+            if (this->on_settings != nullptr) this->on_settings(group);
+        });
         
         // setup listener. 
         // On a combobox event, puts a call to _on_change_combobox() on the evt_idle stack.
@@ -124,7 +127,11 @@ bool PresetChooser::select_preset_by_name(wxString name, preset_t group, size_t 
     auto& ps_list = this->preset_choosers.at(get_preset(group));
     bool updated = false;
     if (ps_list.size() > index) {
-        updated = select_preset_by_name(name, ps_list.at(index));
+        // only a change of selection counts: "found" alone made the editors and the
+        // plater select each other until the stack ran out
+        const int before {ps_list.at(index)->GetSelection()};
+        updated = select_preset_by_name(name, ps_list.at(index))
+            && ps_list.at(index)->GetSelection() != before;
     }
     if (updated)
         this->_on_select_preset(group);
@@ -155,6 +162,8 @@ void PresetChooser::_on_select_preset(preset_t preset) {
     if (preset == preset_t::Printer) {
         this->load(); // reload print/filament settings to honor compatible printers
     }
+    if (this->on_preset_selected != nullptr)
+        this->on_preset_selected(preset, this->_get_selected_preset(preset, 0));
 }
 
 bool PresetChooser::prompt_unsaved_changes() {

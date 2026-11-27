@@ -116,7 +116,12 @@ The Perl GUI is the reference for behaviour and layout.
       (`~/.Slic3r`, same files as the Perl GUI). Done 2026-11-27: presets from the data
       directory, the selection read from and written to `slic3r.ini` (Perl format, other
       keys kept), slicing with them equals the CLI (`cpp_gui_smoke.sh`, Ender presets).
-      Open: the preset editors (editing, saving), several extruders, the wizard
+      Editors (2026-11-27): Print/Material/Printer Settings tabs, pages built from the
+      option definitions (one per category); edits go into the preset's unsaved state and
+      into the next export; save as / delete; editor and plater choosers follow each
+      other; smoke-tested (edit, export equals the CLI, save as). Open: the Perl GUI's
+      hand-made page layouts and the rules that enable/disable dependent options,
+      several extruders, the wizard, preset compatibility
 - [ ] Preview: layers and toolpaths (3D and 2D)
 - [ ] The rest of what the Perl GUI has and is worth keeping: object settings and
       modifiers, cut, rotate to face, wizard, preferences. Printer controller (USB) and

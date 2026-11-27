@@ -53,6 +53,12 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     });
     */
     _presets->load();
+    _presets->on_settings = [this](preset_t group) { this->show_preset_editor(group, 0); };
+    _presets->on_preset_selected = [this](preset_t group, wxString name) {
+        auto& editors {this->GetFrame()->preset_editor_tabs};
+        if (editors.count(group) > 0) editors[group]->select_preset_by_name(name, true);
+        this->refresh_config();
+    };
 
     // Initialize handlers for canvases
     auto on_select_object {[this](ObjIdx obj_idx) { this->select_object(obj_idx); }};
@@ -1217,7 +1223,35 @@ void Plater::center_selected_object_on_bed() {
 }
 
 void Plater::show_preset_editor(preset_t group, unsigned int idx) {
-    
+    // one editor per group, as a tab of the main window (as the Perl GUI's default)
+    auto* frame {GetFrame()};
+    auto& editors {frame->preset_editor_tabs};
+    auto* tabs {frame->tabs()};
+    if (editors.count(group) > 0) {  // exists: show it (a settings button)
+        const int page {tabs->FindPage(editors[group])};
+        if (page != wxNOT_FOUND) tabs->SetSelection(page);
+        return;
+    }
+    PresetEditor* editor {nullptr};
+    switch (group) {
+        case preset_t::Print:    editor = new PrintEditor(tabs); break;
+        case preset_t::Material: editor = new MaterialEditor(tabs); break;
+        case preset_t::Printer:  editor = new PrinterEditor(tabs); break;
+        default: return;
+    }
+    // choosing a preset in the editor chooses it in the plater too
+    editor->on_select_preset = [this](wxString name, preset_t type) {
+        this->_presets->select_preset_by_name(name, type, 0);
+    };
+    // after a save or delete every list is read again
+    editor->on_save_preset = [this, frame](wxString name, preset_t type) {
+        for (auto& tab : frame->preset_editor_tabs) tab.second->reload_list();
+        this->_presets->load();
+        if (!name.IsEmpty()) this->_presets->select_preset_by_name(name, type, 0);
+    };
+    editor->on_value_change = [this](std::string) { this->refresh_config(); };
+    editors[group] = editor;
+    tabs->AddPage(editor, editor->title());
 }
 
 

@@ -48,10 +48,11 @@ public:
     std::array<wxString, preset_types> preset_ini { };
     Settings* settings() { return ui_settings.get(); }
 
+    /// (Re)read the presets from the data directory.
+    void load_presets();
+
 private:
     std::unique_ptr<Notifier> notifier {nullptr};
-
-    void load_presets();
 
     const std::string LogChannel {"APP"}; //< Which log these messages should go to.
 

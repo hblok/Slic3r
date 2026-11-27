@@ -44,6 +44,9 @@ public:
     PresetEditor(wxWindow* parent, t_config_option_keys options = {});
     PresetEditor() : PresetEditor(nullptr, {}) {};
     std::shared_ptr<Preset> current_preset;
+    
+    /// Called after a preset was selected here (the plater follows) or saved.
+    std::function<void (wxString, preset_t)> on_select_preset {nullptr};
 
     /// Check if there is a dirty config that is different than the loaded config.
     bool prompt_unsaved_changes();
@@ -52,6 +55,14 @@ public:
     /// method.
     void select_preset(int id, bool force = false);
     void select_preset_by_name(const wxString& name, bool force = false);
+    
+    /// Delete the selected preset's file (after asking).
+    void delete_preset();
+    
+    /// Read the app's (reloaded) preset list again, keeping the selection by name.
+    /// (After App::load_presets the old Preset objects are gone: only the name is kept.)
+    void reload_list() { const wxString name {this->_preset_name};
+        this->_preset = nullptr; this->load_presets(); if (!name.IsEmpty()) this->select_preset_by_name(name, true); }
     
     /// suppress the callback when the tree selection is changed.
     bool disable_tree_sel_changed_event {false};
@@ -86,6 +97,23 @@ protected:
     const unsigned int left_col_width {150};
     void _update_tree();
     void load_presets();
+    
+    /// Pages built from the option definitions: one page per option category, one row
+    /// per option (label, control by type, unit, tooltip).
+    /// ponytail: generic layout; the Perl GUI's hand-made pages and the rules that
+    /// enable/disable dependent options (_update) can replace it page by page.
+    void build_pages();
+    /// The preset being edited (an element of the app's preset list) and its name, which
+    /// survives a reload of that list.
+    Preset* _preset {nullptr};
+    wxString _preset_name {};
+    /// Reload every control from this->config.
+    std::vector<std::function<void()>> _refreshers {};
+    std::vector<wxTreeItemId> _page_items {};
+    void _show_page(size_t idx);
+    void _add_row(PresetPage* page, wxFlexGridSizer* grid, const std::string& opt_key);
+    /// A value was changed in a control: into the preset's unsaved state.
+    void _changed(const std::string& opt_key);
 
     virtual void _build() = 0;
     virtual void _update(const std::string& opt_key = "") = 0;
@@ -289,6 +317,8 @@ public:
             this->SetSizer(this->vsizer);
             this->SetScrollRate(ui_settings->scroll_step(), ui_settings->scroll_step());
         }
+    wxSizer* sizer() { return this->vsizer; }
+    const wxString& get_title() const { return this->title; }
 protected:
     wxSizer* vsizer {nullptr};
     wxString title {""};

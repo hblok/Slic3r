@@ -3,7 +3,9 @@
 # "Export G-code…", and check that the G-code equals the C++ command line's, that the
 # GUI kept running and that it reported no wx assertions. Twice: with an empty data
 # directory (defaults), and with the Ender 5 Pro presets selected through slic3r.ini
-# (the Perl GUI's settings file). The Perl GUI has utils/gui_smoke.sh.
+# (the Perl GUI's settings file). Then the preset editor: change the layer height in the
+# Print Settings tab, export (must equal the CLI with that change), and save the preset
+# under a new name. The Perl GUI has utils/gui_smoke.sh.
 #
 # There is no window manager, so the click goes to fixed coordinates inside the
 # default-size window; re-measure them if the layout changes (see the screenshots).
@@ -30,7 +32,9 @@ fail() { echo "FAIL: $*"; import -window root "$out/fail.png"; exit 1; }
 Xvfb "$DISPLAY" -screen 0 1280x900x24 >"$out/xvfb.log" 2>&1 & xvfb=$!
 sleep 2
 
-run() { # name datadir cli-options...
+click() { xdotool mousemove --window "$main" "$1" "$2" click 1; sleep 1; }
+
+run() { # name datadir cli-options...   ($edit, if set, runs before the export)
     name=$1 datadir=$2
     shift 2
     "$gui_bin" --datadir "$datadir" -o "$out/$name.gui.gcode" "$model" >"$out/$name.gui.log" 2>&1 & gui=$!
@@ -38,10 +42,13 @@ run() { # name datadir cli-options...
     import -window root "$out/$name.loaded.png"
     kill -0 "$gui" 2>/dev/null || fail "$name: the GUI exited (see $out/$name.gui.log)"
     main=$(xdotool search --onlyvisible --name Slic3r | head -1)
+    [ -z "${edit:-}" ] || $edit
     xdotool mousemove --window "$main" 712 249 click 1   # "Export G-code…"
     for i in $(seq 1 60); do [ -s "$out/$name.gui.gcode" ] && break; sleep 1; done
     sleep 1
     import -window root "$out/$name.exported.png"
+    [ -z "${after:-}" ] || $after
+    kill -0 "$gui" 2>/dev/null || fail "$name: the GUI exited (see $out/$name.gui.log)"
     kill "$gui" 2>/dev/null || :
     wait "$gui" 2>/dev/null || :
     [ -s "$out/$name.gui.gcode" ] || fail "$name: no G-code exported"
@@ -69,3 +76,25 @@ printf '[presets]\nprint = Ender-5-Pro-0.20mm\nfilament = Ender-5-Pro-PLA\nprint
 run ender "$out/data-ender" --load "$p/printer/Ender-5-Pro.ini" \
     --load "$p/filament/Ender-5-Pro-PLA.ini" --load "$p/print/Ender-5-Pro-0.20mm.ini"
 grep -q '^print = Ender-5-Pro-0.20mm' "$out/data-ender/slic3r.ini" || fail "slic3r.ini lost the presets"
+
+# the preset editor: layer height 0.3 in the Print Settings tab, then "Save as" My-Print
+edit_layer_height() {
+    click 230 43                                          # "Print Settings" tab
+    click 548 89                                          # "Layer height"
+    xdotool key ctrl+a; xdotool type 0.3; xdotool key Return; sleep 1
+    import -window root "$out/editor.edited.png"
+    click 40 43                                           # back to the plater
+}
+save_as_my_print() {
+    click 230 43
+    click 167 85; sleep 2                                 # save button, then the name dialog
+    xdotool type My-Print; xdotool key Return; sleep 3
+    import -window root "$out/editor.saved.png"
+}
+cp -r "$out/data-ender" "$out/data-editor"
+edit=edit_layer_height after=save_as_my_print run editor "$out/data-editor" \
+    --load "$p/printer/Ender-5-Pro.ini" --load "$p/filament/Ender-5-Pro-PLA.ini" \
+    --load "$p/print/Ender-5-Pro-0.20mm.ini" --layer-height 0.3
+grep -q '^layer_height = 0.3' "$out/data-editor/print/My-Print.ini" || fail "editor: My-Print.ini not saved with the change"
+grep -q '^print = My-Print' "$out/data-editor/slic3r.ini" || fail "editor: the saved preset is not selected"
+echo "ok   editor: saved as My-Print and selected"

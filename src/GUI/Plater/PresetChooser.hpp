@@ -68,6 +68,11 @@ public:
     /// (first extruder) and printer presets, including unsaved changes (as Perl's
     /// Plater::config).
     Slic3r::Config full_config();
+    
+    /// The settings (cog) button next to a chooser.
+    std::function<void (preset_t)> on_settings {nullptr};
+    /// A preset was chosen here (the editor follows).
+    std::function<void (preset_t, wxString)> on_preset_selected {nullptr};
 private:
     wxFlexGridSizer* _local_sizer {};
     wxWindow* _parent {};
