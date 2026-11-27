@@ -1,6 +1,8 @@
 #include <catch.hpp>
 
 #include "Config.hpp"
+#include <boost/filesystem.hpp>
+#include <boost/nowide/cstdio.hpp>
 #include <test_options.hpp>
 
 #include <string>
@@ -204,13 +206,31 @@ SCENARIO("Config accessor functions perform as expected.") {
     }
 }
 
-SCENARIO("Config ini load/save interface", "[!mayfail]") {
+SCENARIO("Config ini load/save interface") {
     WHEN("new_from_ini is called") {
-        auto config {Slic3r::Config::new_from_ini(std::string(testfile_dir) + "test_config/new_from_ini.ini"s) };
+        auto config {Slic3r::Config::new_from_ini(std::string(testfile_dir) + "test_config/new_from_ini_values.ini"s) };
         THEN("Config object contains ini file options.") {
+            REQUIRE(config->getFloat("layer_height") == Approx(0.15));
+            REQUIRE(config->getInt("perimeters") == 5);
+            REQUIRE(config->get<ConfigOptionEnum<InfillPattern>>("fill_pattern").value == ipGyroid);
+            REQUIRE(config->get<ConfigOptionPercent>("fill_density").value == Approx(35));
+            REQUIRE(config->get<ConfigOptionFloats>("nozzle_diameter").values == std::vector<double>({0.4, 0.6}));
+            REQUIRE(config->getString("end_gcode") == "M104 S0\nM84\n"s);
+            REQUIRE(config->getBool("spiral_vase"));
+        }
+        AND_WHEN("it is saved and loaded again") {
+            const std::string file {(boost::filesystem::temp_directory_path()
+                / boost::filesystem::unique_path("slic3r-test-%%%%%%.ini")).string()};
+            config->config().save(file);
+            auto reloaded {Slic3r::Config::new_from_ini(file)};
+            boost::nowide::remove(file.c_str());
+            THEN("the options are the same") {
+                for (const auto &key : {"layer_height", "perimeters", "fill_pattern", "fill_density",
+                        "nozzle_diameter", "end_gcode", "spiral_vase"})
+                    REQUIRE(reloaded->config().serialize(key) == config->config().serialize(key));
+            }
         }
     }
-    REQUIRE(false);
 }
 
 SCENARIO("FullPrintConfig validation has the checks of the Perl version") {

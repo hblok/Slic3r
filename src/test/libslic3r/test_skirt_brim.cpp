@@ -66,7 +66,7 @@ TEST_CASE("Skirt height is honored") {
     REQUIRE(layers_with_skirt.size() == (size_t)config->getInt("skirt_height"));
 }
 
-SCENARIO("Original Slic3r Skirt/Brim tests", "[!mayfail]") {
+SCENARIO("Original Slic3r Skirt/Brim tests") {
     auto parser {Slic3r::GCodeReader()};
     Slic3r::Model model;
     auto gcode {std::stringstream("")};
@@ -207,7 +207,6 @@ SCENARIO("Original Slic3r Skirt/Brim tests", "[!mayfail]") {
             config->set("support_material_speed", 99);
             config->set("perimeter_extruder", 1);
             config->set("support_material_extruder", 2);
-            config->set("infill_extruder", 3); // ensure that a tool command gets emitted.
             config->set("cooling", false);                     // to prevent speeds to be altered
             config->set("first_layer_speed", "100%");      // to prevent speeds to be altered
 
@@ -215,41 +214,34 @@ SCENARIO("Original Slic3r Skirt/Brim tests", "[!mayfail]") {
             auto print {Slic3r::Test::init_print({TestMesh::overhang}, model, config)};
             print->process();
 
-            // config->set("support_material", true);      // to prevent speeds to be altered
+            // as in t/skirt_brim.t: enable support after the skirt has been generated
+            config->set("support_material", true);
+            print->apply_config(config);
 
             THEN("skirt length is large enough to contain object with support") {
-                CHECK(config->getBool("support_material")); // test is not valid if support material is off
                 double skirt_length = 0.0;
                 Points extrusion_points;
                 int tool = -1;
                 std::regex tool_regex("^T(\\d+)");
                 std::smatch m;
 
-                auto print {Slic3r::Test::init_print({TestMesh::cube_20x20x20}, model, config)};
                 Slic3r::Test::gcode(gcode, print);
 
                 auto support_speed = config->get<ConfigOptionFloat>("support_material_speed") * MM_PER_MIN;
                 parser.parse_stream(gcode, [tool_regex, &m, config, &extrusion_points, &tool, &skirt_length, support_speed] (Slic3r::GCodeReader& self, const Slic3r::GCodeReader::GCodeLine& line)
                     {
-                        std::cerr << line.cmd << "\n";
                         if (std::regex_match(line.cmd, m, tool_regex)) {
                             tool = std::stoi(m[1].str());
                         } else if (self.Z == Approx(config->get<ConfigOptionFloat>("first_layer_height").value)) {
                             // on first layer
                             if (line.extruding() && line.dist_XY() > 0) {
-                                auto speed = ( self.F > 0 ?  self.F : line.new_F());
-                                std::cerr << "Tool " << tool << "\n";
+                                const double speed = line.new_F();  // as Perl: this line's F, else the current one
                                 if (speed == Approx(support_speed) && tool == config->getInt("perimeter_extruder") - 1) {
                                     // Skirt uses first material extruder, support material speed.
                                     skirt_length += line.dist_XY();
                                 } else {
                                     extrusion_points.push_back(Slic3r::Point::new_scale(line.new_X(), line.new_Y()));
                                 }
-                            }
-                        }
-
-                        if (self.Z == Approx(0.3) || line.new_Z() == Approx(0.3)) {
-                            if (line.extruding() && self.F == Approx(support_speed)) {
                             }
                         }
                     });
