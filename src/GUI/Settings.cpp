@@ -1,6 +1,7 @@
 #include "Settings.hpp"
 #include "misc_ui.hpp"
 #include <cctype>
+#include <cstdlib>
 #include <fstream>
 #include <wx/filefn.h>
 
@@ -52,7 +53,11 @@ void Settings::load_settings() {
     flag("autoalignz", this->autoalignz);
     flag("invert_zoom", this->invert_zoom);
     flag("background_processing", this->background_processing);
-    if (general.count("threads") && !general["threads"].empty()) this->threads = std::stoi(general["threads"]);
+    flag("remember_output_path", this->remember_output_path);
+    if (general.count("last_output_path")) this->last_output_path = wxString::FromUTF8(general["last_output_path"]);
+    // a hand-edited value that is no number leaves the default
+    if (general.count("threads")) this->threads = std::strtoul(general["threads"].c_str(), nullptr, 10);
+    if (general.count("nudge_val") && std::atof(general["nudge_val"].c_str()) > 0) this->nudge = std::atof(general["nudge_val"].c_str());
     if (general.count("skein_directory")) this->skein_directory = wxString::FromUTF8(general["skein_directory"]);
     
     auto& presets = this->_ini["presets"];
@@ -73,7 +78,11 @@ void Settings::save_settings() {
     general["autoalignz"] = this->autoalignz ? "1" : "0";
     general["invert_zoom"] = this->invert_zoom ? "1" : "0";
     general["background_processing"] = this->background_processing ? "1" : "0";
-    general["threads"] = std::to_string(this->threads);
+    general["remember_output_path"] = this->remember_output_path ? "1" : "0";
+    general["last_output_path"] = this->last_output_path.ToUTF8().data();
+    if (this->threads > 0) general["threads"] = std::to_string(this->threads);
+    else general.erase("threads");
+    general["nudge_val"] = wxString::Format("%g", this->nudge).ToStdString();
     general["skein_directory"] = this->skein_directory.ToUTF8().data();
     general["version"] = SLIC3R_VERSION;
     

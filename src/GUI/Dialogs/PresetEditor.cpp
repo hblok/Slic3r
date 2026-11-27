@@ -1,5 +1,6 @@
 #include "Dialogs/PresetEditor.hpp"
 #include "misc_ui.hpp"
+#include "OptionsGroup/OptionControl.hpp"
 #include "GUI.hpp"
 #include <wx/bookctrl.h>
 #include <wx/textdlg.h>
@@ -102,82 +103,15 @@ void PresetEditor::_show_page(size_t idx) {
 void PresetEditor::_add_row(PresetPage* page, wxFlexGridSizer* grid, const std::string& opt_key) {
     const ConfigOptionDef& def {print_config_def.get(opt_key)};
     const wxString tooltip {wxString::FromUTF8(def.tooltip + (def.cli.empty() ? "" : "\n(--" + def.cli.substr(0, def.cli.find_first_of("|=!")) + ")"))};
-    // full_label is the stand-alone name ("Top solid layers" rather than "Top")
-    const std::string& name {!def.full_label.empty() ? def.full_label : !def.label.empty() ? def.label : opt_key};
-    auto* label {new wxStaticText(page, wxID_ANY, wxString::FromUTF8(name) + ":")};
+    auto* label {new wxStaticText(page, wxID_ANY, option_name(opt_key) + ":")};
     label->SetToolTip(tooltip);
-    wxWindow* control {nullptr};
-    
-    if (def.type == coBool) {
-        auto* check {new wxCheckBox(page, wxID_ANY, "")};
-        check->Bind(wxEVT_CHECKBOX, [this, opt_key, check](wxCommandEvent&) {
-            this->config->set(opt_key, check->GetValue());
-            this->_changed(opt_key);
-        });
-        this->_refreshers.push_back([this, opt_key, check]() { check->SetValue(this->config->getBool(opt_key)); });
-        control = check;
-    } else if (def.type == coEnum) {
-        const std::vector<std::string> values {def.enum_values};
-        wxArrayString labels;
-        for (size_t i = 0; i < values.size(); ++i)
-            labels.Add(wxString::FromUTF8(i < def.enum_labels.size() ? def.enum_labels[i] : values[i]));
-        auto* choice {new wxChoice(page, wxID_ANY, wxDefaultPosition, wxDefaultSize, labels)};
-        choice->Bind(wxEVT_CHOICE, [this, opt_key, choice, values](wxCommandEvent&) {
-            const int sel {choice->GetSelection()};
-            if (sel < 0) return;
-            this->config->set(opt_key, values[sel]);
-            this->_changed(opt_key);
-        });
-        this->_refreshers.push_back([this, opt_key, choice, values]() {
-            const auto it = std::find(values.begin(), values.end(), this->config->config().serialize(opt_key));
-            choice->SetSelection(it == values.end() ? wxNOT_FOUND : int(it - values.begin()));
-        });
-        control = choice;
-    } else {
-        // text: raw for (multi-line) strings and lists of strings, else the option's own
-        // text form, which is also parsed back (invalid input is refused)
-        const bool multiline {def.multiline};
-        auto* text {new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition,
-            wxSize(multiline ? 400 : 150, multiline ? std::max(def.height, 60) : -1),
-            multiline ? wxTE_MULTILINE : wxTE_PROCESS_ENTER)};
-        auto get = [this, opt_key, type = def.type]() -> wxString {
-            if (type == coString)
-                return wxString::FromUTF8(this->config->get<ConfigOptionString>(opt_key).value);
-            if (type == coStrings) {
-                wxString out;
-                for (const auto& v : this->config->get<ConfigOptionStrings>(opt_key).values)
-                    out << (out.empty() ? "" : "\n") << wxString::FromUTF8(v);
-                return out;
-            }
-            return wxString::FromUTF8(this->config->config().serialize(opt_key));
-        };
-        auto commit = [this, opt_key, text, get, type = def.type]() {
-            const wxString value {text->GetValue()};
-            if (value == get()) return;
-            try {
-                if (type == coString) {
-                    this->config->get<ConfigOptionString>(opt_key).value = value.ToUTF8().data();
-                } else if (type == coStrings) {
-                    auto& values = this->config->get<ConfigOptionStrings>(opt_key).values;
-                    values.clear();
-                    for (const auto& line : wxSplit(value, '\n', 0))
-                        if (!line.IsEmpty()) values.push_back(line.ToUTF8().data());
-                } else {
-                    this->config->set(opt_key, std::string(value.ToUTF8().data()));
-                }
-            } catch (std::exception&) {
-                wxBell();
-                text->ChangeValue(get());  // refused: back to the stored value
-                return;
-            }
-            this->_changed(opt_key);
-        };
-        text->Bind(wxEVT_KILL_FOCUS, [commit](wxFocusEvent& e) { commit(); e.Skip(); });
-        if (!multiline) text->Bind(wxEVT_TEXT_ENTER, [commit](wxCommandEvent&) { commit(); });
-        this->_refreshers.push_back([text, get]() { text->ChangeValue(get()); });
-        control = text;
-    }
+    const OptionControl option {make_option_control(page, opt_key,
+        [this]() -> DynamicPrintConfig& { return this->config->config(); },
+        [this, opt_key]() { this->_changed(opt_key); })};
+    this->_refreshers.push_back(option.refresh);
+    wxWindow* control {option.window};
     control->SetToolTip(tooltip);
+    this->_controls[opt_key] = control;
     grid->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
     grid->Add(control, 0, def.multiline ? wxEXPAND : 0);
     grid->Add(new wxStaticText(page, wxID_ANY, wxString::FromUTF8(def.sidetext)), 0, wxALIGN_CENTER_VERTICAL);
@@ -185,6 +119,13 @@ void PresetEditor::_add_row(PresetPage* page, wxFlexGridSizer* grid, const std::
 
 void PresetEditor::_changed(const std::string& opt_key) {
     if (this->_preset == nullptr) return;
+    // a question may take the focus from a text field, whose commit then lands here again
+    if (this->_resolving) return;
+    this->_resolving = true;
+    this->resolve_conflicts(opt_key);
+    this->_resolving = false;
+    for (auto& refresh : this->_refreshers) refresh();
+    this->apply_rules();
     this->_preset->apply_dirty(this->config);
     // mark the preset as modified in the list (as the Perl GUI)
     const int sel {this->_presets_choice->GetSelection()};
@@ -251,6 +192,7 @@ void PresetEditor::_on_select_preset(bool force) {
     this->config = Slic3r::Config::new_from_defaults(known_keys(this->my_options()));
     this->config->apply(this->_preset->dirty_config());
     for (auto& refresh : this->_refreshers) refresh();
+    this->apply_rules();
     this->_btn_delete_preset->Enable(!this->_preset->default_preset);
     this->_on_preset_loaded();
     if (this->on_select_preset != nullptr) this->on_select_preset(this->_preset->name, this->type());

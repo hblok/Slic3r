@@ -25,7 +25,8 @@ Preview2D::Preview2D(wxWindow* parent) : PreviewPanel(parent), canvas(new wxPane
     });
     canvas->Bind(wxEVT_LEFT_DCLICK, [this](wxMouseEvent&) { zoom = 1; pan = {0, 0}; canvas->Refresh(); });
     canvas->Bind(wxEVT_MOUSEWHEEL, [this](wxMouseEvent& e) {
-        const double factor {std::pow(1.25, static_cast<double>(e.GetWheelRotation()) / e.GetWheelDelta())};
+        const double turn {static_cast<double>(e.GetWheelRotation()) / e.GetWheelDelta()};
+        const double factor {std::pow(1.25, ui_settings->invert_zoom ? -turn : turn)};
         const wxSize size {canvas->GetClientSize()};
         // the point under the mouse stays where it is
         const double x {e.GetX() - size.x / 2.}, y {e.GetY() - size.y / 2.};

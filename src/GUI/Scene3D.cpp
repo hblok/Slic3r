@@ -114,9 +114,7 @@ void Scene3D::mouse_up(wxMouseEvent &e){
 void Scene3D::mouse_wheel(wxMouseEvent &e){
         // Calculate the zoom delta and apply it to the current zoom factor
         auto _zoom = ((float)e.GetWheelRotation()) / e.GetWheelDelta();
-        /*if ($Slic3r::GUI::Settings->{_}{invert_zoom}) {
-            _zoom *= -1;
-        }*/
+        if (ui_settings->invert_zoom) _zoom *= -1;
         _zoom = clamp(-4, _zoom,4);
         _zoom /= 10;
         zoom /= 1-_zoom;

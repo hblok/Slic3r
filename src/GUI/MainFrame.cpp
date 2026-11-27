@@ -6,6 +6,7 @@
 #include "MainFrame.hpp"
 #include "misc_ui.hpp"
 #include "Dialogs/AboutDialog.hpp"
+#include "Dialogs/Preferences.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -123,6 +124,9 @@ void MainFrame::init_menubar()
         item(_(L"Slice to SV&G…"), _("Slice file to SVG"), [this]() { this->plater->quick_slice(true, false, true); }, "shape_handles.png", "Ctrl+G");
         item(_(L"Repair STL file…"), _("Automatically repair an STL file"), [this]() { this->plater->repair_stl(); }, "wrench.png");
         menuFile->AppendSeparator();
+        item(_(L"Preferences…"), _("Application preferences"), [this]() {
+            if (show_preferences(this, *ui_settings) && ui_settings->background_processing) this->plater->start_background_processing();
+        }, "wrench.png", "Ctrl+,");
         item(_("&Quit"), _("Quit Slic3r"), [this]() { this->Close(false); }, "", "Ctrl+Q");
     }
     

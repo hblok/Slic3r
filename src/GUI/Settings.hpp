@@ -44,7 +44,10 @@ class Settings {
 
         float nudge {1.0}; //< 2D plater nudge amount in mm
 
-        unsigned int threads {1}; //< Number of threads to use when slicing
+        unsigned int threads {0}; //< Threads for slicing; 0: as the print settings say
+
+        bool remember_output_path {true};
+        wxString last_output_path {};   //< directory of the last G-code export
 
         const wxString version { wxString(SLIC3R_VERSION) };
 

@@ -130,6 +130,8 @@ public:
     void load_files(const std::vector<std::string>& files);
 
     void show_preset_editor(preset_t preset, unsigned int idx);
+    /// Slice now, if background processing was just switched on.
+    void start_background_processing() { this->update_preview(); }
 
     // The File menu (Plater/FileMenu.cpp)
     void load_config_file();
@@ -193,6 +195,7 @@ private:
     std::atomic<bool> cancel_slicing {false};
     std::shared_ptr<SliceJob> running;  ///< null when nothing is slicing
     std::shared_ptr<SliceJob> sliced;   ///< the last job that still matches the plater
+    bool export_pending {false};        ///< export once the running preview job has ended
     unsigned long revision {0};         ///< counts changes of the model or the settings
     unsigned long failed_revision {static_cast<unsigned long>(-1)}; ///< do not slice this one again by itself
     /// A job for this model with the selected presets. Throws if the print is not valid.
@@ -205,7 +208,8 @@ private:
     void on_job_done(std::shared_ptr<SliceJob> job, const std::string& error, bool cancelled);
     /// The model or the settings changed: the sliced result is stale.
     void invalidate_slices();
-    /// Slice for the preview, if a preview tab is selected and has nothing to show.
+    /// Slice for the preview, if a preview tab is selected (or background processing is
+    /// on) and there is no result.
     void update_preview();
     
     /// Take the plater's own settings (bed shape, ...) from the selected presets.
@@ -259,8 +263,6 @@ private:
 
     /// Create and launch dialog for object settings.
     void object_settings_dialog();
-    void object_settings_dialog(ObjIdx obj_idx);
-    void object_settings_dialog(ObjRef obj);
 
     /// Instantiate the toolbar 
     void build_toolbar();

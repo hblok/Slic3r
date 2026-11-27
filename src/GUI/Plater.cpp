@@ -16,6 +16,7 @@
 #include "Geometry.hpp"
 #include "GCodeTimeEstimator.hpp"
 #include "GUI.hpp"
+#include "Dialogs/ObjectSettings.hpp"
 #include <wx/filedlg.h>
 #include <wx/dnd.h>
 #include <wx/filename.h>
@@ -63,7 +64,7 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
 
     // Initialize handlers for canvases
     auto on_select_object {[this](ObjIdx obj_idx) { this->select_object(obj_idx); }};
-    auto on_double_click {[this]() { if (this->selected_object() != this->objects.end()) this->object_settings_dialog(); }};
+    auto on_double_click {[this]() { this->object_settings_dialog(); }};
     auto on_right_click {[this](wxPanel* canvas, const wxPoint& pos) 
         {
             auto obj = this->selected_object();
@@ -317,6 +318,7 @@ std::shared_ptr<SliceJob> Plater::make_job(const Slic3r::Model& what) {
     auto job {std::make_shared<SliceJob>(what)};
     job->revision = this->revision;
     job->print.apply_config(config.config());
+    if (ui_settings->threads > 0) job->print.config.threads.value = ui_settings->threads;
     for (auto* object : job->model.objects) {
         job->print.auto_assign_extruders(object);
         job->print.add_model_object(object);
@@ -330,8 +332,14 @@ void Plater::export_gcode() {
         GetFrame()->statusbar->SetStatusText(_("Nothing to export."));
         return;
     }
-    // ponytail: an export waits until a running preview has sliced (the button is disabled)
-    if (this->running != nullptr) return;
+    if (this->running != nullptr) {
+        // a preview is slicing: stop it, and export when it has ended
+        if (this->running->output_file.empty()) {
+            this->export_pending = true;
+            this->cancel_slicing = true;
+        }
+        return;
+    }
 
     std::shared_ptr<SliceJob> job;
     try {
@@ -344,11 +352,15 @@ void Plater::export_gcode() {
     const auto* app {dynamic_cast<App*>(wxTheApp)};
     std::string output_file {app != nullptr ? app->output_file : std::string()};
     if (output_file.empty()) {
-        const wxFileName default_file {wxString(job->print.output_filepath(""))};
+        wxFileName default_file {wxString(job->print.output_filepath(""))};
+        if (ui_settings->remember_output_path && wxDirExists(ui_settings->last_output_path))
+            default_file.SetPath(ui_settings->last_output_path);
         wxFileDialog dialog(this, _("Save G-code file as:"), default_file.GetPath(), default_file.GetFullName(),
             _("G-code files (*.gcode)|*.gcode;*.GCODE;*.g;*.ngc|All files|*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() != wxID_OK) return;
         output_file = dialog.GetPath().ToStdString();
+        ui_settings->last_output_path = wxFileName(dialog.GetPath()).GetPath();
+        ui_settings->save_settings();
     }
     job->output_file = job->print.output_filepath(output_file);
     this->run_job(job);
@@ -369,7 +381,7 @@ void Plater::run_job(std::shared_ptr<SliceJob> job) {
     if (this->slicing_thread.joinable()) this->slicing_thread.join();  // the last one has ended
     this->running = job;
     this->cancel_slicing = false;
-    this->btn_export_gcode->Disable();
+    if (!job->output_file.empty()) this->btn_export_gcode->Disable();
     auto* statusbar {GetFrame()->statusbar};
     statusbar->SetStatusText(job->output_file.empty() ? _(L"Slicing…") : _(L"Exporting G-code…"));
     statusbar->SetProgress(1);
@@ -410,7 +422,7 @@ void Plater::on_job_done(std::shared_ptr<SliceJob> job, const std::string& error
     const bool exporting {!job->output_file.empty()};
     const bool current {job->for_plate && job->revision == this->revision};
     // a cancel by the user or an error: do not start over by itself
-    if ((cancelled || !error.empty()) && current) this->failed_revision = job->revision;
+    if ((cancelled || !error.empty()) && current && !this->export_pending) this->failed_revision = job->revision;
 
     if (cancelled) {
         if (exporting) wxRemoveFile(wxString(job->output_file + ".tmp"));  // the export's own temporary file
@@ -439,6 +451,10 @@ void Plater::on_job_done(std::shared_ptr<SliceJob> job, const std::string& error
             this->preview2D->set_print(result);
         }
     }
+    if (this->export_pending) {
+        this->export_pending = false;
+        this->export_gcode();
+    }
     this->update_preview();
 }
 
@@ -455,7 +471,7 @@ void Plater::invalidate_slices() {
 
 void Plater::update_preview() {
     const wxWindow* page {this->preview_notebook->GetCurrentPage()};
-    if (page != this->preview3D && page != this->preview2D) return;
+    if (!ui_settings->background_processing && page != this->preview3D && page != this->preview2D) return;
     if (this->running != nullptr || this->sliced != nullptr || this->objects.empty()
         || this->revision == this->failed_revision) return;
     try {
@@ -590,10 +606,22 @@ ObjRef Plater::selected_object() {
     return this->objects.end();
 }
 
-void Plater::object_settings_dialog() { object_settings_dialog(this->selected_object()); }
-void Plater::object_settings_dialog(ObjIdx obj_idx) { object_settings_dialog(this->objects.begin() + obj_idx); }
-void Plater::object_settings_dialog(ObjRef obj) {
-
+void Plater::object_settings_dialog() {
+    const int idx {this->selected_index()};
+    if (idx < 0) return;
+    this->refresh_config();
+    const Slic3r::Config presets {this->_presets->full_config()};
+    ModelObject* object {this->model->objects.at(idx)};
+    bool edited {false};
+    ObjectSettingsDialog dialog(this, object, presets.config(), [this, idx, &edited]() {
+        edited = true;
+        this->canvas3D->update();  // it draws the object's volumes
+    });
+    dialog.ShowModal();
+    if (!edited) return;
+    this->make_thumbnail(idx);
+    this->commit();  // not on_model_change(): autocenter would move the plate
+    this->refresh_model();
 }
 
 void Plater::select_object(ObjRef obj) {
@@ -787,6 +815,8 @@ wxMenu* Plater::object_menu() {
 
     item(_("Split"), _("Split the selected object into individual parts"), [this]() { this->split_object(); }, "shape_ungroup.png");
     item(_(L"Cut…"), _("Open the 3D cutting tool"), [this]() { this->object_cut_dialog(); }, "package.png");
+    menu->AppendSeparator();
+    item(_(L"Settings…"), _("Parts, modifiers and settings of this object"), [this]() { this->object_settings_dialog(); }, "cog.png");
     menu->AppendSeparator();
     item(_("Reload from Disk"), _("Reload the selected file from Disk"), [this]() { this->reload_from_disk(); }, "arrow_refresh.png");
     item(_(L"Export object as STL…"), _("Export this single object as STL file"), [this]() { this->export_object(IO::STL); }, "brick_go.png");

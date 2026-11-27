@@ -4,6 +4,7 @@
 // stdlib
 #include <string>
 #include <functional>
+#include <map>
 
 // Libslic3r
 #include "libslic3r.h"
@@ -114,6 +115,13 @@ protected:
     void _add_row(PresetPage* page, wxFlexGridSizer* grid, const std::string& opt_key);
     /// A value was changed in a control: into the preset's unsaved state.
     void _changed(const std::string& opt_key);
+    /// The control of each option, for the rules.
+    std::map<std::string, wxWindow*> _controls {};
+    bool _resolving {false};
+    /// Enable the options that matter with the current values (Dialogs/PresetRules.cpp).
+    void apply_rules();
+    /// Ask about combinations that do not work and change this->config accordingly.
+    void resolve_conflicts(const std::string& changed);
 
     virtual void _build() = 0;
     virtual void _update(const std::string& opt_key = "") = 0;

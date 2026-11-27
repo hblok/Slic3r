@@ -66,7 +66,7 @@ export_plate() { # name: "Export plate as STL"
     "$cli_bin" --info "$out/$1.stl" >"$out/$1.info"
 }
 export_object() {
-    object_menu 15
+    object_menu 16
     answer "$out/$1.stl"
     alive "$1"
     [ -s "$out/$1.stl" ] || fail "$1: no STL exported"
@@ -150,7 +150,7 @@ near mirrored size_x 20
 near mirrored volume "$(info flat volume)"
 cp "$root/src/test/inputs/test_cli/20mmbox.stl" "$out/part.stl"
 select_first
-object_menu 14                                          # Reload from Disk
+object_menu 15                                          # Reload from Disk
 export_plate reloaded
 near reloaded size_z 10                                  # the box is 20 x 20 x 10
 near reloaded number_of_facets 12

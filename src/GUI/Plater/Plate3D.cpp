@@ -106,7 +106,8 @@ void Plate3D::color_volumes(){
         bool hover_object = hover && i <= hover_volume && hover_volume < i+modelobj->instances.size()*modelobj->volumes.size();
         for(ModelInstance *instance: modelobj->instances){
             for(ModelVolume* volume: modelobj->volumes){
-                auto& rendervolume = volumes.at(i);
+                if (i >= volumes.size()) return;  // the model changed, update() is coming
+                auto& rendervolume = volumes[i];
                 if(object.selected){
                     rendervolume.color = ui_settings->color->SELECTED_COLOR();
                 }else if(hover_object){

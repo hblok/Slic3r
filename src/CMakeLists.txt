@@ -422,10 +422,14 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
     add_library(slic3r_gui STATIC 
     ${GUI_LIBDIR}/Dialogs/AboutDialog.cpp
     ${GUI_LIBDIR}/Dialogs/PresetEditor.cpp
+    ${GUI_LIBDIR}/Dialogs/PresetRules.cpp
+    ${GUI_LIBDIR}/Dialogs/ObjectSettings.cpp
+    ${GUI_LIBDIR}/OptionsGroup/OptionControl.cpp
     ${GUI_LIBDIR}/Dialogs/PrintEditor.cpp
     ${GUI_LIBDIR}/Dialogs/PrinterEditor.cpp
     ${GUI_LIBDIR}/Dialogs/MaterialEditor.cpp
     ${GUI_LIBDIR}/Dialogs/ObjectCutDialog.cpp
+    ${GUI_LIBDIR}/Dialogs/Preferences.cpp
     ${GUI_LIBDIR}/GUI.cpp
     ${GUI_LIBDIR}/MainFrame.cpp
     ${GUI_LIBDIR}/Plater.cpp

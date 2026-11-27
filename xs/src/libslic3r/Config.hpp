@@ -92,6 +92,7 @@ public:
     void validate() { this->_config.validate(); };
 
     const DynamicPrintConfig& config() const { return _config; }
+    DynamicPrintConfig& config() { return _config; }
     bool empty() const { return _config.empty(); }
 
     /// Pass-through of apply()
