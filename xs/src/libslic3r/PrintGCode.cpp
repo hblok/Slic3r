@@ -195,35 +195,32 @@ PrintGCode::output()
 
     // Calculate wiping points if needed.
     if (config.ooze_prevention && extruders.size() > 1) {
-        /*
-        TODO: PORT THIS!
-        my @skirt_points = map @$_, map @$_, @{$self->print->skirt};
-        if (@skirt_points) {
-            my $outer_skirt = convex_hull(\@skirt_points);
-            my @skirts = ();
-            foreach my $extruder_id (@extruders) {
-                my $extruder_offset = $self->config->get_at('extruder_offset', $extruder_id);
-                push @skirts, my $s = $outer_skirt->clone;
-                $s->translate(-scale($extruder_offset->x), -scale($extruder_offset->y));  #)
+        // as Perl: standby points every 10 mm on a line 3 mm outside the skirt as
+        // seen by every extruder (no skirt, no ooze prevention)
+        Points skirt_points;
+        for (const ExtrusionEntity* e : _print.skirt.entities) {
+            const Points pp = e->as_polyline().points;
+            skirt_points.insert(skirt_points.end(), pp.begin(), pp.end());
+        }
+        if (!skirt_points.empty()) {
+            const Polygon outer_skirt = Geometry::convex_hull(skirt_points);
+            Points all_skirts;
+            for (const auto extruder_id : extruders) {
+                const Pointf extruder_offset = config.extruder_offset.get_at(extruder_id);
+                Polygon s = outer_skirt;
+                s.translate(-scale_(extruder_offset.x), -scale_(extruder_offset.y));
+                all_skirts.insert(all_skirts.end(), s.points.begin(), s.points.end());
             }
-            my $convex_hull = convex_hull([ map @$_, @skirts ]);
+            const Polygon convex_hull = Geometry::convex_hull(all_skirts);
 
-            $gcodegen->ooze_prevention->set_enable(1);
-            $gcodegen->ooze_prevention->set_standby_points(
-                [ map @{$_->equally_spaced_points(scale 10)}, @{offset([$convex_hull], scale 3)} ]
-            );
-
-            if (0) {
-                require "Slic3r/SVG.pm";
-                Slic3r::SVG::output(
-                    "ooze_prevention.svg",
-                    red_polygons    => \@skirts,
-                    polygons        => [$outer_skirt],
-                    points          => $gcodegen->ooze_prevention->standby_points,
-                );
+            _gcodegen.ooze_prevention.enable = true;
+            _gcodegen.ooze_prevention.standby_points.clear();
+            for (const Polygon &p : offset(Polygons{convex_hull}, scale_(3))) {
+                const Points pp = p.equally_spaced_points(scale_(10));
+                _gcodegen.ooze_prevention.standby_points.insert(
+                    _gcodegen.ooze_prevention.standby_points.end(), pp.begin(), pp.end());
             }
         }
-        */
     }
 
     // Do all objects for each layer.

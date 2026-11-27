@@ -111,6 +111,11 @@ compare vibration_limit --vibration-limit 30 $m/cube_with_hole.stl
 compare pressure_advance --pressure-advance 0.5 $box
 compare pressure_advance_relative --pressure-advance 0.5 --use-relative-e-distances $m/cube_with_hole.stl
 compare pressure_advance_complete --pressure-advance 0.5 --complete-objects --duplicate 2 $box
+compare modifier $m/modifier.amf
+compare two_parts --load two_extruders.ini $m/two_parts.amf
+compare two_extruders_infill --load two_extruders.ini --infill-extruder 2 $box
+compare two_extruders_support --load two_extruders.ini --support-material --support-material-extruder 2 table.stl
+compare ooze_prevention --load two_extruders.ini --ooze-prevention --infill-extruder 2 --skirts 2 $box
 }
 # Known difference, not in the list: --rotate, --rotate-x, --rotate-y. C++ rotates the
 # mesh, Perl the instance (Z) or the mesh after applying the instance (X, Y); E differs

@@ -145,9 +145,12 @@ Open:
 - ~~Differ from Perl: `--vibration-limit`, `--pressure-advance`~~ ported to C++
   2026-11-27 (`GCode/VibrationLimit`, `GCode/PressureRegulator`); output equals Perl.
   `GCodeReader` now keeps coordinates as double, like Perl.
-- Not compared yet: several extruders (Perl wants repeated options, e.g.
-  `--temperature 200 --temperature 210`), modifier volumes, GUI-only steps.
-  `--gcode-arcs` is refused by Perl as incomplete.
+- ~~Not compared: several extruders, modifier volumes~~ compared 2026-11-27 with
+  generated AMF models (`models/make_amf.py`) and `two_extruders.ini` (an ini reads the
+  same in both; the command lines take per-extruder lists differently): identical.
+  `--ooze-prevention` placed no standby points in C++ (a `TODO: PORT THIS` block in
+  `PrintGCode.cpp`); ported, now identical.
+- Not compared yet: GUI-only steps. `--gcode-arcs` is refused by Perl as incomplete.
 
 `src/test/libslic3r/test_support_material.cpp` is still not part of the test build;
 the golden `table_support` output covers the default case.
