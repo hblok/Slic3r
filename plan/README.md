@@ -97,6 +97,22 @@ Still Perl outside the GUI, and what to do with it:
 So only the UI uses Perl now: everything left is GUI glue or Perl tests. Next for Perl:
 the C++ GUI (step 3).
 
+### The C++ GUI (step 3), wxWidgets (DECISIONS.md, 2026-11-27)
+
+Each step ends with something checked under Xvfb, like `utils/gui_smoke.sh` does for Perl.
+The Perl GUI is the reference for behaviour and layout.
+
+- [x] Builds with wxWidgets 3.2 (`cmake -DEnable_GUI=ON`; one fix, 2026-11-27)
+- [ ] Starts: fix the wx 3.2 debug assertions (sizer parents); build it in CI
+- [ ] Plater: load a model, 3D view, arrange, slice and export; smoke test: export equals the CLI
+- [ ] Presets: print/filament/printer editors and choosers, read and write the data directory
+      (`~/.Slic3r`, same files as the Perl GUI)
+- [ ] Preview: layers and toolpaths (3D and 2D)
+- [ ] The rest of what the Perl GUI has and is worth keeping: object settings and
+      modifiers, cut, rotate to face, wizard, preferences. Printer controller (USB) and
+      SLA/projector: decide before porting
+- [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps
+
 If phase 2 turns out to be hopeless, go to B. (It did not: see phase 2.)
 
 ## Open questions
