@@ -106,9 +106,12 @@ The Perl GUI is the reference for behaviour and layout.
 - [x] Starts without wx assertions; `utils/cpp_gui_smoke.sh`; CI job `cpp-gui` (2026-11-27, CI run not seen yet)
 - [x] Plater: models from the command line, 2D and 3D views (fit to objects), object info,
       more/fewer/rotate/arrange/delete, "Export G-code…" with the selected presets;
-      `cpp_gui_smoke.sh`: export equals the CLI (2026-11-27). Still to do: slicing in the
-      background with progress (it runs on the GUI thread), the "Add…" dialog untested
-      under Xvfb, export STL/AMF/3MF, undo
+      `cpp_gui_smoke.sh`: export equals the CLI (2026-11-27). The export slices in the
+      background (own copy of the model and Print) with progress and Cancel in the status
+      bar; checked by hand with a 640,000-facet model (edits while slicing, cancel leaves no
+      file, export again). Still to do: background slicing on changes (Perl's
+      background_processing setting), the "Add…" dialog untested under Xvfb, export
+      STL/AMF/3MF, undo
 - [ ] Presets: print/filament/printer editors and choosers, read and write the data directory
       (`~/.Slic3r`, same files as the Perl GUI). Done 2026-11-27: presets from the data
       directory, the selection read from and written to `slic3r.ini` (Perl format, other

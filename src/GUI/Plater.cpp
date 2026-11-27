@@ -310,15 +310,19 @@ void Plater::export_gcode() {
     this->refresh_config();
     const Slic3r::Config config {this->_presets->full_config()};
     
-    // the print gets the plater's objects with their positions (as the Perl GUI)
-    this->print->clear_objects();
-    this->print->apply_config(config.config());
-    for (auto* object : this->model->objects) {
-        this->print->auto_assign_extruders(object);
-        this->print->add_model_object(object);
+    if (this->slicing) return;  // the button is disabled meanwhile
+    
+    // The job gets its own copy of the model (with the plater's positions) and its own
+    // Print: the plater can be edited while it slices.
+    auto job_model {std::make_shared<Slic3r::Model>(*this->model)};
+    auto job {std::make_shared<Slic3r::Print>()};
+    job->apply_config(config.config());
+    for (auto* object : job_model->objects) {
+        job->auto_assign_extruders(object);
+        job->add_model_object(object);
     }
     try {
-        this->print->validate();
+        job->validate();
     } catch (std::exception& e) {
         show_error(this, e.what());
         return;
@@ -327,32 +331,85 @@ void Plater::export_gcode() {
     const auto* app {dynamic_cast<App*>(wxTheApp)};
     std::string output_file {app != nullptr ? app->output_file : std::string()};
     if (output_file.empty()) {
-        const wxFileName default_file {wxString(this->print->output_filepath(""))};
+        const wxFileName default_file {wxString(job->output_filepath(""))};
         wxFileDialog dialog(this, _("Save G-code file as:"), default_file.GetPath(), default_file.GetFullName(),
             _("G-code files (*.gcode)|*.gcode;*.GCODE;*.g;*.ngc|All files|*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() != wxID_OK) return;
         output_file = dialog.GetPath().ToStdString();
     }
+    output_file = job->output_filepath(output_file);
     
-    // ponytail: slices on the GUI thread with a busy cursor; the background process
-    // (Perl GUI) is a later step
-    try {
-        wxBusyCursor busy;
-        GetFrame()->statusbar->SetStatusText(_(L"Exporting G-code…"));
-        wxYield();
-        this->print->export_gcode(output_file);
-    } catch (std::exception& e) {
-        show_error(this, e.what());
-        GetFrame()->statusbar->SetStatusText(_("Export failed"));
+    // Progress from the print's status messages. They come between slicing steps, which
+    // is also where a cancel takes effect (the exception ends the job).
+    struct Cancelled {};
+    job->status_cb = [this](int percent, const std::string& message) {
+        if (this->cancel_slicing) throw Cancelled();
+        this->CallAfter([this, percent, message]() {
+            GetFrame()->statusbar->SetStatusText(wxString::FromUTF8(message));
+            GetFrame()->statusbar->SetProgress(percent);
+        });
+    };
+    
+    this->slicing = true;
+    this->cancel_slicing = false;
+    this->btn_export_gcode->Disable();
+    auto* statusbar {GetFrame()->statusbar};
+    statusbar->SetStatusText(_(L"Exporting G-code…"));
+    statusbar->SetProgress(1);
+    statusbar->SetCancelCallback([this]() { this->cancel_slicing = true; });
+    
+    if (this->slicing_thread.joinable()) this->slicing_thread.join();  // the last one has ended
+    this->slicing_thread = std::thread([this, job, job_model, output_file]() {
+        std::string error;
+        bool cancelled {false};
+        try {
+            job->export_gcode(output_file);
+        } catch (Cancelled&) {
+            cancelled = true;
+        } catch (std::exception& e) {
+            error = e.what();
+        }
+        this->CallAfter([this, job, output_file, error, cancelled]() {
+            this->on_export_done(job, output_file, error, cancelled);
+        });
+    });
+}
+
+void Plater::on_export_done(std::shared_ptr<Slic3r::Print> job, const std::string& output_file,
+    const std::string& error, bool cancelled)
+{
+    this->slicing = false;
+    this->btn_export_gcode->Enable();
+    auto* statusbar {GetFrame()->statusbar};
+    statusbar->SetCancelCallback(nullptr);
+    statusbar->StopBusy();  // hides and resets the progress gauge
+    if (cancelled) {
+        wxRemoveFile(wxString(output_file + ".tmp"));  // the export's own temporary file
+        statusbar->SetStatusText(_("Export cancelled"));
+        return;
+    }
+    if (!error.empty()) {
+        statusbar->SetStatusText(_("Export failed"));
+        show_error(this, wxString::FromUTF8(error));
         return;
     }
     this->processed = true;
+    // the plater's print shows the last export's numbers
+    this->print->total_used_filament = job->total_used_filament;
+    this->print->estimated_print_time = job->estimated_print_time;
     wxString message;
-    message << _("G-code file exported to ") << wxString(this->print->output_filepath(output_file))
-            << wxString::Format(_(" (%.2f m filament, %s)"), this->print->total_used_filament / 1000.,
-                   wxString(GCodeTimeEstimator::format_time(this->print->estimated_print_time)));
-    GetFrame()->statusbar->SetStatusText(message);
+    message << _("G-code file exported to ") << wxString::FromUTF8(output_file)
+            << wxString::Format(_(" (%.2f m filament, %s)"), job->total_used_filament / 1000.,
+                   wxString(GCodeTimeEstimator::format_time(job->estimated_print_time)));
+    statusbar->SetStatusText(message);
     this->refresh_canvases();
+}
+
+Plater::~Plater() {
+    if (this->slicing_thread.joinable()) {
+        this->cancel_slicing = true;
+        this->slicing_thread.join();
+    }
 }
 
 std::vector<int> Plater::load_file(const std::string file, const int obj_idx_to_load) {

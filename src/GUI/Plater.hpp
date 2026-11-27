@@ -10,7 +10,9 @@
 #include <wx/menu.h>
 #include <wx/bmpcbox.h>
 
+#include <atomic>
 #include <stack>
+#include <thread>
 
 #include "libslic3r.h"
 #include "Model.hpp"
@@ -71,6 +73,7 @@ class Plater : public wxPanel
 {
 public:
     Plater(wxWindow* parent, const wxString& title);
+    ~Plater();
 
     /// User-level function called through external interface.
     /// Pops file dialog.
@@ -155,6 +158,15 @@ private:
 
     wxStaticBoxSizer* object_info_size {nullptr};
     wxButton* btn_export_gcode {nullptr};
+    
+    /// Background slicing: the export runs on this thread with its own copy of the
+    /// model and its own Print, so the plater stays usable.
+    std::thread slicing_thread;
+    std::atomic<bool> cancel_slicing {false};
+    bool slicing {false};
+    /// Back on the GUI thread when the background export has ended.
+    void on_export_done(std::shared_ptr<Slic3r::Print> job, const std::string& output_file,
+        const std::string& error, bool cancelled);
     
     /// Take the plater's own settings (bed shape, ...) from the selected presets.
     void refresh_config();
