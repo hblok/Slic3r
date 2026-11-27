@@ -103,7 +103,7 @@ Each step ends with something checked under Xvfb, like `utils/gui_smoke.sh` does
 The Perl GUI is the reference for behaviour and layout.
 
 - [x] Builds with wxWidgets 3.2 (`cmake -DEnable_GUI=ON`; one fix, 2026-11-27)
-- [ ] Starts: fix the wx 3.2 debug assertions (sizer parents); build it in CI
+- [x] Starts without wx assertions; `utils/cpp_gui_smoke.sh`; CI job `cpp-gui` (2026-11-27, CI run not seen yet)
 - [ ] Plater: load a model, 3D view, arrange, slice and export; smoke test: export equals the CLI
 - [ ] Presets: print/filament/printer editors and choosers, read and write the data directory
       (`~/.Slic3r`, same files as the Perl GUI)

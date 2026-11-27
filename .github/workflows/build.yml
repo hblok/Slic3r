@@ -32,6 +32,34 @@ jobs:
       - name: Golden G-code check
         run: src/test/golden/check.sh build/slic3r
 
+  # C++ GUI (wxWidgets): build it and check that it starts under Xvfb.
+  cpp-gui:
+    runs-on: ubuntu-latest
+    container: debian:13
+    timeout-minutes: 45
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git cmake make g++ \
+            libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev \
+            libwxgtk3.2-dev libgl-dev libglu1-mesa-dev \
+            xvfb xauth imagemagick libgl1-mesa-dri
+      - uses: actions/checkout@v7
+      - name: Build
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
+          cmake --build build-gui -j"$(nproc)" --target slic3r
+      - name: C++ GUI smoke test
+        run: utils/cpp_gui_smoke.sh build-gui/slic3r cpp-gui-smoke
+      - name: Keep the screenshot
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cpp-gui-smoke
+          path: cpp-gui-smoke/*.png
+
   # Perl application: XS module, Perl tests, and a GUI smoke test under Xvfb.
   perl:
     runs-on: ubuntu-latest

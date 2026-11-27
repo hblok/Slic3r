@@ -5,6 +5,7 @@
     #include <wx/filefn.h> 
     #include <wx/dir.h>
 #endif
+#include <iostream>
 #include <string>
 
 
@@ -23,6 +24,12 @@ namespace Slic3r { namespace GUI {
 /// Calls MainFrame and handles preset loading, etc.
 bool App::OnInit()
 {
+    // wx assertions go to stderr instead of a dialog that stops the program
+    wxSetAssertHandler([](const wxString& file, int line, const wxString& func,
+                          const wxString& cond, const wxString& msg) {
+        std::cerr << "wx assertion " << file << ":" << line << " " << func << ": "
+                  << cond << " " << msg << std::endl;
+    });
     this->SetAppName("Slic3r");
     this->notifier = std::unique_ptr<Notifier>();
     
@@ -114,27 +121,6 @@ bool App::OnInit()
     });
     */
 
-    // Handle custom version check event
-    /*
-    EVT_COMMAND($self, -1, $VERSION_CHECK_EVENT, sub {
-        my ($self, $event) = @_;
-        my ($success, $response, $manual_check) = @{$event->GetData};
-        
-        if ($success) {
-            if ($response =~ /^obsolete ?= ?([a-z0-9.-]+,)*\Q$Slic3r::VERSION\E(?:,|$)/) {
-                my $res = Wx::MessageDialog->new(undef, "A new version is available. Do you want to open the Slic3r website now?",
-                    'Update', wxYES_NO | wxCANCEL | wxYES_DEFAULT | wxICON_INFORMATION | wxICON_ERROR)->ShowModal;
-                Wx::LaunchDefaultBrowser('https://slic3r.org/') if $res == wxID_YES;
-            } else {
-                Slic3r::GUI::show_info(undef, "You're using the latest version. No updates are available.") if $manual_check;
-            }
-            $Settings->{_}{last_version_check} = time();
-            $self->save_settings;
-        } else {
-            Slic3r::GUI::show_error(undef, "Failed to check for updates. Try later.") if $manual_check;
-        }
-    });
-    */
 
     return true;
 }

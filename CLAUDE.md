@@ -13,7 +13,7 @@ before proposing a change of direction.
 |---|---|
 | `xs/src/libslic3r/` | C++ slicing core |
 | `src/` | C++ CLI (`slic3r.cpp`), CMake build, Catch2 tests (`src/test/`) |
-| `src/GUI/` | C++ GUI: unfinished skeleton, many `//TODO` stubs |
+| `src/GUI/` | C++ GUI (wxWidgets 3.2), replacing the Perl GUI: builds with `-DEnable_GUI=ON` and starts (`utils/cpp_gui_smoke.sh`); most features still stubs |
 | `lib/Slic3r/`, `slic3r.pl` | Perl GUI; slicing, support and G-code run in C++ through XS; command line use goes to the C++ CLI |
 | `xs/xsp/`, `xs/t/`, `t/` | Perl/C++ bindings and Perl tests |
 | `package/` | Linux desktop entry only; packaging not built yet |
