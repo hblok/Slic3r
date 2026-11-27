@@ -32,14 +32,14 @@ extern bool unescape_strings_cstyle(const std::string &str, std::vector<std::str
 class ConfigOptionException : public std::exception {
     public:
     const t_config_option_key opt_key;
-    ConfigOptionException(const t_config_option_key _opt_key)
-        : opt_key(_opt_key) {};
+    ConfigOptionException(const t_config_option_key _opt_key,
+            const std::string &prefix = "Exception with the option: ")
+        : opt_key(_opt_key), message(prefix + _opt_key) {};
 
-    virtual const char* what() const noexcept {
-        std::string s("Exception with the option: ");
-        s += this->opt_key;
-        return s.c_str();
-    }
+    // the message is a member: what() used to return a pointer into a destroyed local
+    virtual const char* what() const noexcept { return this->message.c_str(); }
+    private:
+    std::string message;
 };
 
 class UnknownOptionException : public ConfigOptionException {
@@ -48,14 +48,9 @@ class UnknownOptionException : public ConfigOptionException {
 };
 
 class InvalidOptionException : public ConfigOptionException {
-    using ConfigOptionException::ConfigOptionException;
-    
     public:
-    virtual const char* what() const noexcept {
-        std::string s("Invalid value for option: ");
-        s += this->opt_key;
-        return s.c_str();
-    }
+    InvalidOptionException(const t_config_option_key _opt_key)
+        : ConfigOptionException(_opt_key, "Invalid value for option: ") {};
 };
 
 /// Specialization of std::exception to indicate that an unsupported accessor was called on a config option.

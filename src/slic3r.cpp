@@ -123,7 +123,7 @@ int CLI::run(int argc, char **argv) {
                 m.merge(model);
             
             // Rearrange instances unless --dont-arrange is supplied
-            if (!this->config.getBool("dont_arrange")) {
+            if (!this->config.getBool("dont_arrange", false)) {
                 m.add_default_instances();
                 const BoundingBoxf bb{ this->full_print_config.bed_shape.values };
                 m.arrange_objects(

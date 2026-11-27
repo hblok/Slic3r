@@ -103,6 +103,7 @@ compare start_gcode_plain --start-gcode G28 --first-layer-bed-temperature 60 --b
 compare box_with_support --support-material $box
 compare scale2 --scale 2 $box
 compare duplicate_grid --duplicate-grid 2,3 $box
+compare merge --merge $box $m/cube_with_hole.stl
 }
 # Known difference, not in the list: --rotate, --rotate-x, --rotate-y. C++ rotates the
 # mesh, Perl the instance (Z) or the mesh after applying the instance (X, Y); E differs

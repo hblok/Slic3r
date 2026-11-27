@@ -127,8 +127,7 @@ motion planner for the first travel of almost every layer, because it detects a 
 object copy by the memory address of a Point (commit `30d45e10`). C++ compares
 positions.
 
-Different option names: `--center` in C++ is `--print-center` in Perl; C++ has no
-`--merge`.
+Different option names: `--center` in C++ is `--print-center` in Perl.
 
 Second sweep (scratch, not in the script yet): AMF, 3MF, multi-object AMF, layer
 G-code, top/bottom patterns, speed limits, retraction and fan options are identical.
@@ -156,8 +155,9 @@ the golden `table_support` output covers the default case.
 - G2/G3 arc fitting exists in Perl but is disabled as incomplete
   (`lib/Slic3r/GCode/ArcFitting.pm`). Pressure advance and vibration limit filters
   also exist in Perl.
-- The C++ CLI does not know `--merge` (or `-m`): it aborts with `UnknownOptionException` and an
-  unreadable message. Perl handles it.
+- ~~The C++ CLI aborts on `--merge` (or `-m`) with an unreadable `UnknownOptionException`~~
+  fixed 2026-11-27: it read `--dont-arrange` without a default, and the config
+  exceptions returned a pointer into a destroyed string from `what()`. Output equals Perl.
 - `src/test/inputs/20mmbox.stl` is an 84-byte empty STL; use `test_cli/20mmbox.stl`.
 - `src/CMakeLists.txt` has `target_compile_options(libslic3r -DBOOST_INCLUDE_NOWIDE)`
   behind a misspelled variable, so it never runs.
