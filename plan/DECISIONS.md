@@ -19,3 +19,7 @@
   PrusaSlicer and OrcaSlicer (AGPL, also wxWidgets) may be borrowed with attribution.
   Not chosen: Qt 6 (full rewrite, no reuse), a web UI over the CLI (a different program).
 - Goal: no Perl at all. The Perl GUI stays usable until the C++ one does what it does.
+- No functionality is dropped on the way away from Perl: the C++ GUI gets it all before
+  the Perl code is deleted. The USB printer controller is wanted. SLA/projector is lower
+  priority.
+- Commit and push as the work goes.

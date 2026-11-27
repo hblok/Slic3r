@@ -1,55 +1,55 @@
 #!/bin/sh
-# Build a run directory you can copy anywhere: the Perl program with its GUI, the
-# compiled XS module, the C++ CLI and the printer profiles. Not a package; the
-# runtime libraries come from Debian 13 (listed in the README written below).
+# Build a run directory you can copy anywhere: the C++ program (GUI and command line in
+# one), its icons and the printer profiles. No Perl. Not a package; the runtime
+# libraries come from Debian 13 (listed in the README written below).
 #
-# Usage: utils/make_dist.sh [output dir]   (default: build/dist, ignored by git)
-# Needs the build packages from README.md.
+# Usage: utils/make_dist.sh [output dir]   (default: build/dist-gui, ignored by git)
+# Needs the build packages from README.md plus libwxgtk3.2-dev libgl-dev libglu1-mesa-dev.
+# Files from an earlier run are overwritten; nothing is removed.
 set -eu
 root=$(cd "$(dirname "$0")/.." && pwd)
-out=$(realpath -m "${1:-$root/build/dist}")
+out=$(realpath -m "${1:-$root/build/dist-gui}")
 cd "$root"
 
-if [ -e "$out" ] && [ ! -e "$out/slic3r.pl" ]; then
+if [ -e "$out" ] && [ ! -e "$out/bin/slic3r" ]; then
     echo "$out exists and is not a Slic3r run directory; not touching it" >&2
     exit 1
 fi
 
-cmake -S src -B build -DCMAKE_BUILD_TYPE=Release >/dev/null
-cmake --build build -j"$(nproc)" --target slic3r
-# clean XS build: Module::Build ignores header changes, and stale objects with an
-# old class layout link fine and then misbehave
-(cd xs && { [ ! -e Build ] || ./Build realclean >/dev/null; } && perl Build.PL >/dev/null && ./Build >/dev/null)
+cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON >/dev/null
+cmake --build build-gui -j"$(nproc)" --target slic3r
 
-rm -rf "$out"
-mkdir -p "$out"
-cp -r slic3r.pl lib var profiles LICENSE "$out/"
-# slic3r.pl puts its own lib/ on @INC, and DynaLoader finds auto/ there
-cp -r xs/blib/lib/. "$out/lib/"
-cp -r xs/blib/arch/auto "$out/lib/"
-cp build/slic3r "$out/slic3r-cli"
-strip --strip-unneeded "$out/slic3r-cli" "$out/lib/auto/Slic3r/XS/XS.so"  # 118 MB -> ~15 MB
+mkdir -p "$out/bin"
+cp build-gui/slic3r "$out/bin/slic3r"
+strip --strip-unneeded "$out/bin/slic3r"
+# the program looks for its icons in ../var, seen from the directory it is in
+cp -r var profiles LICENSE "$out/"
 
-cat >"$out/README.md" <<EOF
+cat >"$out/slic3r" <<'EOT'
+#!/bin/sh
+# without files or options this opens the GUI; --help lists the command line
+exec "$(dirname "$(readlink -f "$0")")/bin/slic3r" "$@"
+EOT
+chmod +x "$out/slic3r"
+
+cat >"$out/README.md" <<EOF2
 # Slic3r (hblok fork), run directory
 
 Built $(date -u +%Y-%m-%d) from commit $(git rev-parse --short HEAD 2>/dev/null || echo unknown).
 
-    ./slic3r.pl              # GUI
-    ./slic3r.pl --help       # Perl command line
-    ./slic3r-cli --help      # C++ command line
+    ./slic3r                      # GUI
+    ./slic3r model.stl            # GUI with a model on the plate
+    ./slic3r -g model.stl         # slice on the command line
+    ./slic3r --help
 
-Ender 5 Pro profiles are in \`profiles/\` (File > Load Config in the GUI).
-Settings are stored in ~/.Slic3r.
+Settings and presets are in ~/.Slic3r (shared with the Perl GUI). For the Ender-5 Pro
+presets: cp -r profiles/print profiles/filament profiles/printer ~/.Slic3r/
 
 Runtime packages (Debian 13):
 
-    sudo apt install perl libmoo-perl libencode-locale-perl \\
-      libio-stringy-perl libclass-xsaccessor-perl libclass-accessor-perl libwww-perl \\
-      libwx-perl libwx-glcanvas-perl libopengl-perl \\
+    sudo apt install libwxgtk3.2-1t64 libwxgtk-gl3.2-1t64 libgl1 libglu1-mesa \\
       libboost-thread1.83.0 libboost-filesystem1.83.0
 
-The compiled parts are tied to Debian 13's Perl (5.40) and Boost (1.83). On another
-system, run utils/make_dist.sh there instead of copying this directory.
-EOF
+If the 3D views stay empty on Wayland, try: GDK_BACKEND=x11 ./slic3r
+EOF2
 echo "run directory: $out"

@@ -66,8 +66,8 @@ prove -j$(nproc) t/
 utils/gui_smoke.sh /tmp/gui-smoke   # needs xvfb xdotool imagemagick
 ```
 
-`utils/make_dist.sh` builds a copyable run directory (GUI, XS module, C++ CLI,
-profiles) in `build/dist`; build it on Debian 13 (the chroot), it is tied to its Perl and Boost.
+`utils/make_dist.sh` builds a copyable run directory of the C++ program (no Perl) in
+`build/dist-gui`; build it on Debian 13 (the chroot), it is tied to its wxWidgets and Boost.
 
 The smoke test drives the GUI with clicks at fixed window coordinates (no window
 manager under Xvfb). A layout change breaks it; check its screenshots, re-measure.
@@ -80,5 +80,5 @@ manager under Xvfb). A layout change breaks it; check its screenshots, re-measur
 - AI use is disclosed (README). Keep the `Co-Authored-By` trailer on AI-assisted commits.
 - No upstreaming planned; upstream compatibility is not a constraint.
 - Public repo: no secrets, personal paths or personal data in commits.
-- Do not push, tag or release unless asked.
+- Commit each verified step and push it. Do not tag or release unless asked.
 - Verify G-code changes by slicing and comparing output, not only by compiling.

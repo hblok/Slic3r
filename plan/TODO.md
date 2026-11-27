@@ -19,8 +19,9 @@ Missing, compared with the Perl GUI:
       transformations, added parts)
 - [ ] Preview: colour by extruder, greyed overlapping layers, camera shared with the 3D
       plater
-- [ ] Decide before porting: printer controller (USB), SLA/projector. The Controller and
-      DLP/SLA tabs are empty
+- [ ] Printer controller (USB); the Controller tab is empty
+- [ ] SLA/projector (lower priority); the DLP/SLA tab is empty
+- [ ] Prompt about unsaved preset changes when closing (they are lost silently now)
 - [ ] Try the "Add…" dialog and drag and drop
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` bindings, `t/`; packaging dependencies
 
