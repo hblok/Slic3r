@@ -137,8 +137,13 @@ Open:
   `--duplicate-grid` with the wrong option type. `--scale` and `--duplicate-grid` are
   identical to Perl; rotations differ in the last digit of E (C++ rotates the mesh,
   Perl the instance) and are in the golden check instead.
-- Differ from Perl: `--adaptive-slicing`, `--vibration-limit`, `--pressure-advance`
-  (the last two are filters Perl implements itself).
+- ~~`--adaptive-slicing` differs from Perl~~ fixed 2026-11-27: `SimplePrint` aligned
+  objects to z = 0 with a bounding box that is empty before instances exist, so a
+  model not already on z = 0 was not moved. Slicing aligns its own copy, so only
+  adaptive slicing (it reads the model meshes) saw it. Same bug in `--cut` (cut height
+  counted from the mesh origin, not the bed); both now equal Perl.
+- Differ from Perl: `--vibration-limit`, `--pressure-advance` (filters Perl
+  implements itself).
 - Not compared yet: several extruders (Perl wants repeated options, e.g.
   `--temperature 200 --temperature 210`), modifier volumes, GUI-only steps.
   `--gcode-arcs` is refused by Perl as incomplete.

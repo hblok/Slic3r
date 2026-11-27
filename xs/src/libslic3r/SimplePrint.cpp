@@ -13,7 +13,7 @@ SimplePrint::set_model(const Model &model) {
     
     // align to z = 0
     for (ModelObject* o : this->_model.objects)
-        o->translate(0, 0, -o->bounding_box().min.z);
+        o->translate(0, 0, -o->raw_bounding_box().min.z);
     
     // make sure all objects have at least one defined instance
     if (this->_model.add_default_instances() && this->arrange) {

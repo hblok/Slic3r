@@ -104,6 +104,9 @@ compare box_with_support --support-material $box
 compare scale2 --scale 2 $box
 compare duplicate_grid --duplicate-grid 2,3 $box
 compare merge --merge $box $m/cube_with_hole.stl
+compare adaptive_sloping_hole --adaptive-slicing $m/sloping_hole.stl
+compare adaptive_pyramid --adaptive-slicing --adaptive-slicing-quality 30 $m/pyramid.stl
+compare adaptive_table --adaptive-slicing --support-material table.stl
 }
 # Known difference, not in the list: --rotate, --rotate-x, --rotate-y. C++ rotates the
 # mesh, Perl the instance (Z) or the mesh after applying the instance (X, Y); E differs

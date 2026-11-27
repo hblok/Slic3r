@@ -209,6 +209,7 @@ int CLI::run(int argc, char **argv) {
             std::vector<Model> new_models;
             for (auto &model : this->models) {
                 model.repair();
+                model.add_default_instances();  // bounding_box() is empty without them (as Perl)
                 model.translate(0, 0, -model.bounding_box().min.z);  // align to z = 0
                 
                 Model out;
