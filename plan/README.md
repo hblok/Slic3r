@@ -104,7 +104,11 @@ The Perl GUI is the reference for behaviour and layout.
 
 - [x] Builds with wxWidgets 3.2 (`cmake -DEnable_GUI=ON`; one fix, 2026-11-27)
 - [x] Starts without wx assertions; `utils/cpp_gui_smoke.sh`; CI job `cpp-gui` (2026-11-27, CI run not seen yet)
-- [ ] Plater: load a model, 3D view, arrange, slice and export; smoke test: export equals the CLI
+- [x] Plater: models from the command line, 2D and 3D views (fit to objects), object info,
+      more/fewer/rotate/arrange/delete, "Export G-code…" with the selected presets;
+      `cpp_gui_smoke.sh`: export equals the CLI (2026-11-27). Still to do: slicing in the
+      background with progress (it runs on the GUI thread), the "Add…" dialog untested
+      under Xvfb, export STL/AMF/3MF, undo
 - [ ] Presets: print/filament/printer editors and choosers, read and write the data directory
       (`~/.Slic3r`, same files as the Perl GUI)
 - [ ] Preview: layers and toolpaths (3D and 2D)
