@@ -17,8 +17,8 @@ public:
     const wxColour COLOR_CUTPLANE() const { return wxColour(255*0.8, 255*0.8, 255*0.8, 255*0.5); };
     const wxColour COLOR_PARTS() const { return wxColour(255, 255*0.95, 255*0.2); };        //<Perimeter color
     const wxColour COLOR_INFILL() const { return wxColour(255, 255*0.45, 255*0.45); };
-    const wxColour COLOR_SUPPORT() const { return wxColour(255*0.5, 1, 255*0.5); };
-    const wxColour COLOR_UNKNOWN() const { return wxColour(255*0.5, 255*0.5, 1); };
+    const wxColour COLOR_SUPPORT() const { return wxColour(255*0.5, 255, 255*0.5); };
+    const wxColour COLOR_UNKNOWN() const { return wxColour(255*0.5, 255*0.5, 255); };
     const wxColour BED_COLOR() const { return wxColour(255, 255, 255); };
     const wxColour BED_GRID() const { return wxColour(230, 230, 230); };
     const wxColour BED_SELECTED() const { return wxColour(255, 166, 128); };

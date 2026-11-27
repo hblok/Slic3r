@@ -64,6 +64,7 @@ protected:
     void set_bed_shape(Points _bed_shape);
     
     std::vector<Volume> volumes;
+    BoundingBoxf3 content_bb;    ///< drawn by a subclass; the view fits it and the volumes
     Volume load_object(ModelVolume &mv, ModelInstance &mi);
     
     // Virtual methods to override

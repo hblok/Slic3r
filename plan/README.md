@@ -123,7 +123,12 @@ The Perl GUI is the reference for behaviour and layout.
       other; smoke-tested (edit, export equals the CLI, save as). Open: the Perl GUI's
       hand-made page layouts and the rules that enable/disable dependent options,
       several extruders, the wizard, preset compatibility
-- [ ] Preview: layers and toolpaths (3D and 2D)
+- [x] Preview: "Preview" (3D) and "Toolpaths" (2D, wheel zoom, drag) tabs with a layer
+      slider (2026-11-27). Opening one slices in the background; a change of the plate or
+      the settings slices again. `cpp_gui_smoke.sh` counts the drawn pixels. The 3D canvas
+      had no depth buffer (what was drawn last covered the rest); fixed. Left out: colour by
+      extruder, greying thicker layers that overlap the shown one (2D), a camera shared
+      with the 3D plater. An export waits until a preview has finished slicing
 - [ ] The rest of what the Perl GUI has and is worth keeping: object settings and
       modifiers, cut, rotate to face, wizard, preferences. Printer controller (USB) and
       SLA/projector: decide before porting

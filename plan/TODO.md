@@ -5,7 +5,8 @@ Feature candidates (not scheduled): [features.md](features.md).
 
 ## C++ GUI
 
-- [ ] Preview: layers and toolpaths (3D and 2D) — next
+- [ ] Preview extras: colour by extruder, greyed overlapping layers (2D), camera shared
+      with the 3D plater
 - [ ] Preset editors: the Perl GUI's page layouts, rules that enable/disable dependent
       options, several extruders, wizard, preset compatibility
 - [ ] Plater: background slicing on changes (`background_processing`), export
@@ -30,6 +31,8 @@ Feature candidates (not scheduled): [features.md](features.md).
 
 - [ ] `sequential_print_priority` is ignored: the sort in
       `xs/src/libslic3r/PrintGCode.cpp` compares `a` with itself
+- [ ] With `-DEnable_GUI=ON`, building every target fails: `slic3r_test` does not find
+      `ColorScheme/ColorSchemeBase.hpp` (CI builds only the `slic3r` target there)
 
 ## Repo and release
 

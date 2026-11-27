@@ -5,7 +5,9 @@
 # directory (defaults), and with the Ender 5 Pro presets selected through slic3r.ini
 # (the Perl GUI's settings file). Then the preset editor: change the layer height in the
 # Print Settings tab, export (must equal the CLI with that change), and save the preset
-# under a new name. The Perl GUI has utils/gui_smoke.sh.
+# under a new name. Then the preview: both toolpath tabs slice and draw (counted by
+# colour), the slider cuts layers off, an export afterwards still equals the CLI, and the
+# preview empties with the plate. The Perl GUI has utils/gui_smoke.sh.
 #
 # There is no window manager, so the click goes to fixed coordinates inside the
 # default-size window; re-measure them if the layout changes (see the screenshots).
@@ -91,6 +93,37 @@ save_as_my_print() {
     xdotool type My-Print; xdotool key Return; sleep 3
     import -window root "$out/editor.saved.png"
 }
+# the preview: the canvas left of the slider, pixels that match an ImageMagick condition
+pixels() { # name condition
+    import -window root "$out/$1.png"
+    # (ImageMagick 7.1.1 prints a line "list" before the number)
+    convert "$out/$1.png" -crop 335x300+3+123 +repage -fx "($2)?1:0" -format '%[fx:round(mean*w*h)]' info: | tail -n 1
+}
+yellow='r-b>0.25 && g-b>0.25'   # perimeters in the 3D preview (lit)
+red='r-g>0.3 && r-b>0.3'        # perimeters in the 2D toolpaths
+check_preview() {
+    click 171 447; sleep 5                                # "Preview" tab: slices
+    all=$(pixels preview.3d "$yellow")
+    [ "$all" -gt 500 ] || fail "preview: no toolpaths in 3D ($all pixels)"
+    click 378 350                                         # slider: down to the table's post
+    low=$(pixels preview.3d-low "$yellow")
+    [ "$low" -lt $((all / 2)) ] || fail "preview: the slider changes nothing ($all, then $low pixels)"
+    click 260 447                                         # "Toolpaths" tab
+    flat=$(pixels preview.2d "$red")
+    [ "$flat" -gt 500 ] || fail "preview: no 2D toolpaths ($flat pixels)"
+    echo "ok   preview: 3D ($all pixels, $low at a low layer) and 2D ($flat pixels)"
+}
+check_preview_empties() {
+    click 227 88; sleep 1                                 # "Delete All", on the Toolpaths tab
+    left=$(pixels preview.deleted "$red")
+    [ "$left" -eq 0 ] || fail "preview: still drawn after Delete All ($left pixels)"
+    echo "ok   preview: empty after Delete All"
+}
+cp -r "$out/data-ender" "$out/data-preview"
+edit=check_preview after=check_preview_empties run preview "$out/data-preview" \
+    --load "$p/printer/Ender-5-Pro.ini" --load "$p/filament/Ender-5-Pro-PLA.ini" \
+    --load "$p/print/Ender-5-Pro-0.20mm.ini"
+
 cp -r "$out/data-ender" "$out/data-editor"
 edit=edit_layer_height after=save_as_my_print run editor "$out/data-editor" \
     --load "$p/printer/Ender-5-Pro.ini" --load "$p/filament/Ender-5-Pro-PLA.ini" \

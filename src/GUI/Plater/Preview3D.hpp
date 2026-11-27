@@ -1,43 +1,43 @@
 #ifndef PREVIEW3D_HPP
 #define PREVIEW3D_HPP
-#include <wx/wxprec.h>
-#ifndef WX_PRECOMP
-    #include <wx/wx.h>
-#endif
 
-#include "PlaterObject.hpp"
+#include <array>
+
+#include "PreviewPanel.hpp"
 #include "Scene3D.hpp"
-#include "Model.hpp"
-#include "Config.hpp"
-#include "Print.hpp"
 
 namespace Slic3r { namespace GUI {
 
+/// The toolpaths as solid extrusions, drawn up to a chosen level.
 class PreviewScene3D : public Scene3D {
 public:
-    PreviewScene3D(wxWindow* parent, const wxSize& size) : Scene3D(parent,size){}
-    // TODO: load_print_toolpaths(Print);
-    // TODO: load_print_object_toolpaths(PrintObject);
-    void resetObjects(){volumes.clear();}
+    explicit PreviewScene3D(wxWindow* parent) : Scene3D(parent, wxDefaultSize) {}
+
+    /// All extrusions of one colour, lowest level first.
+    struct Toolpaths {
+        GLVertexArray quads, triangles;
+        /// per level: the number of floats up to and including that level
+        std::vector<size_t> quads_end, triangles_end;
+    };
+    std::array<Toolpaths, 3> toolpaths;  ///< perimeters (and skirt), infill, support
+
+    /// Takes the bed from the print and fits the view to it; call after filling toolpaths.
+    void loaded(const Slic3r::Print* print, double height);
+    void show(size_t level);
+protected:
+    void after_render() override;
+private:
+    size_t shown_level {0};
 };
 
-class Preview3D : public wxPanel {
+class Preview3D : public PreviewPanel {
 public:
-    void reload_print();
-    Preview3D(wxWindow* parent, const wxSize& size, std::shared_ptr<Slic3r::Print> _print, std::vector<PlaterObject>& _objects, std::shared_ptr<Model> _model, std::shared_ptr<Config> _config);
-    void enabled(bool enable = true) {}
+    explicit Preview3D(wxWindow* parent);
+protected:
+    void load() override;
+    void show_level(size_t level) override { canvas->show(level); }
 private:
-    void load_print();
-    void set_z(float z);
-    bool loaded = false, _enabled = false;
-    std::vector<float> layers_z;
-    std::shared_ptr<Slic3r::Print> print;
-    PreviewScene3D canvas;
-    wxSlider* slider;
-    wxStaticText* z_label;
-    std::vector<PlaterObject>& objects; //< reference to parent vector
-    std::shared_ptr<Slic3r::Model> model;
-    std::shared_ptr<Slic3r::Config> config;
+    PreviewScene3D* canvas;
 };
 
 } } // Namespace Slic3r::GUI

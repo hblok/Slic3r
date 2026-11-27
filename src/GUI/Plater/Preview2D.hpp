@@ -1,27 +1,25 @@
 #ifndef PREVIEW2D_HPP
 #define PREVIEW2D_HPP
-#include <wx/wxprec.h>
-#ifndef WX_PRECOMP
-    #include <wx/wx.h>
-#endif
 
-#include "Model.hpp"
-#include "Config.hpp"
+#include "PreviewPanel.hpp"
 
 namespace Slic3r { namespace GUI {
 
-class Preview2D : public wxPanel {
+/// One level's toolpaths seen from above, as thin lines over the slices. The wheel zooms,
+/// dragging moves, a double click fits the print again.
+class Preview2D : public PreviewPanel {
 public:
-    void reload_print() {};
-    Preview2D(wxWindow* parent, const wxSize& size, std::vector<PlaterObject>& _objects, std::shared_ptr<Model> _model, std::shared_ptr<Config> _config) :
-    wxPanel(parent, wxID_ANY, wxDefaultPosition, size, wxTAB_TRAVERSAL), objects(_objects), model(_model), config(_config)
-    {}
-
-    void enabled(bool enable = true) {}
+    explicit Preview2D(wxWindow* parent);
+protected:
+    void load() override { canvas->Refresh(); }
+    void show_level(size_t level) override;
 private:
-    std::vector<PlaterObject>& objects; //< reference to parent vector
-    std::shared_ptr<Slic3r::Model> model;
-    std::shared_ptr<Slic3r::Config> config;
+    wxPanel* canvas;
+    size_t level {0};
+    double zoom {1};
+    wxPoint2DDouble pan {0, 0};  ///< pixels from the canvas center to the print's center
+    wxPoint drag_from;
+    void paint();
 };
 
 } } // Namespace Slic3r::GUI

@@ -80,6 +80,7 @@ void Plate3D::mouse_move(wxMouseEvent &e){
 }
 
 void Plate3D::update(){
+    set_bed_shape(Slic3r::Polygon::new_scale(config->get<ConfigOptionPoints>("bed_shape").values).points);
     volumes.clear();
     for(const PlaterObject &object: objects){
         const auto &modelobj = model->objects.at(&object - objects.data());

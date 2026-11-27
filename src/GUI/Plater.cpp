@@ -58,6 +58,7 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
         auto& editors {this->GetFrame()->preset_editor_tabs};
         if (editors.count(group) > 0) editors[group]->select_preset_by_name(name, true);
         this->refresh_config();
+        this->invalidate_slices();
     };
 
     // Initialize handlers for canvases
@@ -105,14 +106,20 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     canvas3D->on_select_object = std::function<void (ObjIdx obj_idx)>(on_select_object);
     canvas3D->on_instances_moved = std::function<void ()>(on_instances_moved);
     
-    preview3D = new Preview3D(preview_notebook, wxDefaultSize, print, objects, model, config);
+    preview3D = new Preview3D(preview_notebook);
     preview_notebook->AddPage(preview3D, _("Preview"));
 
-    preview2D = new Preview2D(preview_notebook, wxDefaultSize, objects, model, config);
+    preview2D = new Preview2D(preview_notebook);
     preview_notebook->AddPage(preview2D, _("Toolpaths"));
 
     previewDLP = new PreviewDLP(preview_notebook, wxDefaultSize, objects, model, config);
     preview_notebook->AddPage(previewDLP, _("DLP/SLA"));
+
+    preview_notebook->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, [this](wxBookCtrlEvent& e) {
+        this->failed_revision = static_cast<unsigned long>(-1);  // opening the tab tries again
+        this->CallAfter([this]() { this->update_preview(); });
+        e.Skip();
+    });
 
     /*
     # Initialize 2D preview canvas
@@ -300,6 +307,7 @@ void Plater::refresh_config() {
         if (full->has(key)) keys.push_back(key);
     this->config->apply(full, keys);
     this->canvas2D->update_bed_size();
+    this->canvas3D->update();
 }
 
 void Plater::load_files(const std::vector<std::string>& files) {
@@ -308,107 +316,152 @@ void Plater::load_files(const std::vector<std::string>& files) {
     this->on_model_change();
 }
 
+std::shared_ptr<SliceJob> Plater::make_job() {
+    this->refresh_config();
+    const Slic3r::Config config {this->_presets->full_config()};
+    auto job {std::make_shared<SliceJob>(*this->model)};
+    job->revision = this->revision;
+    job->print.apply_config(config.config());
+    for (auto* object : job->model.objects) {
+        job->print.auto_assign_extruders(object);
+        job->print.add_model_object(object);
+    }
+    job->print.validate();
+    return job;
+}
+
 void Plater::export_gcode() {
     if (this->objects.empty()) {
         GetFrame()->statusbar->SetStatusText(_("Nothing to export."));
         return;
     }
-    this->refresh_config();
-    const Slic3r::Config config {this->_presets->full_config()};
-    
-    if (this->slicing) return;  // the button is disabled meanwhile
-    
-    // The job gets its own copy of the model (with the plater's positions) and its own
-    // Print: the plater can be edited while it slices.
-    auto job_model {std::make_shared<Slic3r::Model>(*this->model)};
-    auto job {std::make_shared<Slic3r::Print>()};
-    job->apply_config(config.config());
-    for (auto* object : job_model->objects) {
-        job->auto_assign_extruders(object);
-        job->add_model_object(object);
-    }
+    // ponytail: an export waits until a running preview has sliced (the button is disabled)
+    if (this->running != nullptr) return;
+
+    std::shared_ptr<SliceJob> job;
     try {
-        job->validate();
+        job = this->make_job();
     } catch (std::exception& e) {
         show_error(this, e.what());
         return;
     }
-    
+
     const auto* app {dynamic_cast<App*>(wxTheApp)};
     std::string output_file {app != nullptr ? app->output_file : std::string()};
     if (output_file.empty()) {
-        const wxFileName default_file {wxString(job->output_filepath(""))};
+        const wxFileName default_file {wxString(job->print.output_filepath(""))};
         wxFileDialog dialog(this, _("Save G-code file as:"), default_file.GetPath(), default_file.GetFullName(),
             _("G-code files (*.gcode)|*.gcode;*.GCODE;*.g;*.ngc|All files|*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() != wxID_OK) return;
         output_file = dialog.GetPath().ToStdString();
     }
-    output_file = job->output_filepath(output_file);
-    
+    job->output_file = job->print.output_filepath(output_file);
+    this->run_job(job);
+}
+
+void Plater::run_job(std::shared_ptr<SliceJob> job) {
     // Progress from the print's status messages. They come between slicing steps, which
     // is also where a cancel takes effect (the exception ends the job).
     struct Cancelled {};
-    job->status_cb = [this](int percent, const std::string& message) {
+    job->print.status_cb = [this](int percent, const std::string& message) {
         if (this->cancel_slicing) throw Cancelled();
         this->CallAfter([this, percent, message]() {
             GetFrame()->statusbar->SetStatusText(wxString::FromUTF8(message));
             GetFrame()->statusbar->SetProgress(percent);
         });
     };
-    
-    this->slicing = true;
+
+    if (this->slicing_thread.joinable()) this->slicing_thread.join();  // the last one has ended
+    this->running = job;
     this->cancel_slicing = false;
     this->btn_export_gcode->Disable();
     auto* statusbar {GetFrame()->statusbar};
-    statusbar->SetStatusText(_(L"Exporting G-code…"));
+    statusbar->SetStatusText(job->output_file.empty() ? _(L"Slicing…") : _(L"Exporting G-code…"));
     statusbar->SetProgress(1);
     statusbar->SetCancelCallback([this]() { this->cancel_slicing = true; });
-    
-    if (this->slicing_thread.joinable()) this->slicing_thread.join();  // the last one has ended
-    this->slicing_thread = std::thread([this, job, job_model, output_file]() {
+
+    this->slicing_thread = std::thread([this, job]() {
         std::string error;
         bool cancelled {false};
         try {
-            job->export_gcode(output_file);
+            if (job->output_file.empty())
+                job->print.process();
+            else
+                job->print.export_gcode(job->output_file);
         } catch (Cancelled&) {
             cancelled = true;
         } catch (std::exception& e) {
             error = e.what();
         }
-        this->CallAfter([this, job, output_file, error, cancelled]() {
-            this->on_export_done(job, output_file, error, cancelled);
+        this->CallAfter([this, job, error, cancelled]() {
+            this->on_job_done(job, error, cancelled);
         });
     });
 }
 
-void Plater::on_export_done(std::shared_ptr<Slic3r::Print> job, const std::string& output_file,
-    const std::string& error, bool cancelled)
-{
-    this->slicing = false;
+void Plater::on_job_done(std::shared_ptr<SliceJob> job, const std::string& error, bool cancelled) {
+    this->running.reset();
     this->btn_export_gcode->Enable();
     auto* statusbar {GetFrame()->statusbar};
     statusbar->SetCancelCallback(nullptr);
     statusbar->StopBusy();  // hides and resets the progress gauge
+
+    const bool exporting {!job->output_file.empty()};
+    const bool current {job->revision == this->revision};
+    // a cancel by the user or an error: do not start over by itself
+    if ((cancelled || !error.empty()) && current) this->failed_revision = job->revision;
+
     if (cancelled) {
-        wxRemoveFile(wxString(output_file + ".tmp"));  // the export's own temporary file
-        statusbar->SetStatusText(_("Export cancelled"));
-        return;
+        if (exporting) wxRemoveFile(wxString(job->output_file + ".tmp"));  // the export's own temporary file
+        statusbar->SetStatusText(exporting ? _("Export cancelled") : _("Slicing cancelled"));
+    } else if (!error.empty()) {
+        statusbar->SetStatusText(exporting ? _("Export failed") : wxString::FromUTF8(error));
+        if (exporting) show_error(this, wxString::FromUTF8(error));
+    } else {
+        wxString message {_("Sliced")};
+        if (exporting) {
+            this->processed = true;
+            // the plater's print shows the last export's numbers
+            this->print->total_used_filament = job->print.total_used_filament;
+            this->print->estimated_print_time = job->print.estimated_print_time;
+            message.clear();
+            message << _("G-code file exported to ") << wxString::FromUTF8(job->output_file)
+                    << wxString::Format(_(" (%.2f m filament, %s)"), job->print.total_used_filament / 1000.,
+                           wxString(GCodeTimeEstimator::format_time(job->print.estimated_print_time)));
+        }
+        statusbar->SetStatusText(message);
+        if (current) {
+            this->sliced = job;
+            const std::shared_ptr<Slic3r::Print> result {job, &job->print};  // keeps the whole job
+            this->preview3D->set_print(result);
+            this->preview2D->set_print(result);
+        }
     }
-    if (!error.empty()) {
-        statusbar->SetStatusText(_("Export failed"));
-        show_error(this, wxString::FromUTF8(error));
-        return;
+    this->update_preview();
+}
+
+void Plater::invalidate_slices() {
+    ++this->revision;
+    this->sliced.reset();
+    this->preview3D->set_print(nullptr);
+    this->preview2D->set_print(nullptr);
+    if (this->running != nullptr && this->running->output_file.empty())
+        this->cancel_slicing = true;  // on_job_done starts the new one
+    else
+        this->update_preview();
+}
+
+void Plater::update_preview() {
+    const wxWindow* page {this->preview_notebook->GetCurrentPage()};
+    if (page != this->preview3D && page != this->preview2D) return;
+    if (this->running != nullptr || this->sliced != nullptr || this->objects.empty()
+        || this->revision == this->failed_revision) return;
+    try {
+        this->run_job(this->make_job());
+    } catch (std::exception& e) {
+        this->failed_revision = this->revision;
+        GetFrame()->statusbar->SetStatusText(wxString::FromUTF8(e.what()));
     }
-    this->processed = true;
-    // the plater's print shows the last export's numbers
-    this->print->total_used_filament = job->total_used_filament;
-    this->print->estimated_print_time = job->estimated_print_time;
-    wxString message;
-    message << _("G-code file exported to ") << wxString::FromUTF8(output_file)
-            << wxString::Format(_(" (%.2f m filament, %s)"), job->total_used_filament / 1000.,
-                   wxString(GCodeTimeEstimator::format_time(job->estimated_print_time)));
-    statusbar->SetStatusText(message);
-    this->refresh_canvases();
 }
 
 Plater::~Plater() {
@@ -615,11 +668,6 @@ void Plater::refresh_canvases() {
         this->canvas2D->Refresh();
     if (this->canvas3D != nullptr)
         this->canvas3D->update();
-    if (this->preview3D != nullptr)
-        this->preview3D->reload_print();
-    if (this->preview2D != nullptr)
-        this->preview2D->reload_print();
-
     if (this->previewDLP != nullptr)
         this->previewDLP->reload_print();
 
@@ -672,6 +720,7 @@ void Plater::on_model_change(bool force_autocenter) {
     }
     this->object_list_changed();
     this->refresh_canvases();
+    this->invalidate_slices();
 }
 
 ObjRef Plater::selected_object() {
@@ -823,16 +872,6 @@ void Plater::remove(int obj_idx, bool dont_push) {
     
     // TODO: $self->stop_background_process;
     
-    // Prevent toolpaths preview from rendering while we modify the Print object
-    if (this->preview2D != nullptr) 
-        this->preview2D->enabled(false);
-
-    if (this->preview3D != nullptr) 
-        this->preview3D->enabled(false);
-
-    if (this->previewDLP != nullptr) 
-        this->previewDLP->enabled(false);
-    
     ObjRef obj_ref;
     // if no object index is supplied or an invalid one is supplied, remove the selected one
     if (obj_idx < 0 || obj_idx >= this->objects.size()) {
@@ -883,16 +922,6 @@ void Plater::remove(int obj_idx, bool dont_push) {
 void Plater::reset(bool dont_push) {
     // TODO: $self->stop_background_process;
     
-    // Prevent toolpaths preview from rendering while we modify the Print object
-    if (this->preview2D != nullptr) 
-        this->preview2D->enabled(false);
-
-    if (this->preview3D != nullptr) 
-        this->preview3D->enabled(false);
-
-    if (this->previewDLP != nullptr) 
-        this->previewDLP->enabled(false);
-
     if (!dont_push) {
         Slic3r::Model current_model {*(this->model)};
         std::vector<int> tmp_ids;
@@ -1248,8 +1277,12 @@ void Plater::show_preset_editor(preset_t group, unsigned int idx) {
         for (auto& tab : frame->preset_editor_tabs) tab.second->reload_list();
         this->_presets->load();
         if (!name.IsEmpty()) this->_presets->select_preset_by_name(name, type, 0);
+        this->invalidate_slices();
     };
-    editor->on_value_change = [this](std::string) { this->refresh_config(); };
+    editor->on_value_change = [this](std::string) {
+        this->refresh_config();
+        this->invalidate_slices();
+    };
     editors[group] = editor;
     tabs->AddPage(editor, editor->title());
 }

@@ -1,145 +1,82 @@
 #include "Preview3D.hpp"
-#include <wx/event.h>
+#include "Layer.hpp"
+#include "misc_ui.hpp"
 
 namespace Slic3r { namespace GUI {
 
-Preview3D::Preview3D(wxWindow* parent, const wxSize& size, std::shared_ptr<Slic3r::Print> _print, std::vector<PlaterObject>& _objects, std::shared_ptr<Model> _model, std::shared_ptr<Config> _config) :
-    wxPanel(parent, wxID_ANY, wxDefaultPosition, size, wxTAB_TRAVERSAL), print(_print), objects(_objects), model(_model), config(_config), canvas(this,size)
-{
-
-    // init GUI elements
-    slider = new wxSlider(
-        this, -1,
-        0,                              // default
-        0,                              // min
-        // we set max to a bogus non-zero value because the MSW implementation of wxSlider
-        // will skip drawing the slider if max <= min:
-        1,                              // max
-        wxDefaultPosition,
-        wxDefaultSize,
-        wxVERTICAL | wxSL_INVERSE
-    );
-    
-    this->z_label = new wxStaticText(this, -1, "", wxDefaultPosition,
-        wxSize(40,-1), wxALIGN_CENTRE_HORIZONTAL);
-    //z_label->SetFont(Slic3r::GUI::small_font);
-    
-    auto* vsizer = new wxBoxSizer(wxVERTICAL);
-    vsizer->Add(slider, 1, wxALL | wxEXPAND, 3);
-    vsizer->Add(z_label, 0, wxALL | wxEXPAND, 3);
-    
-    auto* sizer = new wxBoxSizer(wxHORIZONTAL);
-    sizer->Add(&canvas, 1, wxALL | wxEXPAND, 0);
-    sizer->Add(vsizer, 0, wxTOP | wxBOTTOM | wxEXPAND, 5);
-
-    this->Bind(wxEVT_SLIDER, [this](wxCommandEvent &e){ 
-        //$self->set_z($self->{layers_z}[$slider->GetValue])
-        //  if $self->enabled;
-    }); 
-    this->Bind(wxEVT_CHAR, [this](wxKeyEvent &e) {
-        /*my ($s, $event) = @_;
-        
-        my $key = $event->GetKeyCode;
-        if ($key == 85 || $key == 315) {
-            $slider->SetValue($slider->GetValue + 1);
-            $self->set_z($self->{layers_z}[$slider->GetValue]);
-        } elsif ($key == 68 || $key == 317) {
-            $slider->SetValue($slider->GetValue - 1);
-            $self->set_z($self->{layers_z}[$slider->GetValue]);
-        } else {
-            $event->Skip;
-        }*/
-    });
-    
-    SetSizer(sizer);
-    SetMinSize(GetSize());
-    sizer->SetSizeHints(this);
-    
-    // init canvas
-    reload_print();
-    
-}
-void Preview3D::reload_print(){
-   
-    canvas.resetObjects();
-    loaded = false;
-    load_print();
-}
-
-void Preview3D::load_print() {
-    if(loaded) return;
-    
-    // we require that there's at least one object and the posSlice step
-    // is performed on all of them (this ensures that _shifted_copies was
-    // populated and we know the number of layers)
-    if(!print->step_done(posSlice)) {
-        _enabled = false;
-        slider->Hide();
-        canvas.Refresh();  // clears canvas
-        return;
+void PreviewScene3D::loaded(const Slic3r::Print* print, double height) {
+    shown_level = 0;
+    content_bb = BoundingBoxf3();
+    if (print != nullptr) {
+        set_bed_shape(Slic3r::Polygon::new_scale(print->config.bed_shape.values).points);
+        const BoundingBox bb {print->total_bounding_box()};
+        content_bb.merge(Pointf3(unscale(bb.min.x), unscale(bb.min.y), 0));
+        content_bb.merge(Pointf3(unscale(bb.max.x), unscale(bb.max.y), height));
     }
-    
-    size_t z_idx = 0;
-    {
-        layers_z.clear();
-        // Load all objects on the plater + support material
-        for(auto* object : print->objects) {
-            for(auto layer : object->layers){
-                layers_z.push_back(layer->print_z);
+    dirty = true;  // fit the view again (unless the user moved it)
+}
+
+void PreviewScene3D::show(size_t level) {
+    shown_level = level;
+    Refresh();
+}
+
+void PreviewScene3D::after_render() {
+    const wxColour colours[] {ui_settings->color->COLOR_PARTS(), ui_settings->color->COLOR_INFILL(),
+        ui_settings->color->COLOR_SUPPORT()};
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glCullFace(GL_BACK);
+    for (size_t i = 0; i < toolpaths.size(); ++i) {
+        const auto& group {toolpaths[i]};
+        if (shown_level >= group.quads_end.size()) continue;
+        glColor3ub(colours[i].Red(), colours[i].Green(), colours[i].Blue());
+        auto draw = [](GLenum mode, const GLVertexArray& vertices, size_t floats) {
+            if (floats == 0) return;
+            glVertexPointer(3, GL_FLOAT, 0, vertices.verts.data());
+            glNormalPointer(GL_FLOAT, 0, vertices.norms.data());
+            glDrawArrays(mode, 0, floats / 3);
+        };
+        draw(GL_QUADS, group.quads, group.quads_end[shown_level]);
+        draw(GL_TRIANGLES, group.triangles, group.triangles_end[shown_level]);
+    }
+    glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+Preview3D::Preview3D(wxWindow* parent) : PreviewPanel(parent), canvas(new PreviewScene3D(this)) {
+    this->attach(canvas);
+}
+
+void Preview3D::load() {
+    canvas->toolpaths = {};
+    double height {0};
+    for (size_t level = 0; level < level_count(); ++level) {
+        const double z {layers_at(level).front().second->print_z};
+        height = z;
+        this->visit_level(level, [this, z](PreviewRole role, const std::vector<const ExtrusionPath*>& paths, bool closed, const Point& shift) {
+            Lines lines;
+            std::vector<double> widths, heights;
+            for (const auto* path : paths) {
+                Polyline polyline {path->polyline};
+                polyline.remove_duplicate_points();  // the vertex code refuses empty lines
+                polyline.translate(shift.x, shift.y);
+                for (const auto& line : polyline.lines()) {
+                    lines.push_back(line);
+                    widths.push_back(path->width);
+                    heights.push_back(path->height);
+                }
             }
-            for(auto layer : object->support_layers) {
-                layers_z.push_back(layer->print_z);
-            }
+            const size_t group {role == PreviewRole::Infill ? 1u : role == PreviewRole::Support ? 2u : 0u};
+            auto& out {canvas->toolpaths[group]};
+            _3DScene::_extrusionentity_to_verts_do(lines, widths, heights, closed, z, shift, &out.quads, &out.triangles);
+        });
+        for (auto& group : canvas->toolpaths) {
+            group.quads_end.push_back(group.quads.verts.size());
+            group.triangles_end.push_back(group.triangles.verts.size());
         }
-        
-        _enabled = true;
-        std::sort(layers_z.begin(),layers_z.end());
-        slider->SetRange(0, layers_z.size()-1);
-        z_idx = slider->GetValue();
-        // If invalid z_idx,  move the slider to the top
-        if (z_idx >= layers_z.size() || slider->GetValue() == 0) {
-            slider->SetValue(layers_z.size()-1);
-            //$z_idx = @{$self->{layer_z}} ? -1 : undef;
-            z_idx = slider->GetValue(); // not sure why the perl version makes z_idx invalid
-        }
-        slider->Show();
-        Layout();
     }
-    if (IsShown()) {
-        // set colors
-        /*canvas.color_toolpaths_by($Slic3r::GUI::Settings->{_}{color_toolpaths_by});
-        if ($self->canvas->color_toolpaths_by eq 'extruder') {
-            my @filament_colors = map { s/^#//; [ map $_/255, (unpack 'C*', pack 'H*', $_), 255 ] }
-                @{$self->print->config->filament_colour};
-            $self->canvas->colors->[$_] = $filament_colors[$_] for 0..$#filament_colors;
-        } else {
-            $self->canvas->colors([ $self->canvas->default_colors ]);
-        }*/
-        
-        // load skirt and brim
-        //$self->canvas->load_print_toolpaths($self->print);
-        
-        /*foreach my $object (@{$self->print->objects}) {
-            canvas.load_print_object_toolpaths($object);
-        }*/
-        loaded = true;
-    }
-    
-    set_z(layers_z.at(z_idx));
+    canvas->loaded(print.get(), height);
 }
-void Preview3D::set_z(float z) {
-    if(!_enabled) return;
-    z_label->SetLabel(std::to_string(z));
-    //canvas.set_toolpaths_range(0, $z);
-    if(IsShown())canvas.Refresh();
-}
-
-/*
-void set_bed_shape() {
-    my ($self, $bed_shape) = @_;
-    $self->canvas->set_bed_shape($bed_shape);
-}
-*/
 
 } } // Namespace Slic3r::GUI
-

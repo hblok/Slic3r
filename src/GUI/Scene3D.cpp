@@ -9,8 +9,13 @@
 #endif
 namespace Slic3r { namespace GUI {
 
+namespace {
+// without the depth size there is no depth buffer: what is drawn last covers the rest
+const int GL_ATTRIBUTES[] {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 24, 0};
+}
+
 Scene3D::Scene3D(wxWindow* parent, const wxSize& size) :
-    wxGLCanvas(parent, wxID_ANY, nullptr, wxDefaultPosition, size)
+    wxGLCanvas(parent, wxID_ANY, GL_ATTRIBUTES, wxDefaultPosition, size)
 { 
 
     this->glContext = new wxGLContext(this);
@@ -164,6 +169,7 @@ void Scene3D::zoom_to_contents(){
         vb.translate(volume.origin.x, volume.origin.y, volume.origin.z);
         bb.merge(vb);
     }
+    if (content_bb.defined) bb.merge(content_bb);
     if (!bb.defined) {  // no objects: the bed
         bb.merge(Pointf3(unscale(bed_bound.min.x), unscale(bed_bound.min.y), 0));
         bb.merge(Pointf3(unscale(bed_bound.max.x), unscale(bed_bound.max.y), 0));
@@ -298,6 +304,7 @@ void Scene3D::init_gl(){
 
 void Scene3D::draw_background(){
     glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);  // the backdrop must not hide anything behind it
     glPushMatrix();
     glLoadIdentity();
     
@@ -321,6 +328,7 @@ void Scene3D::draw_background(){
     
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+    glEnable(GL_DEPTH_TEST);
 }
 
 void Scene3D::draw_ground(){
