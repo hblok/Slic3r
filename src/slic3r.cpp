@@ -151,9 +151,10 @@ int CLI::run(int argc, char **argv) {
                 }
             }
         } else if (opt_key == "duplicate_grid") {
-            auto &ints = this->config.opt<ConfigOptionInts>("duplicate_grid")->values;
-            const int x = ints.size() > 0 ? ints.at(0) : 1;
-            const int y = ints.size() > 1 ? ints.at(1) : 1;
+            // defined as a point ("2,3" or "2x3")
+            const Pointf grid{ this->config.opt<ConfigOptionPoint>("duplicate_grid")->value };
+            const int x = std::max(1, int(grid.x));
+            const int y = std::max(1, int(grid.y));
             const double distance = this->full_print_config.duplicate_distance.value;
             for (auto &model : this->models)
                 model.duplicate_objects_grid(x, y, (distance > 0) ? distance : 6);  // TODO: this is not the right place for setting a default

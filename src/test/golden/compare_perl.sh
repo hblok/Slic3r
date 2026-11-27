@@ -101,7 +101,13 @@ compare end_gcode_plain --end-gcode M84 $box
 compare start_gcode_plain --start-gcode G28 --first-layer-bed-temperature 60 --bed-temperature 55 \
     --first-layer-temperature 210 --temperature 205 $box
 compare box_with_support --support-material $box
+compare scale2 --scale 2 $box
+compare duplicate_grid --duplicate-grid 2,3 $box
 }
+# Known difference, not in the list: --rotate, --rotate-x, --rotate-y. C++ rotates the
+# mesh, Perl the instance (Z) or the mesh after applying the instance (X, Y); E differs
+# in the last digit, and a 45 degree Y rotation of overhang.stl orders one layer's
+# infill differently. Same toolpaths otherwise.
 # Known difference, not in the list: --avoid-crossing-perimeters (Perl detects a new
 # object copy by memory address, see commit 30d45e10).
 

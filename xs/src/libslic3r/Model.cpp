@@ -370,7 +370,8 @@ Model::duplicate_objects_grid(size_t x, size_t y, coordf_t dist)
     ModelObject* object = this->objects.front();
     object->clear_instances();
 
-    Sizef3 size = object->bounding_box().size();
+    // the new instances are untransformed, so measure the bare volumes
+    Sizef3 size = object->raw_bounding_box().size();
 
     for (size_t x_copy = 1; x_copy <= x; ++x_copy) {
         for (size_t y_copy = 1; y_copy <= y; ++y_copy) {
@@ -639,8 +640,9 @@ BoundingBoxf3
 ModelObject::raw_bounding_box() const
 {
     BoundingBoxf3 bb;
-    if (this->instances.empty()) CONFESS("Can't call raw_bounding_box() with no instances");
-    TransformationMatrix trafo = this->instances.front()->get_trafo_matrix(true);
+    const TransformationMatrix trafo = this->instances.empty()
+        ? TransformationMatrix()
+        : this->instances.front()->get_trafo_matrix(true);
     for (ModelVolumePtrs::const_iterator v = this->volumes.begin(); v != this->volumes.end(); ++v) {
         if ((*v)->modifier) continue;
         bb.merge((*v)->get_transformed_bounding_box(trafo));
@@ -769,7 +771,8 @@ ModelObject::scale(const Pointf3 &versor)
 void
 ModelObject::scale_to_fit(const Sizef3 &size)
 {
-    Sizef3 orig_size = this->bounding_box().size();
+    // one instance, not the union of all of them; also works before instances exist
+    Sizef3 orig_size = this->raw_bounding_box().size();
     double factor = fminf(
         size.x / orig_size.x,
         fminf(

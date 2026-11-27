@@ -348,7 +348,8 @@ class ModelObject
     TriangleMesh raw_mesh() const;
 
     /// Get the raw bounding box.
-    /// This function croaks when there are no ModelInstances for this ModelObject
+    /// Uses the rotation and scaling of the first instance; without instances,
+    /// the volumes as they are (the CLI transforms run before instances exist).
     /// \return BoundingBoxf3
     BoundingBoxf3 raw_bounding_box() const;
 
