@@ -7,7 +7,7 @@ UI_Choice::UI_Choice(wxWindow* parent, Slic3r::ConfigOptionDef _opt, wxWindowID 
     style |= wxTE_PROCESS_ENTER;
 
     /// Load the values
-    auto values {wxArrayString()};
+    wxArrayString values;  // "auto values {wxArrayString()}" is an initializer list in wxWidgets 3.2
     for (auto v : opt.enum_values) values.Add(wxString(v));
 
     if (opt.gui_type.size() > 0 && opt.gui_type.compare("select_open"s)) {

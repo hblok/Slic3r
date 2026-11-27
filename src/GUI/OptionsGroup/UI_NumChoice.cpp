@@ -83,7 +83,7 @@ UI_NumChoice::UI_NumChoice(wxWindow* parent, Slic3r::ConfigOptionDef _opt, wxWin
     if (opt.gui_type.size() > 0 && opt.gui_type.compare("select_open"s)) style |= wxCB_READONLY;
 
     /// Load the values
-    auto values {wxArrayString()};
+    wxArrayString values;  // "auto values {wxArrayString()}" is an initializer list in wxWidgets 3.2
     if (opt.enum_labels.size() > 0) // if we have labels, use those instead.
         for (auto v : opt.enum_labels) values.Add(wxString(v));
     else 
