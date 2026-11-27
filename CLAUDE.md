@@ -61,6 +61,9 @@ prove -j$(nproc) t/
 utils/gui_smoke.sh /tmp/gui-smoke   # needs xvfb xdotool imagemagick
 ```
 
+`utils/make_dist.sh` builds a copyable run directory (GUI, XS module, C++ CLI,
+profiles) in `build/dist`; build it on Debian 13 (the chroot), it is tied to its Perl and Boost.
+
 The smoke test drives the GUI with clicks at fixed window coordinates (no window
 manager under Xvfb). A layout change breaks it; check its screenshots, re-measure.
 
