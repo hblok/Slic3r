@@ -85,6 +85,8 @@ public:
     /// User-level function called through external interface.
     /// Pops file dialog.
     void add();
+    /// Open a surface (2.5D TIN mesh) and give it a thickness.
+    void add_tin();
 
     // What the menus and the toolbar do (Plater/ObjectOperations.cpp). Most act on the
     // selected object.
@@ -147,7 +149,9 @@ public:
     void load_config_file();
     void export_config();
     void import_config_from_gcode();
-    void load_config_bundle();
+    /// `file`: empty to ask for one. `only_with_id`: of the bundle's presets those that
+    /// carry an id (the bundle shipped beside the program).
+    void load_config_bundle(const wxString& file = "", bool only_with_id = false);
     void export_config_bundle();
     /// Slice a file without putting it on the plate. save_as: ask where to write;
     /// again: the file of the last quick slice.

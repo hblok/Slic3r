@@ -121,3 +121,13 @@ if grep -q "wx assertion" "$out/gui.log"; then
     grep "wx assertion" "$out/gui.log" | sort | uniq -c
     fail "wx assertions"
 fi
+
+# the first start, with an empty data directory: the configuration wizard
+kill "$gui" 2>/dev/null || :
+wait "$gui" 2>/dev/null || :
+mkdir -p "$out/data-new"
+"$gui_bin" --datadir "$out/data-new" >"$out/first.log" 2>&1 & gui=$!
+sleep 7
+shot first-start
+xdotool search --onlyvisible --name '^Configuration Assistant$' >/dev/null || fail "no wizard on the first start"
+ok "the wizard on the first start"

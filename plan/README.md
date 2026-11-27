@@ -152,6 +152,10 @@ The Perl GUI is the reference for behaviour and layout.
       does; a material's overrides apply to its extruder only), compatible printers, bed
       shape dialog, filament overrides, shortcuts, asking before a modified preset is
       left, serial/OctoPrint test and Bonjour browse (`cpp_gui_presets.sh`)
+- [x] Wizard as in Perl, on the first start too; `.init_bundle.ini`; loaded config files
+      stay in the preset lists; reload from disk keeps transformations and added parts
+      (its dialog); "Open 2.5D TIN mesh"; window positions; every Perl preference
+      (editors in windows, controller tab, colour scheme) (2026-11-27)
 - [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps

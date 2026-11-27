@@ -32,12 +32,6 @@ public:
     virtual bool OnInit() override;
     App() : wxApp() {}
 
-    /// Save position, size, and maximize state for a TopLevelWindow (includes Frames) by name in Settings.
-    void save_window_pos(const wxTopLevelWindow* window, const wxString& name );
-
-    /// Move/resize a named TopLevelWindow (includes Frames) from Settings
-    void restore_window_pos(wxTopLevelWindow* window, const wxString& name );
-
     /// Function to add callback functions to the idle loop stack.
     void CallAfter(std::function<void()> cb_function); 
 

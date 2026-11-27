@@ -7,7 +7,6 @@
 #endif
 #include <map>
 #include <memory>
-#include <tuple>
 
 #include "libslic3r.h"
 #include "ColorScheme.hpp"
@@ -16,7 +15,7 @@
 namespace Slic3r { namespace GUI {
 
 enum class PathColor {
-    role
+    role, extruder
 };
 
 enum class ReloadBehavior {
@@ -34,11 +33,16 @@ class Settings {
         bool invert_zoom {false};
         bool background_processing {false};
 
-        bool preset_editor_tabs {true};
+        bool preset_editor_tabs {true};  //< else each editor in a window of its own
 
         bool hide_reload_dialog {false};
 
         ReloadBehavior reload {ReloadBehavior::all};
+        bool reload_preserve_trafo {true};
+        /// Rotation buttons in the plater's toolbar: "z", "xyz" or "xyz-big".
+        std::string rotation_controls {"z"};
+        /// "getDefault" or "getSolarized", as the Perl GUI names them (takes a restart).
+        std::string colorscheme {"getDefault"};
         std::unique_ptr<ColorScheme> color {new Slic3r::GUI::DefaultColor};
         PathColor color_toolpaths_by {PathColor::role};
 
@@ -52,6 +56,7 @@ class Settings {
         const wxString version { wxString(SLIC3R_VERSION) };
 
         wxString skein_directory {}; //< Recently-opened skien directory.
+        wxString config_directory {}; //< Directory of the last configuration file.
 
         /// slic3r.ini in the data directory, in the Perl GUI's format ([_] general
         /// settings, [presets] selected presets); keys this GUI does not use are kept.
@@ -61,11 +66,9 @@ class Settings {
 
         std::array<std::vector<wxString>, preset_types> default_presets {};
 
-        /// Storage for window positions
-        std::map<wxString, std::tuple<wxPoint, wxSize, bool> > window_pos { std::map<wxString, std::tuple<wxPoint, wxSize, bool> >() };
-
-        void save_window_pos(wxWindow* ref, wxString name);
-        void restore_window_pos(wxWindow* ref, wxString name);
+        /// A window's position, size and maximized state, kept in slic3r.ini by name.
+        void save_window_pos(wxTopLevelWindow* window, const wxString& name);
+        void restore_window_pos(wxTopLevelWindow* window, const wxString& name);
 
 
         const wxFont& small_font() { return _small_font;}

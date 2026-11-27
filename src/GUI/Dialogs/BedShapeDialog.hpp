@@ -36,9 +36,9 @@ private:
 };
 
 /// Choose the bed's shape: a rectangle, a circle, or the outline of a model's projection.
-class BedShapeDialog : public wxDialog {
+class BedShapePanel : public wxPanel {
 public:
-    BedShapeDialog(wxWindow* parent, const std::vector<Pointf>& shape);
+    BedShapePanel(wxWindow* parent, const std::vector<Pointf>& shape);
     std::vector<Pointf> shape() const { return this->_bed->shape(); }
 private:
     wxChoicebook* _book {nullptr};
@@ -49,6 +49,15 @@ private:
     void _set_shape(const std::vector<Pointf>& shape);
     void _update_shape();
     void _load_model();
+};
+
+/// The panel in a dialog of its own, with OK and Cancel.
+class BedShapeDialog : public wxDialog {
+public:
+    BedShapeDialog(wxWindow* parent, const std::vector<Pointf>& shape);
+    std::vector<Pointf> shape() const { return this->_panel->shape(); }
+private:
+    BedShapePanel* _panel;
 };
 
 }} // namespace Slic3r::GUI

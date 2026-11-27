@@ -39,6 +39,7 @@ export DISPLAY=":${SMOKE_DISPLAY:-$display}"
 export HOME="$out/home"
 mkdir -p "$HOME" "$out/data"
 cp "$root/src/test/golden/table.stl" "$out/part.stl"
+: >"$out/data/slic3r.ini"                                # not a first start: no wizard
 gui= xvfb=
 trap 'kill $gui $xvfb 2>/dev/null || :' EXIT
 
@@ -182,10 +183,13 @@ near mirrored volume "$(info flat volume)"
 cp "$root/src/test/inputs/test_cli/20mmbox.stl" "$out/part.stl"
 select_first
 object_menu 17                                          # Reload from Disk
+shot reload-options
+key Return; sleep 1                                     # OK: keeping the transformations
 export_plate reloaded
-near reloaded size_z 10                                  # the box is 20 x 20 x 10
+near reloaded size_z 5                                  # the box is 20 x 20 x 10, scaled as before
+near reloaded size_x 20
 near reloaded number_of_facets 12
-ok "mirror and reload from disk"
+ok "mirror and reload from disk, transformations kept"
 
 select_first
 object_menu 16                                          # Settings: a modifier with a setting
@@ -205,10 +209,10 @@ object_menu 19; answer "$out/unmodified.amf"
 ! grep -q 'slic3r.modifier' "$out/unmodified.amf" || fail "undo kept the modifier"
 ok "object settings: modifier with a setting, undo"
 
-file_menu 12                                            # Preferences
-xdotool mousemove 437 239 click 1; sleep 1              # "Background processing"
+file_menu 13                                            # Preferences
+xdotool mousemove 388 137 click 1; sleep 1              # "Background processing"
 shot preferences
-xdotool mousemove 508 365 click 1; sleep 1              # "OK"
+xdotool mousemove 552 500 click 1; sleep 1              # "OK"
 grep -q '^background_processing = 1' "$out/data/slic3r.ini" || fail "the preference is not in slic3r.ini"
 ok "preferences"
 fi
@@ -296,12 +300,12 @@ fi
 
 # ---- the File menu ----
 if [ "$part" = files ]; then
-file_menu 3; answer "$out/exported.ini"                 # Export Config
+file_menu 4; answer "$out/exported.ini"                 # Export Config
 grep -q '^layer_height = 0.3' "$out/exported.ini" || fail "exported.ini lacks the default layer height"
 sed 's/^layer_height = .*/layer_height = 0.25/' "$out/exported.ini" >"$out/loaded-config.ini"
-file_menu 2; answer_open "$out/loaded-config.ini"            # Load Config
+file_menu 3; answer_open "$out/loaded-config.ini"            # Load Config
 shot config-loaded
-file_menu 7; answer_open "$out/part.stl"; sleep 3            # Quick Slice
+file_menu 8; answer_open "$out/part.stl"; sleep 3            # Quick Slice
 [ -s "$out/part.gcode" ] || fail "quick slice wrote nothing"
 "$cli_bin" -g --load "$out/loaded-config.ini" "$out/part.stl" -o "$out/part.cli.gcode" >"$out/cli.log" 2>&1
 for f in part part.cli; do
@@ -310,11 +314,11 @@ done
 cmp -s "$out/part.cmp" "$out/part.cli.cmp" || fail "quick slice differs from the CLI (diff $out/part.cmp $out/part.cli.cmp)"
 ok "export and load a configuration, quick slice equals the CLI"
 
-file_menu 10; answer_open "$out/part.stl"; answer "$out/part.svg"; sleep 2            # Slice to SVG: input, output
+file_menu 11; answer_open "$out/part.stl"; answer "$out/part.svg"; sleep 2            # Slice to SVG: input, output
 grep -q '<svg' "$out/part.svg" || fail "no SVG"
-file_menu 11; answer_open "$out/part.stl"; answer "$out/repaired.obj"; key Return   # Repair STL
+file_menu 12; answer_open "$out/part.stl"; answer "$out/repaired.obj"; key Return   # Repair STL
 grep -q '^v ' "$out/repaired.obj" || fail "no repaired OBJ"
-file_menu 6; answer_open "$out/part.gcode"; sleep 2            # Import Config from G-code
+file_menu 7; answer_open "$out/part.gcode"; sleep 2            # Import Config from G-code
 grep -q '^layer_height = 0.25' "$out/part.ini" || fail "import from G-code: layer height missing"
 ok "SVG, repair, configuration from G-code"
 
@@ -324,7 +328,7 @@ shot spiral-vase-question
 key Return; sleep 1                                     # yes, adjust the other settings
 shot spiral-vase
 click 40 43
-file_menu 3; answer "$out/vase.ini"
+file_menu 4; answer "$out/vase.ini"
 for line in 'spiral_vase = 1' 'perimeters = 1' 'top_solid_layers = 0' 'fill_density = 0'; do
     grep -q "^$line" "$out/vase.ini" || fail "vase.ini lacks '$line'"
 done
@@ -332,8 +336,14 @@ ok "preset editor: the spiral vase rule"
 
 menu 358 1; sleep 1                                     # Help > Configuration Wizard
 shot wizard
-key Return; sleep 2                                     # OK: accept what is selected
-for group in printer filament; do
+i=0
+while [ "$i" -lt 8 ]; do                                 # "Next >" on every page, then "Finish"
+    xdotool mousemove 899 646 click 1; sleep 0.7; i=$((i + 1))
+    [ "$i" -ne 2 ] || shot wizard-bed
+done
+sleep 1
+shot wizard-done
+for group in print printer filament; do
     [ -s "$out/data/$group/My Settings.ini" ] || fail "wizard: no $group preset"
 done
 grep -q '^bed_shape = 0x0,200' "$out/data/printer/My Settings.ini" || fail "wizard: bed shape"

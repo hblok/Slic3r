@@ -110,7 +110,16 @@ void Bed2D::_repaint() {
 }
 
 BedShapeDialog::BedShapeDialog(wxWindow* parent, const std::vector<Pointf>& shape) :
-    wxDialog(parent, wxID_ANY, _("Bed Shape"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+    wxDialog(parent, wxID_ANY, _("Bed Shape"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+    _panel(new BedShapePanel(this, shape))
+{
+    auto* sizer {new wxBoxSizer(wxVERTICAL)};
+    sizer->Add(this->_panel, 1, wxEXPAND);
+    sizer->Add(this->CreateButtonSizer(wxOK | wxCANCEL), 0, wxALIGN_RIGHT | wxALL, 10);
+    this->SetSizerAndFit(sizer);
+}
+
+BedShapePanel::BedShapePanel(wxWindow* parent, const std::vector<Pointf>& shape) : wxPanel(parent, wxID_ANY)
 {
     auto* box {new wxStaticBoxSizer(wxVERTICAL, this, _("Shape"))};
     this->_book = new wxChoicebook(box->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxSize(300, -1));
@@ -162,16 +171,13 @@ BedShapeDialog::BedShapeDialog(wxWindow* parent, const std::vector<Pointf>& shap
     auto* top {new wxBoxSizer(wxHORIZONTAL)};
     top->Add(box, 0, wxEXPAND | wxALL, 10);
     top->Add(this->_bed, 1, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT, 10);
-    auto* sizer {new wxBoxSizer(wxVERTICAL)};
-    sizer->Add(top, 1, wxEXPAND);
-    sizer->Add(this->CreateButtonSizer(wxOK | wxCANCEL), 0, wxALIGN_RIGHT | wxALL, 10);
     this->_set_shape(shape);
-    this->SetSizerAndFit(sizer);
+    this->SetSizerAndFit(top);
     this->_book->Bind(wxEVT_CHOICEBOOK_PAGE_CHANGED, [this](wxBookCtrlEvent& e) { this->_update_shape(); e.Skip(); });
 }
 
 /// Which of the three kinds the points are, and show them as that.
-void BedShapeDialog::_set_shape(const std::vector<Pointf>& points) {
+void BedShapePanel::_set_shape(const std::vector<Pointf>& points) {
     double x0 {1e9}, x1 {-1e9}, y0 {1e9}, y1 {-1e9};
     for (const auto& p : points) {
         x0 = std::min(x0, p.x); x1 = std::max(x1, p.x);
@@ -219,7 +225,7 @@ void BedShapeDialog::_set_shape(const std::vector<Pointf>& points) {
     this->_bed->set_shape(points);  // as it is, until a value is changed
 }
 
-void BedShapeDialog::_update_shape() {
+void BedShapePanel::_update_shape() {
     if (this->_bed == nullptr || this->_diameter == nullptr) return;
     if (this->_book->GetSelection() == 0) {
         const double w {this->_size[0]->GetValue()}, h {this->_size[1]->GetValue()};
@@ -240,7 +246,7 @@ void BedShapeDialog::_update_shape() {
     }
 }
 
-void BedShapeDialog::_load_model() {
+void BedShapePanel::_load_model() {
     wxFileDialog dialog(this, _("Choose a file to import bed shape from (STL/OBJ/AMF/3MF):"), "", "",
         wxString(MODEL_WILDCARD), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (dialog.ShowModal() != wxID_OK) return;

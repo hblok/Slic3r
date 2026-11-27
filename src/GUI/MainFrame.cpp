@@ -100,6 +100,8 @@ void MainFrame::init_menubar()
             append_menu_item(menuFile, name, help, [action](wxCommandEvent&) { action(); }, wxID_ANY, icon, accelerator);
         };
         item(_(L"Open STL/OBJ/AMF/3MF…"), _("Open a model"), [this]() { this->plater->add(); }, "brick_add.png", "Ctrl+O");
+        item(_(L"Open 2.5D TIN mesh…"), _("Import a 2.5D TIN mesh"), [this]() { this->plater->add_tin(); }, "map_add.png");
+        menuFile->AppendSeparator();
         item(_(L"&Load Config…"), _("Load exported configuration file"), [this]() { this->plater->load_config_file(); }, "plugin_add.png", "Ctrl+L");
         item(_(L"&Export Config…"), _("Export current configuration to file"), [this]() { this->plater->export_config(); }, "plugin_go.png", "Ctrl+E");
         item(_(L"Load Config &Bundle…"), _("Load presets from a bundle"), [this]() { this->plater->load_config_bundle(); }, "lorry_add.png");
@@ -178,6 +180,16 @@ void MainFrame::init_menubar()
     {
         append_menu_item(menuWindow, _("&Plater"), _("Show the plater"),
             [this](wxCommandEvent&) { this->tabpanel->SetSelection(0); }, wxID_ANY, "application_view_tile.png", "Ctrl+T");
+        append_menu_item(menuWindow, _("&Controller"), _("Show the printer controller"), [this](wxCommandEvent&) {
+            if (this->tabpanel->FindPage(this->controller) != wxNOT_FOUND) {
+                this->tabpanel->SetSelection(1);
+            } else if (wxMessageBox(_("The printer controller is currently disabled in the preferences. Do you want to enable it?"),
+                    _("Controller"), wxYES_NO | wxICON_QUESTION, this) == wxYES) {
+                ui_settings->show_host = true;
+                ui_settings->save_settings();
+                show_info(this, _("The controller is now enabled. You must restart Slic3r now to make the change effective."), _("Controller"));
+            }
+        }, wxID_ANY, "printer_empty.png", "Ctrl+Y");
     }
     wxMenu* menuHelp = new wxMenu();
     {

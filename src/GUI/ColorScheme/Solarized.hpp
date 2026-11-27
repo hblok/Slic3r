@@ -9,34 +9,44 @@ namespace Slic3r { namespace GUI {
 /// S O L A R I Z E
 /// http://ethanschoonover.com/solarized
 ///
-/// Implements a colorscheme lookup of wxColors
+/// The Perl GUI's "getSolarized" scheme (ColorScheme.pm).
 class Solarized : public ColorScheme {
 public:
-    const wxColour SELECTED_COLOR() const { return COLOR_SOLAR_MAGENTA; } 
-    const wxColour HOVER_COLOR() const { return COLOR_SOLAR_VIOLET; }     
-    const wxColour SUPPORT_COLOR() const { return COLOR_SOLAR_VIOLET; }   
-
-    const wxColour BACKGROUND_COLOR() const { return COLOR_SOLAR_BASE3; } 
-
-
-private:
-    const wxColour COLOR_SOLAR_BASE0   { wxColour(255*0.51373,255*0.58039,255*0.58824)};
-    const wxColour COLOR_SOLAR_BASE00  { wxColour(255*0.39608,255*0.48235,255*0.51373)};
-    const wxColour COLOR_SOLAR_BASE01  { wxColour(255*0.34510,255*0.43137,255*0.45882)};
-    const wxColour COLOR_SOLAR_BASE02  { wxColour(255*0.02745,255*0.21176,255*0.25882)};
-    const wxColour COLOR_SOLAR_BASE03  { wxColour(255*0.00000,255*0.16863,255*0.21176)};
-    const wxColour COLOR_SOLAR_BASE1   { wxColour(255*0.57647,255*0.63137,255*0.63137)};
-    const wxColour COLOR_SOLAR_BASE2   { wxColour(255*0.93333,255*0.90980,255*0.83529)};
-    const wxColour COLOR_SOLAR_BASE3   { wxColour(255*0.99216,255*0.96471,255*0.89020)};
-    const wxColour COLOR_SOLAR_BLUE    { wxColour(255*0.14902,255*0.54510,255*0.82353)};
-    const wxColour COLOR_SOLAR_CYAN    { wxColour(255*0.16471,255*0.63137,255*0.59608)};
-    const wxColour COLOR_SOLAR_GREEN   { wxColour(255*0.52157,255*0.60000,255*0.00000)};
-    const wxColour COLOR_SOLAR_MAGENTA { wxColour(255*0.82745,255*0.21176,255*0.50980)};
-    const wxColour COLOR_SOLAR_ORANGE  { wxColour(255*0.79608,255*0.29412,255*0.08627)};
-    const wxColour COLOR_SOLAR_RED     { wxColour(255*0.86275,255*0.19608,255*0.18431)};
-    const wxColour COLOR_SOLAR_VIOLET  { wxColour(255*0.42353,255*0.44314,255*0.76863)};
-    const wxColour COLOR_SOLAR_YELLOW  { wxColour(255*0.70980,255*0.53725,255*0.00000)};
-
+    const std::string name() const { return "Solarized"; }
+    const bool SOLID_BACKGROUNDCOLOR() const { return true; }
+    const wxColour SELECTED_COLOR() const { return wxColour(211, 54, 130); }
+    const wxColour HOVER_COLOR() const { return wxColour(109, 114, 197); }
+    const wxColour TOP_COLOR() const { return wxColour(254, 247, 228); }
+    const wxColour BOTTOM_COLOR() const { return wxColour(254, 247, 228); }
+    const wxColour BACKGROUND_COLOR() const { return wxColour(254, 247, 228); }
+    const wxColour GRID_COLOR() const { return wxColour(147, 161, 161, 102); }
+    const wxColour GROUND_COLOR() const { return wxColour(238, 232, 213, 102); }
+    const wxColour COLOR_CUTPLANE() const { return wxColour(147, 161, 161, 127); }
+    const wxColour COLOR_PARTS() const { return wxColour(230, 230, 230); }
+    const wxColour COLOR_INFILL() const { return wxColour(238, 232, 213); }
+    const wxColour COLOR_SUPPORT() const { return wxColour(0, 0, 0); }
+    const wxColour COLOR_UNKNOWN() const { return wxColour(43, 161, 153); }
+    const wxColour BED_COLOR() const { return wxColour(238, 232, 213); }
+    const wxColour BED_GRID() const { return wxColour(147, 161, 161); }
+    const wxColour BED_SELECTED() const { return wxColour(181, 137, 0); }
+    const wxColour BED_OBJECTS() const { return wxColour(230, 230, 230); }
+    const wxColour BED_INSTANCE() const { return wxColour(211, 54, 130); }
+    const wxColour BED_DRAGGED() const { return wxColour(43, 161, 153); }
+    const wxColour BED_CENTER() const { return wxColour(147, 161, 161); }
+    const wxColour BED_SKIRT() const { return wxColour(89, 110, 117); }
+    const wxColour BED_CLEARANCE() const { return wxColour(39, 140, 211); }
+    const wxColour BACKGROUND255() const { return wxColour(254, 247, 228); }
+    const wxColour TOOL_DARK() const { return wxColour(89, 110, 117); }
+    const wxColour TOOL_SUPPORT() const { return wxColour(134, 153, 0); }
+    const wxColour TOOL_INFILL() const { return wxColour(147, 161, 161); }
+    const wxColour TOOL_STEPPERIM() const { return wxColour(43, 161, 153); }
+    const wxColour TOOL_SHADE() const { return wxColour(238, 232, 213); }
+    const wxColour TOOL_COLOR() const { return wxColour(39, 140, 211); }
+    const wxColour SPLINE_L_PEN() const { return wxColour(89, 110, 117); }
+    const wxColour SPLINE_O_PEN() const { return wxColour(147, 161, 161); }
+    const wxColour SPLINE_I_PEN() const { return wxColour(211, 54, 130); }
+    const wxColour SPLINE_R_PEN() const { return wxColour(109, 114, 197); }
+    const wxColour BED_DARK() const { return wxColour(89, 110, 117); }
 };
 }} // namespace Slic3r::GUI
 

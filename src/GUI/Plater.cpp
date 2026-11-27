@@ -908,14 +908,28 @@ void Plater::show_preset_editor(preset_t group, unsigned int idx) {
         const wxString name {this->_presets->selected(group, idx)};
         if (!name.IsEmpty()) editor->select_preset_by_name(name, true);
         const int page {tabs->FindPage(editor)};
-        if (page != wxNOT_FOUND) tabs->SetSelection(page);
+        if (page != wxNOT_FOUND) {
+            tabs->SetSelection(page);
+        } else {  // in a window of its own
+            wxWindow* window {wxGetTopLevelParent(editor)};
+            window->Show();
+            window->Raise();
+        }
         return;
+    }
+    // a tab of the main window, or (preferences) a window for each editor
+    wxDialog* dialog {nullptr};
+    wxWindow* parent {tabs};
+    if (!ui_settings->preset_editor_tabs) {
+        dialog = new wxDialog(frame, wxID_ANY, _("Settings"), wxDefaultPosition, wxSize(900, 500),
+            wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        parent = dialog;
     }
     PresetEditor* editor {nullptr};
     switch (group) {
-        case preset_t::Print:    editor = new PrintEditor(tabs); break;
-        case preset_t::Material: editor = new MaterialEditor(tabs); break;
-        case preset_t::Printer:  editor = new PrinterEditor(tabs); break;
+        case preset_t::Print:    editor = new PrintEditor(parent); break;
+        case preset_t::Material: editor = new MaterialEditor(parent); break;
+        case preset_t::Printer:  editor = new PrinterEditor(parent); break;
         default: return;
     }
     // choosing a preset in the editor chooses it in the plater too
@@ -940,7 +954,28 @@ void Plater::show_preset_editor(preset_t group, unsigned int idx) {
     };
     editor->plater_config = [this]() { return DynamicPrintConfig(this->_presets->full_config().config()); };
     editors[group] = editor;
-    tabs->AddPage(editor, editor->title());
+    editor->chooser_index = idx;
+    const wxString chosen {this->_presets->selected(group, idx)};
+    if (!chosen.IsEmpty()) editor->select_preset_by_name(chosen, true);
+    if (dialog == nullptr) {
+        tabs->AddPage(editor, editor->title());
+        return;
+    }
+    dialog->SetTitle(editor->title());
+    auto* sizer {new wxBoxSizer(wxVERTICAL)};
+    sizer->Add(editor, 1, wxEXPAND);
+    dialog->SetSizer(sizer);
+    ui_settings->restore_window_pos(dialog, "preset_editor");
+    auto hide = [dialog]() {
+        ui_settings->save_window_pos(dialog, "preset_editor");
+        dialog->Hide();
+    };
+    dialog->Bind(wxEVT_CLOSE_WINDOW, [hide](wxCloseEvent&) { hide(); });
+    dialog->Bind(wxEVT_CHAR_HOOK, [hide](wxKeyEvent& e) {
+        if (e.GetKeyCode() == WXK_ESCAPE) hide();
+        else e.Skip();
+    });
+    dialog->Show();
 }
 
 

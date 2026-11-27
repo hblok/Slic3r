@@ -6,6 +6,7 @@
     #include <wx/dir.h>
     #include <wx/filename.h>
 #endif
+#include <algorithm>
 #include <iostream>
 #include <string>
 
@@ -47,8 +48,8 @@ bool App::OnInit()
     const wxString& material_ini = this->preset_ini[static_cast<int>(preset_t::Material)];
 
 
-    // if we don't have a datadir or a slic3r.ini, prompt for wizard.
-    bool run_wizard = (wxDirExists(datadir) && wxFileExists(slic3r_ini));
+    // the first start: no data directory or no slic3r.ini yet
+    const bool first_start {!wxDirExists(datadir) || !wxFileExists(slic3r_ini)};
     
     /* Check to make sure if datadir exists */
     for (auto& dir : std::vector<wxString> { enc_datadir, print_ini, printer_ini, material_ini }) {
@@ -76,12 +77,14 @@ bool App::OnInit()
     MainFrame *frame = new MainFrame( "Slic3r", wxDefaultPosition, wxDefaultSize);
     this->SetTopWindow(frame);
 
-    // Load init bundle
-    //
-
-    // files from the command line go to the plater (as the Perl GUI did)
-    if (!this->input_files.empty())
-        this->CallAfter([frame, this]() { frame->get_plater()->load_files(this->input_files); });
+    // a bundle of presets shipped beside the program, else the wizard on the first start;
+    // then the files from the command line go to the plater (all as the Perl GUI did)
+    const wxString init_bundle {wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() + "/.init_bundle.ini"};
+    this->CallAfter([frame, this, first_start, init_bundle]() {
+        if (wxFileExists(init_bundle)) frame->get_plater()->load_config_bundle(init_bundle, true);
+        else if (first_start) frame->get_plater()->config_wizard();
+        if (!this->input_files.empty()) frame->get_plater()->load_files(this->input_files);
+    });
     
     // run callback functions during idle on the main frame
     this->Bind(wxEVT_IDLE, 
@@ -112,34 +115,6 @@ bool App::OnInit()
     return true;
 }
 
-void App::save_window_pos(const wxTopLevelWindow* window, const wxString& name ) {
-    ui_settings->window_pos[name] = 
-        std::make_tuple<wxPoint, wxSize, bool>(
-            window->GetScreenPosition(),
-            window->GetSize(),
-            window->IsMaximized());
-
-    ui_settings->save_settings();
-}
-
-void App::restore_window_pos(wxTopLevelWindow* window, const wxString& name ) {
-    try {
-        auto tmp = ui_settings->window_pos[name];
-        const auto& size = std::get<1>(tmp);
-        const auto& pos = std::get<0>(tmp);
-        window->SetSize(size);
-
-        auto display = wxDisplay().GetClientArea();
-        if (((pos.x + size.x / 2) < display.GetRight()) && (pos.y + size.y/2 < display.GetBottom()))
-            window->Move(pos);
-
-        window->Maximize(std::get<2>(tmp));
-    }
-    catch (std::out_of_range& e) {
-        // config was empty
-    }
-}
-
 void App::load_presets() {
     // Rebuilt from the data directory on every call (also after a save or delete): the
     // default preset first, then the files sorted by name. It used to drop dirty presets
@@ -165,6 +140,11 @@ void App::load_presets() {
         for (auto& preset : preset_list)
             for (const auto& old : before)
                 if (old.name == preset.name) preset.keep_changes(old);
+        // loaded configuration files stay while the file is there
+        for (const auto& old : before)
+            if (old.external && old.file_exists()
+                    && std::none_of(preset_list.begin(), preset_list.end(), [&old](const Preset& p) { return p.name == old.name; }))
+                preset_list.push_back(old);
     }
 }
 

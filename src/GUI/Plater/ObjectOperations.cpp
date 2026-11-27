@@ -20,6 +20,8 @@
 #include "BoundingBox.hpp"
 #include "Geometry.hpp"
 #include "IO.hpp"
+#include "misc_ui.hpp"
+#include "Settings.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -30,6 +32,114 @@ namespace {
 constexpr size_t HISTORY_LIMIT {30};
 
 const char* const AXIS_NAMES[] {"X", "Y", "Z"};
+
+/// How to reload an object with parts and modifiers of its own (the Perl GUI's
+/// ReloadDialog); false when cancelled.
+bool ask_reload_options(wxWindow* parent, Settings& settings, ReloadBehavior& behavior, bool& preserve) {
+    wxDialog dialog(parent, wxID_ANY, _("Reload options"));
+    const wxString choices[] {_("Reload all linked files"), _("Reload main file, copy added parts & modifiers"),
+        _("Reload main file, discard added parts & modifiers")};
+    auto* choice {new wxChoice(&dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, 3, choices)};
+    choice->SetSelection(static_cast<int>(behavior));
+    auto* keep {new wxCheckBox(&dialog, wxID_ANY, _("Preserve transformations"))};
+    keep->SetValue(preserve);
+    auto* hide {new wxCheckBox(&dialog, wxID_ANY, _("Don't ask again"))};
+    auto* sizer {new wxBoxSizer(wxVERTICAL)};
+    sizer->Add(new wxStaticText(&dialog, wxID_ANY, _("Handling of additional parts and modifiers:")), 0, wxALL, 10);
+    sizer->Add(choice, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+    sizer->Add(new wxStaticText(&dialog, wxID_ANY, _("Handling of transformations made inside Slic3r:")), 0, wxALL, 10);
+    sizer->Add(keep, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
+    auto* bottom {new wxBoxSizer(wxHORIZONTAL)};
+    bottom->Add(hide, 1, wxALIGN_CENTER_VERTICAL | wxALL, 10);
+    bottom->Add(dialog.CreateButtonSizer(wxOK | wxCANCEL), 0, wxALL, 10);
+    sizer->Add(bottom, 0, wxEXPAND);
+    dialog.SetSizerAndFit(sizer);
+    if (dialog.ShowModal() != wxID_OK) return false;
+    behavior = static_cast<ReloadBehavior>(choice->GetSelection());
+    preserve = keep->GetValue();
+    settings.reload = behavior;
+    settings.reload_preserve_trafo = preserve;
+    if (hide->GetValue()) settings.hide_reload_dialog = true;
+    settings.save_settings();
+    return true;
+}
+
+/// Replace the volumes of `object` by those of `source` (the file's object, read again),
+/// keeping each one's settings and, when asked, transformations; what was added to the
+/// object is read again, copied or dropped. True when some volume had no counterpart.
+bool reload_volumes(ModelObject& object, const ModelObject& source, const std::string& input,
+        ReloadBehavior behavior, bool preserve) {
+    Slic3r::Model fresh;
+    ModelObject* made {fresh.add_object(object, false)};  // instances and settings, no volumes
+    bool unmatched {false};
+    size_t old {0};
+    const size_t old_count {object.volumes.size()};
+    for (const auto* volume : source.volumes) {
+        ModelVolume* added {made->add_volume(*volume)};
+        if (old < old_count && object.volumes[old]->input_file == input) {
+            if (preserve) added->apply_transformation(object.volumes[old]->trafo);
+            added->config = object.volumes[old]->config;
+            added->modifier = object.volumes[old]->modifier;
+            ++old;
+        } else {
+            // the file has more volumes now
+            if (preserve) added->apply_transformation(object.get_trafo_obj());
+            if (old_count > 0) added->config = object.volumes.front()->config;
+            unmatched = true;
+        }
+    }
+    while (old < old_count && object.volumes[old]->input_file == input) { ++old; unmatched = true; }  // it has fewer
+    if (behavior == ReloadBehavior::discard) old = old_count;
+    auto ends_with = [](const std::string& name, const std::string& end) {
+        return name.size() >= end.size() && name.compare(name.size() - end.size(), end.size(), end) == 0;
+    };
+    // a name saying what happened: replaces the other note
+    auto renamed = [&ends_with](std::string name, const std::string& note, const std::string& other) {
+        if (ends_with(name, other)) name.erase(name.size() - other.size());
+        if (!ends_with(name, note)) name += note;
+        return name;
+    };
+    for (; old < old_count; ++old) {
+        const ModelVolume* volume {object.volumes[old]};
+        if (behavior == ReloadBehavior::copy) {
+            ModelVolume* added {made->add_volume(*volume)};
+            added->name = renamed(added->name, " - copied", " - no link to path");
+            continue;
+        }
+        // read it again from its own file
+        bool read {false};
+        if (!volume->input_file.empty()) {
+            try {
+                const Slic3r::Model other {Slic3r::Model::read_from_file(volume->input_file)};
+                if (volume->input_file_obj_idx >= 0 && volume->input_file_obj_idx < static_cast<int>(other.objects.size())) {
+                    const ModelObject* from {other.objects[volume->input_file_obj_idx]};
+                    if (volume->input_file_vol_idx >= 0 && volume->input_file_vol_idx < static_cast<int>(from->volumes.size())) {
+                        ModelVolume* added {made->add_volume(*from->volumes[volume->input_file_vol_idx])};
+                        if (preserve) added->apply_transformation(volume->trafo);
+                        added->name = volume->name;
+                        added->input_file = volume->input_file;
+                        added->input_file_obj_idx = volume->input_file_obj_idx;
+                        added->input_file_vol_idx = volume->input_file_vol_idx;
+                        added->config = volume->config;
+                        added->modifier = volume->modifier;
+                        read = true;
+                    }
+                }
+            } catch (std::exception&) {}
+        }
+        if (!read) {  // the old mesh
+            ModelVolume* added {made->add_volume(*volume)};
+            added->input_file.clear();
+            added->name = renamed(added->name, " - no link to path", " - copied");
+            unmatched = true;
+        }
+    }
+    const TransformationMatrix trafo {object.get_trafo_obj()};
+    object.clear_volumes();
+    for (const auto* volume : made->volumes) object.add_volume(*volume);
+    object.set_trafo_obj(preserve ? trafo : TransformationMatrix());
+    return unmatched;
+}
 
 /// Ask for a number; false when cancelled or not a number.
 bool ask_number(wxWindow* parent, const wxString& question, const wxString& title, double value, double& out) {
@@ -177,6 +287,30 @@ std::vector<int> Plater::load_model_objects(ModelObjectPtrs model_objects) {
     }
     if (need_arrange) this->model->arrange_objects(this->config->config().min_object_distance(), &bed);
     return loaded;
+}
+
+void Plater::add_tin() {
+    const auto files {open_model(this, wxTheApp->GetTopWindow())};
+    if (files.empty()) return;
+    const long offset {wxGetNumberFromUser("",
+        _("Enter the minimum thickness in mm (i.e. the offset from the lowest point):"), _("2.5D TIN"), 5, 0, 1000000, this)};
+    if (offset < 0) return;
+    this->refresh_config();
+    for (const auto& file : files) {
+        try {
+            Slic3r::Model loaded {Slic3r::Model::read_from_file(file.ToUTF8().data())};
+            if (loaded.objects.empty() || loaded.looks_like_multipart_object() || loaded.objects.front()->volumes.empty()) {
+                show_error(this, _("Multi-part models cannot be opened as 2.5D TIN files. Please load a single continuous mesh."));
+                continue;
+            }
+            ModelObject* object {loaded.objects.front()};
+            object->volumes.front()->mesh.extrude_tin(offset);
+            this->load_model_objects(object);
+        } catch (std::exception& e) {
+            show_error(this, wxString::FromUTF8(e.what()));
+        }
+    }
+    this->on_model_change();
 }
 
 // ---- plate ----
@@ -532,35 +666,46 @@ void Plater::reload_from_disk() {
         show_error(this, _("The selected object couldn't be reloaded because it isn't referenced to its input file any more. This is the case after performing operations like cut or split."));
         return;
     }
-    Slic3r::Model fresh;
+    if (!wxFileExists(wxString::FromUTF8(input.c_str()))) {
+        show_error(this, _("The selected object couldn't be reloaded because the file doesn't exist anymore on the disk."));
+        return;
+    }
+    ReloadBehavior behavior {ui_settings->reload};
+    bool preserve {ui_settings->reload_preserve_trafo};
+    if (!ui_settings->hide_reload_dialog && !ask_reload_options(this, *ui_settings, behavior, preserve)) return;
+
+    ModelObject* object {this->model->objects.at(idx)};
+    // which object of the file this one is
+    int source_idx {-1};
+    for (const auto* volume : object->volumes)
+        if (volume->input_file == input) { source_idx = volume->input_file_obj_idx; break; }
+    Slic3r::Model file;
     try {
-        fresh = Slic3r::Model::read_from_file(input);
+        file = Slic3r::Model::read_from_file(input);
     } catch (std::exception& e) {
         show_error(this, wxString::FromUTF8(e.what()));
         return;
     }
-    ModelObject* object {this->model->objects.at(idx)};
-    // ponytail: takes the new meshes and keeps copies, settings and modifiers; rotations
-    // around X/Y, mirroring and per-axis scaling (changes of the mesh) are lost
-    bool replaced {false};
-    for (auto* volume : object->volumes) {
-        if (volume->input_file != input || volume->input_file_obj_idx < 0
-            || volume->input_file_obj_idx >= static_cast<int>(fresh.objects.size())) continue;
-        ModelObject* source {fresh.objects[volume->input_file_obj_idx]};
-        if (volume->input_file_vol_idx < 0 || volume->input_file_vol_idx >= static_cast<int>(source->volumes.size())) continue;
-        if (source->instances.empty() && ui_settings->autocenter) source->center_around_origin();  // as when loaded
-        volume->mesh = source->volumes[volume->input_file_vol_idx]->mesh;
-        volume->mesh.repair();
-        replaced = true;
-    }
-    if (!replaced) {
+    if (source_idx < 0 || source_idx >= static_cast<int>(file.objects.size())) {
         show_error(this, _("The selected object couldn't be reloaded because the new file doesn't contain the object."));
         return;
     }
+    ModelObject* source {file.objects[source_idx]};
+    source->repair();
+    for (size_t i = 0; i < source->volumes.size(); ++i) {
+        source->volumes[i]->input_file = input;
+        source->volumes[i]->input_file_obj_idx = source_idx;
+        source->volumes[i]->input_file_vol_idx = i;
+    }
+    source->center_around_origin();  // as when it was loaded
+    const bool unmatched {reload_volumes(*object, *source, input, behavior, preserve)};
+    object->center_around_origin();
+    object->repair();
     object->invalidate_bounding_box();
-    if (ui_settings->autoalignz) object->align_to_ground();
     this->make_thumbnail(idx);
     this->on_model_change();
+    if (unmatched)
+        show_info(this, _("At least 1 volume couldn't be matched between the original object and the reloaded one."), _("Reload"));
 }
 
 } } // Namespace Slic3r::GUI

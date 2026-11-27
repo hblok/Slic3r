@@ -77,6 +77,7 @@ run() { # name datadir cli-options...   ($edit, if set, runs before the export)
 }
 
 mkdir -p "$out/data-empty"
+: >"$out/data-empty/slic3r.ini"                          # not a first start: no wizard
 run defaults "$out/data-empty"
 
 p=$root/profiles

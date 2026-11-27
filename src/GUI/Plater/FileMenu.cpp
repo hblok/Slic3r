@@ -1,5 +1,6 @@
 // The File menu: configuration files and bundles, slicing a file without putting it on
 // the plate, repairing an STL.
+#include <algorithm>
 #include <fstream>
 #include <map>
 
@@ -24,9 +25,16 @@ namespace {
 const char* const GROUP_SECTIONS[] {"print", "filament", "printer"};
 
 /// A file to read; empty when cancelled.
-wxString ask_open(wxWindow* parent, const wxString& question, const std::string& wildcard) {
-    wxFileDialog dialog(parent, question, ui_settings->skein_directory, "", wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+wxString ask_open(wxWindow* parent, const wxString& question, const std::string& wildcard, const wxString& directory = "") {
+    wxFileDialog dialog(parent, question, directory.IsEmpty() ? ui_settings->skein_directory : directory, "", wildcard,
+        wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     return dialog.ShowModal() == wxID_OK ? dialog.GetPath() : wxString();
+}
+
+/// Remember where configuration files are.
+void used_config_file(const wxString& file) {
+    ui_settings->config_directory = wxFileName(file).GetPath();
+    ui_settings->save_settings();
 }
 
 wxString ask_save(wxWindow* parent, const wxString& question, const wxFileName& suggestion, const std::string& wildcard) {
@@ -39,37 +47,39 @@ wxString ask_save(wxWindow* parent, const wxString& question, const wxFileName& 
 
 void Plater::select_external_config(const wxString& file) {
     const wxFileName path(file);
+    // named after the file, ".ini" kept, as in the Perl GUI; stays in the lists as long as
+    // the program runs and the file exists
+    const wxString name {path.GetFullName()};
     for (size_t group = 0; group < preset_types; ++group) {
         Presets& presets {SLIC3RAPP->presets.at(group)};
-        // ponytail: lasts until the presets are read again (a save or delete) or the GUI
-        // ends; the Perl GUI remembers external files in slic3r.ini
-        Preset external(path.GetPath().ToStdString(), path.GetFullName().ToStdString(), static_cast<preset_t>(group));
+        Preset external(path.GetPath().ToStdString(), name.ToStdString(), static_cast<preset_t>(group));
         external.external = true;
+        external.name = name;
         presets.erase(std::remove_if(presets.begin(), presets.end(),
-            [&external](const Preset& p) { return p.external && p.name == external.name; }), presets.end());
+            [&external](const Preset& p) { return p.name == external.name; }), presets.end());
         presets.push_back(external);
     }
     // the editors' lists first: selecting in the plater selects in them too
     for (auto& editor : GetFrame()->preset_editor_tabs) editor.second->reload_list();
     this->_presets->load();
     for (const auto group : {preset_t::Printer, preset_t::Material, preset_t::Print})
-        this->_presets->select_preset_by_name(path.GetName(), group, 0);
+        this->_presets->select_preset_by_name(name, group, 0);
     this->refresh_config();
     this->invalidate_slices();
     this->update_shortcuts();
 }
 
 void Plater::config_wizard() {
-    DynamicPrintConfig printer, material;
+    DynamicPrintConfig print, printer, material;
     const Slic3r::Config current {this->_presets->full_config()};
-    if (!show_config_wizard(this, current.config(), printer, material)) return;
+    if (!show_config_wizard(this, current.config(), print, printer, material)) return;
     const wxString name {"My Settings"};
     const std::pair<preset_t, const DynamicPrintConfig*> files[] {
-        {preset_t::Printer, &printer}, {preset_t::Material, &material}};
+        {preset_t::Print, &print}, {preset_t::Printer, &printer}, {preset_t::Material, &material}};
     auto path = [&name](preset_t group) {
         return wxFileName(SLIC3RAPP->preset_ini.at(get_preset(group)), name + ".ini").GetFullPath();
     };
-    if ((wxFileExists(path(preset_t::Printer)) || wxFileExists(path(preset_t::Material)))
+    if (std::any_of(std::begin(files), std::end(files), [&path](const auto& file) { return wxFileExists(path(file.first)); })
             && wxMessageBox(wxString::Format(_("Replace the presets \"%s\"?"), name), _("Configuration Wizard"),
                 wxYES_NO | wxICON_QUESTION, this) != wxYES) return;
     try {
@@ -158,8 +168,9 @@ bool Plater::prompt_unsaved_changes() {
 }
 
 void Plater::load_config_file() {
-    const wxString file {ask_open(this, _("Select configuration to load:"), FILE_WILDCARDS.at("ini"))};
+    const wxString file {ask_open(this, _("Select configuration to load:"), FILE_WILDCARDS.at("ini"), ui_settings->config_directory)};
     if (file.IsEmpty()) return;
+    used_config_file(file);
     try {
         this->select_external_config(file);
         GetFrame()->statusbar->SetStatusText(_("Loaded ") + file);
@@ -170,9 +181,11 @@ void Plater::load_config_file() {
 
 void Plater::export_config() {
     const Slic3r::Config config {this->_presets->full_config()};
+    const wxString directory {ui_settings->config_directory.IsEmpty() ? ui_settings->skein_directory : ui_settings->config_directory};
     const wxString file {ask_save(this, _("Save configuration as:"),
-        wxFileName(ui_settings->skein_directory, "config.ini"), FILE_WILDCARDS.at("ini"))};
+        wxFileName(directory, "config.ini"), FILE_WILDCARDS.at("ini"))};
     if (file.IsEmpty()) return;
+    used_config_file(file);
     try {
         DynamicPrintConfig out;
         out.apply(config.config());
@@ -185,8 +198,9 @@ void Plater::export_config() {
 }
 
 void Plater::import_config_from_gcode() {
-    const wxString file {ask_open(this, _("Select G-code file to load config from:"), FILE_WILDCARDS.at("gcode"))};
+    const wxString file {ask_open(this, _("Select G-code file to load config from:"), FILE_WILDCARDS.at("gcode"), ui_settings->config_directory)};
     if (file.IsEmpty()) return;
+    used_config_file(file);
     std::ifstream in(file.ToUTF8().data());
     std::string line;
     if (!std::getline(in, line) || line.find("generated by Slic3r") == std::string::npos) {
@@ -225,12 +239,22 @@ void Plater::import_config_from_gcode() {
 }
 
 void Plater::export_config_bundle() {
+    const wxString directory {ui_settings->config_directory.IsEmpty() ? ui_settings->skein_directory : ui_settings->config_directory};
     const wxString file {ask_save(this, _("Save presets bundle as:"),
-        wxFileName(ui_settings->skein_directory, "Slic3r_config_bundle.ini"), FILE_WILDCARDS.at("ini"))};
+        wxFileName(directory, "Slic3r_config_bundle.ini"), FILE_WILDCARDS.at("ini"))};
     if (file.IsEmpty()) return;
-    // the Perl GUI's bundle: one [group:name] section per preset file
+    used_config_file(file);
+    // the Perl GUI's bundle: [settings], the selected [presets], one [group:name] section
+    // per preset file
     std::ofstream out(file.ToUTF8().data());
     out << "# generated by Slic3r " << SLIC3R_VERSION << "\n";
+    out << "\n[settings]\nautocenter = " << (ui_settings->autocenter ? 1 : 0) << "\n\n[presets]\n";
+    for (size_t group = 0; group < preset_types; ++group) {
+        const auto& names {ui_settings->default_presets.at(group)};
+        for (size_t i = 0; i < names.size(); ++i)
+            out << GROUP_SECTIONS[group] << (i > 0 ? "_" + std::to_string(i) : std::string())
+                << " = " << names[i].ToUTF8().data() << "\n";
+    }
     for (size_t group = 0; group < preset_types; ++group) {
         wxArrayString files;
         const wxString& directory {SLIC3RAPP->preset_ini.at(group)};
@@ -248,16 +272,23 @@ void Plater::export_config_bundle() {
     else GetFrame()->statusbar->SetStatusText(_("Presets bundle saved to ") + file);
 }
 
-void Plater::load_config_bundle() {
-    const wxString file {ask_open(this, _("Select configuration bundle to load:"), FILE_WILDCARDS.at("ini"))};
-    if (file.IsEmpty()) return;
+void Plater::load_config_bundle(const wxString& path, bool only_with_id) {
+    wxString file {path};
+    if (file.IsEmpty()) {
+        file = ask_open(this, _("Select configuration bundle to load:"), FILE_WILDCARDS.at("ini"), ui_settings->config_directory);
+        if (file.IsEmpty()) return;
+        used_config_file(file);
+    }
     std::ifstream in(file.ToUTF8().data());
     std::map<std::pair<size_t, std::string>, std::string> sections;
+    std::map<std::string, std::string> settings, selected;
     std::string* section {nullptr};
+    std::map<std::string, std::string>* values {nullptr};
     for (std::string line; std::getline(in, line); ) {
         if (!line.empty() && line.back() == '\r') line.pop_back();
         if (!line.empty() && line.front() == '[') {
             section = nullptr;
+            values = line == "[settings]" ? &settings : line == "[presets]" ? &selected : nullptr;
             for (size_t group = 0; group < preset_types; ++group) {
                 const std::string start {std::string("[") + GROUP_SECTIONS[group] + ":"};
                 if (line.compare(0, start.size(), start) != 0 || line.back() != ']') continue;
@@ -268,22 +299,49 @@ void Plater::load_config_bundle() {
             }
         } else if (section != nullptr && !line.empty()) {
             *section += line + "\n";
+        } else if (values != nullptr) {
+            const size_t eq {line.find(" = ")};
+            if (eq != std::string::npos) (*values)[line.substr(0, eq)] = line.substr(eq + 3);
         }
     }
+    // the ids of the presets there are, so that none is imported twice
+    auto id_of = [](const std::string& text, size_t group) {
+        const std::string key {std::string(GROUP_SECTIONS[group]) + "_settings_id = "};
+        const size_t at {text.find(key)};
+        if (at == std::string::npos) return std::string();
+        return text.substr(at + key.size(), text.find('\n', at) - at - key.size());
+    };
     int imported {0}, skipped {0};
     for (const auto& entry : sections) {
-        const wxFileName target(SLIC3RAPP->preset_ini.at(entry.first.first),
-            wxString::FromUTF8(entry.first.second.c_str()) + ".ini");
-        if (target.FileExists()) { ++skipped; continue; }  // never over a preset of the user's
+        const size_t group {entry.first.first};
+        const std::string id {id_of(entry.second, group)};
+        if (only_with_id && id.empty()) continue;
+        bool known {false};
+        for (auto& preset : SLIC3RAPP->presets.at(group)) {
+            Slic3r::Config config {preset.dirty_config()};
+            const std::string key {std::string(GROUP_SECTIONS[group]) + "_settings_id"};
+            if (!id.empty() && config.has(key) && config.config().serialize(key) == id) known = true;
+        }
+        const wxFileName target(SLIC3RAPP->preset_ini.at(group), wxString::FromUTF8(entry.first.second.c_str()) + ".ini");
+        if (known || target.FileExists()) { ++skipped; continue; }  // never over a preset of the user's
         std::ofstream out(target.GetFullPath().ToUTF8().data());
         out << entry.second;
         if (out) ++imported;
     }
-    SLIC3RAPP->load_presets();
-    this->_presets->load();
-    for (auto& editor : GetFrame()->preset_editor_tabs) editor.second->reload_list();
-    show_info(this, wxString::Format(_("%d presets imported, %d skipped because they exist."), imported, skipped),
-        _("Config Bundle"));
+    if (settings.count("autocenter") > 0) ui_settings->autocenter = settings["autocenter"] == "1";
+    for (size_t group = 0; group < preset_types; ++group) {
+        const std::string key {GROUP_SECTIONS[group]};
+        if (selected.count(key) == 0) continue;
+        auto& names {ui_settings->default_presets.at(group)};
+        names = {wxString::FromUTF8(selected[key].c_str())};
+        for (size_t i = 1; selected.count(key + "_" + std::to_string(i)) > 0; ++i)
+            names.push_back(wxString::FromUTF8(selected[key + "_" + std::to_string(i)].c_str()));
+    }
+    ui_settings->save_settings();
+    this->reload_presets();
+    if (imported > 0 || path.IsEmpty())
+        show_info(this, wxString::Format(_("%d presets imported, %d skipped because they exist."), imported, skipped),
+            _("Config Bundle"));
 }
 
 void Plater::quick_slice(bool save_as, bool again, bool svg) {
