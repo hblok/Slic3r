@@ -2,6 +2,8 @@
 #include "ObjectCutDialog.hpp"
 
 #include "misc_ui.hpp"
+#include "ExPolygon.hpp"
+#include "TriangleMesh.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -57,9 +59,34 @@ void ObjectCutCanvas::after_render() {
     }
     glEnd();
     glDisable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glLineWidth(2);
+    glColor3ub(0, 0, 0);
+    glBegin(GL_LINES);
+    for (const auto& point : section) glVertex3d(point.x + shift.x, point.y + shift.y, point.z + shift.z);
+    glEnd();
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_LIGHTING);
 }
+
+namespace {
+
+/// The outline of a mesh in the plane across `A` at `at`.
+template <Axis A>
+void section_of(TriangleMesh mesh, double at, std::vector<Pointf3>& out) {
+    ExPolygons slices;
+    TriangleMeshSlicer<A>(&mesh).slice(static_cast<float>(at), &slices);
+    for (const auto& slice : slices)
+        for (const auto& line : slice.lines())
+            for (const Point& p : {line.a, line.b}) {
+                const double u {unscale(p.x)}, v {unscale(p.y)};
+                // the slicer's two coordinates are (y, z), (z, x) or (x, y)
+                out.push_back(A == X ? Pointf3(at, u, v) : A == Y ? Pointf3(v, at, u) : Pointf3(u, v, at));
+            }
+}
+
+} // namespace
 
 ObjectCutDialog::ObjectCutDialog(wxWindow* parent, ModelObject* object) :
     wxDialog(parent, wxID_ANY, _("Cut"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
@@ -135,6 +162,18 @@ ObjectCutDialog::ObjectCutDialog(wxWindow* parent, ModelObject* object) :
 
 void ObjectCutDialog::update() {
     canvas->set_plane(static_cast<Axis>(axis->GetSelection()), height->GetValue());
+    {
+        const CutOptions cut {this->options()};
+        const double at {cut.at(object->instance_bounding_box(0))};
+        std::vector<Pointf3> lines;
+        for (const auto* volume : object->volumes) {
+            if (volume->modifier) continue;
+            if (cut.axis == X) section_of<X>(volume->mesh, at, lines);
+            else if (cut.axis == Y) section_of<Y>(volume->mesh, at, lines);
+            else section_of<Z>(volume->mesh, at, lines);
+        }
+        canvas->set_section(lines);
+    }
     rotate_lower->Enable(axis->GetSelection() == Z && keep_lower->GetValue());
     if (auto* cut {this->FindWindow(wxID_OK)}) cut->Enable(keep_upper->GetValue() || keep_lower->GetValue());
     // live preview: only when one of the two parts is to survive

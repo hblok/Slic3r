@@ -10,16 +10,18 @@ namespace Slic3r { namespace GUI {
 
 namespace {
 
-void visit_entity(const ExtrusionEntity& entity, PreviewRole role, const Point& shift, const PreviewPanel::Visitor& visit) {
+/// `solid`: the extruder of solid infill, where it differs.
+void visit_entity(const ExtrusionEntity& entity, PreviewRole role, const Point& shift, const PreviewPanel::Visitor& visit,
+        int extruder, int solid = 0) {
     if (entity.is_collection()) {
         for (const auto* child : static_cast<const ExtrusionEntityCollection&>(entity).entities)
-            visit_entity(*child, role, shift, visit);
+            visit_entity(*child, role, shift, visit, extruder, solid);
     } else if (entity.is_loop()) {
         std::vector<const ExtrusionPath*> paths;
         for (const auto& path : static_cast<const ExtrusionLoop&>(entity).paths) paths.push_back(&path);
-        visit(role, paths, true, shift);
+        visit(role, paths, true, shift, extruder);
     } else if (const auto* path = dynamic_cast<const ExtrusionPath*>(&entity)) {
-        visit(role, {path}, false, shift);
+        visit(role, {path}, false, shift, solid > 0 && path->is_solid_infill() ? solid : extruder);
     }
 }
 
@@ -32,6 +34,18 @@ PreviewPanel::PreviewPanel(wxWindow* parent) :
     slider = new wxSlider(this, wxID_ANY, 0, 0, 1, wxDefaultPosition, wxDefaultSize, wxVERTICAL | wxSL_INVERSE);
     z_label = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxSize(40, -1), wxALIGN_CENTRE_HORIZONTAL);
     slider->Bind(wxEVT_SLIDER, [this](wxCommandEvent&) { this->select_level(slider->GetValue()); });
+    // U and D (or the arrows) go a layer up and down, as in the Perl GUI
+    this->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& e) {
+        const int key {e.GetKeyCode()};
+        const int step {key == 'U' || key == WXK_UP ? 1 : key == 'D' || key == WXK_DOWN ? -1 : 0};
+        const int value {slider->GetValue() + step};
+        if (step == 0 || levels.empty()) {
+            e.Skip();
+        } else if (value >= 0 && value < static_cast<int>(levels.size())) {
+            slider->SetValue(value);
+            this->select_level(value);
+        }
+    });
     slider->Hide();
 }
 
@@ -90,6 +104,11 @@ void PreviewPanel::set_print(std::shared_ptr<Slic3r::Print> new_print) {
     this->select_level(value);
 }
 
+void PreviewPanel::reload() {
+    this->load();
+    if (!levels.empty()) this->select_level(slider->GetValue());
+}
+
 void PreviewPanel::select_level(size_t level) {
     if (levels.empty()) return;
     level = std::min(level, levels.size() - 1);
@@ -100,22 +119,27 @@ void PreviewPanel::select_level(size_t level) {
 void PreviewPanel::visit_level(size_t level, const Visitor& visit) const {
     if (print == nullptr || level >= levels.size()) return;
     // skirt and brim are stored once, in print coordinates, and printed on the first layers
-    if (level == 0) visit_entity(print->brim, PreviewRole::Skirt, Point(0, 0), visit);
+    const int brim_extruder {print->regions.empty() ? 1 : static_cast<int>(print->brim_extruder())};
+    if (level == 0) visit_entity(print->brim, PreviewRole::Skirt, Point(0, 0), visit, brim_extruder);
     size_t skirt_levels {static_cast<size_t>(std::max(0, print->config.skirt_height.value))};
     if (print->config.brim_width > 0) skirt_levels = std::max(skirt_levels, size_t(1));
     if (print->has_infinite_skirt() || level < skirt_levels)
-        visit_entity(print->skirt, PreviewRole::Skirt, Point(0, 0), visit);
+        visit_entity(print->skirt, PreviewRole::Skirt, Point(0, 0), visit, brim_extruder);
 
     for (const auto& entry : levels.at(level).layers) {
         const Layer* layer {entry.second};
+        const PrintObjectConfig& object {entry.first->config};
         for (const auto& shift : entry.first->_shifted_copies) {
-            for (const auto* region : layer->regions) {
-                visit_entity(region->perimeters, PreviewRole::Perimeter, shift, visit);
-                visit_entity(region->fills, PreviewRole::Infill, shift, visit);
+            for (auto* region : layer->regions) {
+                const PrintRegionConfig& config {region->region()->config};
+                visit_entity(region->perimeters, PreviewRole::Perimeter, shift, visit, config.perimeter_extruder);
+                visit_entity(region->fills, PreviewRole::Infill, shift, visit, config.infill_extruder,
+                    config.solid_infill_extruder);
             }
             if (const auto* support = dynamic_cast<const SupportLayer*>(layer)) {
-                visit_entity(support->support_fills, PreviewRole::Support, shift, visit);
-                visit_entity(support->support_interface_fills, PreviewRole::Support, shift, visit);
+                visit_entity(support->support_fills, PreviewRole::Support, shift, visit, object.support_material_extruder);
+                visit_entity(support->support_interface_fills, PreviewRole::Support, shift, visit,
+                    object.support_material_interface_extruder);
             }
         }
     }

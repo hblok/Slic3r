@@ -175,6 +175,14 @@ void MainFrame::init_menubar()
             append_menu_item(menuView, view.name, _("Set the view of the 3D plater and preview"),
                 [this, phi, theta](wxCommandEvent&) { this->plater->select_view(phi, theta); }, wxID_ANY, "", view.accelerator);
         }
+        menuView->AppendSeparator();
+        auto* by_role {append_menu_item(menuView, _("Color Toolpaths by Role"),
+            _("Color toolpaths according to perimeter/infill/support material"),
+            [this](wxCommandEvent&) { this->plater->color_toolpaths_by(PathColor::role); }, wxID_ANY, "", "", wxITEM_RADIO)};
+        auto* by_extruder {append_menu_item(menuView, _("Color Toolpaths by Filament"),
+            _("Color toolpaths using the configured extruder/filament color"),
+            [this](wxCommandEvent&) { this->plater->color_toolpaths_by(PathColor::extruder); }, wxID_ANY, "", "", wxITEM_RADIO)};
+        (ui_settings->color_toolpaths_by == PathColor::role ? by_role : by_extruder)->Check(true);
     }
     wxMenu* menuWindow = new wxMenu();
     {

@@ -9,14 +9,23 @@ Plate3D::Plate3D(wxWindow* parent, const wxSize& size, std::vector<PlaterObject>
     // Bind the extra mouse events
     this->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent &e) { this->mouse_down(e); });
     this->Bind(wxEVT_RIGHT_DOWN, [this](wxMouseEvent &e) { this->mouse_down(e); });
+    this->Bind(wxEVT_LEFT_DCLICK, [this](wxMouseEvent &e) {
+        // the first click has selected what is under the mouse (or nothing)
+        if (this->on_double_click) this->on_double_click();
+        e.Skip();
+    });
 }
 
 void Plate3D::mouse_down(wxMouseEvent &e){
     if(hover){
         on_select_object(hover_object);
-        moving = true;
-        moving_volume = hover_volume;
-        move_start = Point(e.GetX(),e.GetY());
+        if (e.RightDown()) {
+            if (on_right_click) on_right_click(e.GetPosition());
+        } else {
+            moving = true;
+            moving_volume = hover_volume;
+            move_start = Point(e.GetX(),e.GetY());
+        }
     }else{
         on_select_object(-1);
     }

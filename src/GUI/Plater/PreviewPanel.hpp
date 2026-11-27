@@ -25,8 +25,11 @@ public:
     void set_print(std::shared_ptr<Slic3r::Print> new_print);
 
     /// One extrusion path or loop (a loop's paths together), in the coordinates of one
-    /// copy: add `shift` (scaled) to its points.
-    using Visitor = std::function<void (PreviewRole, const std::vector<const ExtrusionPath*>&, bool closed, const Point& shift)>;
+    /// copy: add `shift` (scaled) to its points. `extruder` counts from 1.
+    using Visitor = std::function<void (PreviewRole, const std::vector<const ExtrusionPath*>&, bool closed, const Point& shift, int extruder)>;
+
+    /// Draw the shown print again (the colours have changed).
+    void reload();
 
 protected:
     /// Puts the canvas to the left of the slider (call once, from the constructor).
@@ -37,6 +40,7 @@ protected:
     virtual void show_level(size_t level) = 0;
 
     size_t level_count() const { return levels.size(); }
+    double level_z(size_t level) const { return levels.at(level).z; }
     /// Everything extruded at a level: object and support layers, skirt and brim.
     void visit_level(size_t level, const Visitor& visit) const;
     /// The object layers (with slices) at a level.

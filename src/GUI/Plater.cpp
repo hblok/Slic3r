@@ -75,7 +75,7 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     // Initialize handlers for canvases
     auto on_select_object {[this](ObjIdx obj_idx) { this->select_object(obj_idx); }};
     auto on_double_click {[this]() { this->object_settings_dialog(); }};
-    auto on_right_click {[this](wxPanel* canvas, const wxPoint& pos) 
+    auto on_right_click {[this](wxWindow* canvas, const wxPoint& pos) 
         {
             auto obj = this->selected_object();
             if (obj == this->objects.end()) return;
@@ -124,6 +124,12 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
 
     preview2D = new Preview2D(preview_notebook);
     preview_notebook->AddPage(preview2D, _("Toolpaths"));
+
+    canvas3D->on_right_click = [=](const wxPoint& pos) { on_right_click(canvas3D, pos); };
+    canvas3D->on_double_click = on_double_click;
+    // one camera for the 3D plater and the 3D preview
+    canvas3D->on_view_changed = [this]() { this->preview3D->scene().copy_view(*this->canvas3D); };
+    preview3D->scene().on_view_changed = [this]() { this->canvas3D->copy_view(this->preview3D->scene()); };
 
     previewDLP = new PreviewDLP(preview_notebook, wxDefaultSize, objects, model, config);
     preview_notebook->AddPage(previewDLP, _("DLP/SLA"));
@@ -1023,6 +1029,12 @@ void Plater::build_toolbar() {
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->object_cut_dialog(); }, TB_CUT);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->object_layers_dialog(); }, TB_LAYERS);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->object_settings_dialog(); }, TB_SETTINGS);
+}
+
+void Plater::color_toolpaths_by(PathColor by) {
+    ui_settings->color_toolpaths_by = by;
+    ui_settings->save_settings();
+    this->preview3D->reload();
 }
 
 void Plater::zoom(Zoom dir) {

@@ -30,11 +30,15 @@ public:
     using ObjectCanvas::ObjectCanvas;
     /// A cut across `axis`, `height` mm above the object's lowest point on that axis.
     void set_plane(Axis axis, double height);
+    /// The outline of the object where the plane goes through it: pairs of points, in
+    /// the object's coordinates.
+    void set_section(const std::vector<Pointf3>& lines) { this->section = lines; this->Refresh(); }
 protected:
     void after_render() override;
 private:
     Axis axis {Z};
     double height {0};
+    std::vector<Pointf3> section {};
 };
 
 struct CutOptions {

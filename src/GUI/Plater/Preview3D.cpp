@@ -22,15 +22,13 @@ void PreviewScene3D::show(size_t level) {
 }
 
 void PreviewScene3D::after_render() {
-    const wxColour colours[] {ui_settings->color->COLOR_PARTS(), ui_settings->color->COLOR_INFILL(),
-        ui_settings->color->COLOR_SUPPORT()};
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
     glCullFace(GL_BACK);
     for (size_t i = 0; i < toolpaths.size(); ++i) {
         const auto& group {toolpaths[i]};
         if (shown_level >= group.quads_end.size()) continue;
-        glColor3ub(colours[i].Red(), colours[i].Green(), colours[i].Blue());
+        glColor3ub(group.colour.Red(), group.colour.Green(), group.colour.Blue());
         auto draw = [](GLenum mode, const GLVertexArray& vertices, size_t floats) {
             if (floats == 0) return;
             glVertexPointer(3, GL_FLOAT, 0, vertices.verts.data());
@@ -49,12 +47,25 @@ Preview3D::Preview3D(wxWindow* parent) : PreviewPanel(parent), canvas(new Previe
 }
 
 void Preview3D::load() {
-    canvas->toolpaths = {};
+    // by role, or (preference) by the filament of the extruder that prints it
+    std::vector<wxColour> colours;
+    const bool by_extruder {ui_settings->color_toolpaths_by == PathColor::extruder && print != nullptr};
+    if (by_extruder)
+        for (const auto& text : print->config.filament_colour.values) {
+            wxColour colour;
+            if (!colour.Set(wxString::FromUTF8(text.c_str()))) colour = ui_settings->color->COLOR_PARTS();
+            colours.push_back(colour);
+        }
+    if (colours.empty())
+        colours = {ui_settings->color->COLOR_PARTS(), ui_settings->color->COLOR_INFILL(), ui_settings->color->COLOR_SUPPORT()};
+    canvas->toolpaths.assign(colours.size(), {});
+    for (size_t i = 0; i < colours.size(); ++i) canvas->toolpaths[i].colour = colours[i];
     double height {0};
     for (size_t level = 0; level < level_count(); ++level) {
         const double z {layers_at(level).front().second->print_z};
         height = z;
-        this->visit_level(level, [this, z](PreviewRole role, const std::vector<const ExtrusionPath*>& paths, bool closed, const Point& shift) {
+        this->visit_level(level, [this, z, by_extruder](PreviewRole role, const std::vector<const ExtrusionPath*>& paths,
+                bool closed, const Point& shift, int extruder) {
             Lines lines;
             std::vector<double> widths, heights;
             for (const auto* path : paths) {
@@ -67,7 +78,8 @@ void Preview3D::load() {
                     heights.push_back(path->height);
                 }
             }
-            const size_t group {role == PreviewRole::Infill ? 1u : role == PreviewRole::Support ? 2u : 0u};
+            const size_t group {by_extruder ? static_cast<size_t>(std::max(extruder, 1) - 1) % canvas->toolpaths.size()
+                : role == PreviewRole::Infill ? 1u : role == PreviewRole::Support ? 2u : 0u};
             auto& out {canvas->toolpaths[group]};
             _3DScene::_extrusionentity_to_verts_do(lines, widths, heights, closed, z, shift, &out.quads, &out.triangles);
         });

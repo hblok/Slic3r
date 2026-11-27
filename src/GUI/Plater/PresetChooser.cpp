@@ -222,7 +222,9 @@ Slic3r::Config PresetChooser::full_config() {
         const wxString name {this->selected(group, index)};
         for (auto& preset : this->_presets[get_preset(group)])
             if (preset.name == name) {
-                out.apply(preset.dirty_config().config());
+                // another extruder's material counts with its defaults too: what its
+                // file lacks must not come from the first one
+                out.apply(index == 0 ? preset.dirty_config().config() : preset.config_to_save().config());
                 return true;
             }
         return false;

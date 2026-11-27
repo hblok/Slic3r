@@ -89,8 +89,20 @@ void Preview2D::paint() {
         ui_settings->color->TOOL_SUPPORT(), ui_settings->color->TOOL_DARK()};
     std::vector<wxGraphicsPath> strokes;
     for (size_t i = 0; i < 4; ++i) strokes.push_back(gc->CreatePath());
-    // ponytail: only this level's paths; Perl also greys thicker layers that overlap it
-    this->visit_level(level, [&](PreviewRole role, const std::vector<const ExtrusionPath*>& paths, bool, const Point& shift) {
+    // layers printed higher up but thick enough to reach this height (combined infill,
+    // support at other heights): greyed, under this level's paths
+    const double z {level_z(level)};
+    wxGraphicsPath overlapping {gc->CreatePath()};
+    for (size_t above = level + 1; above < level_count() && level_z(above) < z + 2; ++above) {
+        const double top {level_z(above)};
+        this->visit_level(above, [&](PreviewRole, const std::vector<const ExtrusionPath*>& paths, bool, const Point& shift, int) {
+            for (const auto* path : paths)
+                if (top - path->height < z - 1e-4) add_line(overlapping, path->polyline.points, shift);
+        });
+    }
+    gc->SetPen(wxPen(wxColour(204, 204, 204), 1));
+    gc->StrokePath(overlapping);
+    this->visit_level(level, [&](PreviewRole role, const std::vector<const ExtrusionPath*>& paths, bool, const Point& shift, int) {
         for (const auto* path : paths)
             add_line(strokes[static_cast<size_t>(role)], path->polyline.points, shift);
     });

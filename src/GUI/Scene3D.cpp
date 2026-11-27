@@ -100,8 +100,8 @@ void Scene3D::mouse_move(wxMouseEvent &e){
                 const auto old = mouse_ray(drag_start).intersect_plane(0);
                 _camera_target.translate(current.vector_to(old));
             }
-            //$self->on_viewport_changed->() if $self->on_viewport_changed;
             Refresh();
+            if (on_view_changed != nullptr) on_view_changed();
         }
         dragging = true;
         user_view = true;
@@ -145,11 +145,23 @@ void Scene3D::mouse_wheel(wxMouseEvent &e){
 
         dirty = true;
         Refresh();
+        if (on_view_changed != nullptr) on_view_changed();
 }
 
 void Scene3D::zoom_by(double factor){
     zoom *= factor;
     user_view = true;
+    dirty = true;
+    Refresh();
+    if (on_view_changed != nullptr) on_view_changed();
+}
+
+void Scene3D::copy_view(const Scene3D &other){
+    zoom = other.zoom;
+    phi = other.phi;
+    theta = other.theta;
+    _camera_target = other._camera_target;
+    user_view = other.user_view;
     dirty = true;
     Refresh();
 }

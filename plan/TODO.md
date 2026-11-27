@@ -10,10 +10,10 @@ preferences, editor rules, object settings and modifiers, a one-page wizard.
 
 Missing, compared with the Perl GUI:
 
-- [ ] Preview: colour by extruder, greyed overlapping layers, camera shared with the 3D
-      plater
 - [ ] Printer controller (USB); the Controller tab is empty
 - [ ] SLA/projector (lower priority); the DLP/SLA tab is empty
+- [ ] Object settings: a 3D view of the parts, scale and rotate a single part; layer
+      heights dialog: its 3D preview and quality slider
 - [ ] Try the "Add…" dialog and drag and drop
 
 Done since: closing (and leaving a preset) asks to save or discard modified presets,

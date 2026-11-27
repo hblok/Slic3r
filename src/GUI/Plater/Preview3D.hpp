@@ -1,7 +1,7 @@
 #ifndef PREVIEW3D_HPP
 #define PREVIEW3D_HPP
 
-#include <array>
+#include <vector>
 
 #include "PreviewPanel.hpp"
 #include "Scene3D.hpp"
@@ -15,11 +15,13 @@ public:
 
     /// All extrusions of one colour, lowest level first.
     struct Toolpaths {
+        wxColour colour;
         GLVertexArray quads, triangles;
         /// per level: the number of floats up to and including that level
         std::vector<size_t> quads_end, triangles_end;
     };
-    std::array<Toolpaths, 3> toolpaths;  ///< perimeters (and skirt), infill, support
+    /// one per colour: perimeters (and skirt), infill, support; or one per filament
+    std::vector<Toolpaths> toolpaths;
 
     /// Takes the bed from the print and fits the view to it; call after filling toolpaths.
     void loaded(const Slic3r::Print* print, double height);

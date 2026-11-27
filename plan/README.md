@@ -161,6 +161,9 @@ The Perl GUI is the reference for behaviour and layout.
       and optional 90° buttons, 180° rotations, `--load`, print options, `--threads` and
       `--autosave` for the GUI, preset names as placeholders, "successfully sliced"
       message, re-centering on a new bed shape, WASD nudging, drop targets on the views
+- [x] Previews and 3D (2026-11-28): colour by filament (View menu), thicker layers above
+      greyed in the 2D toolpaths, U/D keys, one camera for the 3D plater and preview,
+      right and double click in the 3D plater, the section outline in the cut preview
 - [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps

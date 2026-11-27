@@ -5,6 +5,7 @@
     #include <wx/wx.h>
 #endif
     
+#include <functional>
 #include <wx/glcanvas.h>
 #include "Settings.hpp"
 #include "Point.hpp"
@@ -27,6 +28,10 @@ public:
     void zoom_by(double factor);
     /// Look from this yaw and pitch (degrees) and fit the contents.
     void select_view(float new_phi, float new_theta);
+    /// The same camera as another scene.
+    void copy_view(const Scene3D& other);
+    /// Called when the user has moved the camera.
+    std::function<void()> on_view_changed {nullptr};
 private:
     wxGLContext* glContext;
     

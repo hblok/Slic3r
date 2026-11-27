@@ -125,6 +125,8 @@ public:
     void select_next();
     void select_prev();
     void zoom(Zoom dir);
+    /// What the colours of the 3D preview mean.
+    void color_toolpaths_by(PathColor by);
     /// One of the standard views of the 3D plater and preview: yaw and pitch in degrees.
     void select_view(float phi, float theta);
 

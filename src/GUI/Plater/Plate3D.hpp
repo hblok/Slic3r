@@ -24,6 +24,9 @@ public:
     
     /// Registered function to fire when an instance is moved.
     std::function<void ()> on_instances_moved {};
+    /// A right click on an object (after selecting it), and a double click on one.
+    std::function<void (const wxPoint&)> on_right_click {};
+    std::function<void ()> on_double_click {};
     
     void selection_changed(){Refresh();}
  protected:
