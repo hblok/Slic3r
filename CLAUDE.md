@@ -54,6 +54,9 @@ Packages are listed in README and in the `perl` job of
 [build.yml](.github/workflows/build.yml). The XS module compiles the same
 `xs/src/libslic3r` sources, so C++ changes reach the Perl program after `./Build`.
 
+After changing a header, run `./Build realclean` first: Module::Build only rebuilds a
+`.cpp` newer than its `.o`, and objects built against an old class layout still link.
+
 ```sh
 (cd xs && perl Build.PL && ./Build && ./Build test)
 export PERL5LIB=$PWD/xs/blib/arch:$PWD/xs/blib/lib

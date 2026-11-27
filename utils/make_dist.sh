@@ -17,7 +17,9 @@ fi
 
 cmake -S src -B build -DCMAKE_BUILD_TYPE=Release >/dev/null
 cmake --build build -j"$(nproc)" --target slic3r
-(cd xs && perl Build.PL >/dev/null && ./Build >/dev/null)
+# clean XS build: Module::Build ignores header changes, and stale objects with an
+# old class layout link fine and then misbehave
+(cd xs && { [ ! -e Build ] || ./Build realclean >/dev/null; } && perl Build.PL >/dev/null && ./Build >/dev/null)
 
 rm -rf "$out"
 mkdir -p "$out"
