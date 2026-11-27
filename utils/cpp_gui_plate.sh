@@ -215,6 +215,16 @@ for line in 'spiral_vase = 1' 'perimeters = 1' 'top_solid_layers = 0' 'fill_dens
 done
 ok "preset editor: the spiral vase rule"
 
+menu 358 1; sleep 1                                     # Help > Configuration Wizard
+shot wizard
+key Return; sleep 2                                     # OK: accept what is selected
+for group in printer filament; do
+    [ -s "$out/data/$group/My Settings.ini" ] || fail "wizard: no $group preset"
+done
+grep -q '^bed_shape = 0x0,200' "$out/data/printer/My Settings.ini" || fail "wizard: bed shape"
+grep -q '^selected\|^printer = My Settings' "$out/data/slic3r.ini" || fail "wizard: preset not selected"
+ok "configuration wizard"
+
 alive end
 if grep -q "wx assertion" "$out/gui.log"; then
     grep "wx assertion" "$out/gui.log" | sort | uniq -c

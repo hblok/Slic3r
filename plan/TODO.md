@@ -5,16 +5,24 @@ Feature candidates (not scheduled): [features.md](features.md).
 
 ## C++ GUI
 
-- [ ] Preview extras: colour by extruder, greyed overlapping layers (2D), camera shared
-      with the 3D plater
-- [ ] Preset editors: the Perl GUI's page layouts, rules that enable/disable dependent
-      options, several extruders, wizard, preset compatibility
-- [ ] Plater: background slicing on changes (`background_processing`), cut by grid,
-      rotate to face, layer heights, reload with the Perl GUI's options; remember loaded
-      config files; test drag and drop and the "Add…" dialog
-- [ ] Object settings and modifiers, preferences
-- [ ] Decide before porting: printer controller (USB), SLA/projector
-- [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/`, `t/`; packaging dependencies
+Done on 2026-11-27 and checked only under Xvfb: preview, plater operations and menus,
+preferences, editor rules, object settings and modifiers, a one-page wizard.
+
+Missing, compared with the Perl GUI:
+
+- [ ] Layer heights (adaptive spline dialog), rotate to face, cut by grid, live cut preview
+- [ ] "Create modifier" (box, cylinder, slab) and moving parts in Object > Settings;
+      layer height ranges
+- [ ] Preset editors: hand-made page layouts, several extruders (extruder count),
+      compatible printers, bed shape dialog, unsaved-changes prompts
+- [ ] Wizard on first start; remember loaded config files; reload options (keep
+      transformations, added parts)
+- [ ] Preview: colour by extruder, greyed overlapping layers, camera shared with the 3D
+      plater
+- [ ] Decide before porting: printer controller (USB), SLA/projector. The Controller and
+      DLP/SLA tabs are empty
+- [ ] Try the "Add…" dialog and drag and drop
+- [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` bindings, `t/`; packaging dependencies
 
 ## Needs the printer
 

@@ -136,8 +136,9 @@ The Perl GUI is the reference for behaviour and layout.
       repair STL; Settings and View menus. A loaded config file lasts until the presets
       are read again. Reload loses changes made to the mesh (X/Y rotation, mirror,
       per-axis scale)
-- [ ] The rest of what the Perl GUI has and is worth keeping: object settings and
-      modifiers, rotate to face, wizard, preferences. Printer controller (USB) and
+- [x] Preferences, editor rules, Object > Settings (parts, modifiers, own settings),
+      configuration wizard (2026-11-27)
+- [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps
 

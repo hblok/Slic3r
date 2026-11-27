@@ -133,7 +133,8 @@ public:
     /// Slice now, if background processing was just switched on.
     void start_background_processing() { this->update_preview(); }
 
-    // The File menu (Plater/FileMenu.cpp)
+    // The File menu and the wizard (Plater/FileMenu.cpp)
+    void config_wizard();
     void load_config_file();
     void export_config();
     void import_config_from_gcode();

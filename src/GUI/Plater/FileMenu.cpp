@@ -11,6 +11,7 @@
 #include "ProgressStatusBar.hpp"
 #include "MainFrame.hpp"
 #include "GUI.hpp"
+#include "Dialogs/ConfigWizard.hpp"
 #include "IO.hpp"
 #include "BoundingBox.hpp"
 
@@ -51,6 +52,34 @@ void Plater::select_external_config(const wxString& file) {
     this->_presets->load();
     for (const auto group : {preset_t::Printer, preset_t::Material, preset_t::Print})
         this->_presets->select_preset_by_name(path.GetName(), group, 0);
+    this->refresh_config();
+    this->invalidate_slices();
+}
+
+void Plater::config_wizard() {
+    DynamicPrintConfig printer, material;
+    const Slic3r::Config current {this->_presets->full_config()};
+    if (!show_config_wizard(this, current.config(), printer, material)) return;
+    const wxString name {"My Settings"};
+    const std::pair<preset_t, const DynamicPrintConfig*> files[] {
+        {preset_t::Printer, &printer}, {preset_t::Material, &material}};
+    auto path = [&name](preset_t group) {
+        return wxFileName(SLIC3RAPP->preset_ini.at(get_preset(group)), name + ".ini").GetFullPath();
+    };
+    if ((wxFileExists(path(preset_t::Printer)) || wxFileExists(path(preset_t::Material)))
+            && wxMessageBox(wxString::Format(_("Replace the presets \"%s\"?"), name), _("Configuration Wizard"),
+                wxYES_NO | wxICON_QUESTION, this) != wxYES) return;
+    try {
+        for (const auto& file : files) file.second->save(path(file.first).ToUTF8().data());
+    } catch (std::exception& e) {
+        show_error(this, wxString::FromUTF8(e.what()));
+        return;
+    }
+    SLIC3RAPP->load_presets();
+    for (auto& editor : GetFrame()->preset_editor_tabs) editor.second->reload_list();
+    this->_presets->load();
+    for (const auto& file : files) this->_presets->select_preset_by_name(name, file.first, 0);
+    ui_settings->save_settings();  // also when the list had selected them by itself
     this->refresh_config();
     this->invalidate_slices();
 }

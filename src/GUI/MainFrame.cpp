@@ -193,8 +193,9 @@ void MainFrame::init_menubar()
     }
     wxMenu* menuHelp = new wxMenu();
     {
-        // TODO: Reimplement config wizard
-        //menuHelp->AppendSeparator();
+        append_menu_item(menuHelp, _(L"&Configuration Wizard…"), _("Set up a printer and a material"),
+            [this](wxCommandEvent&) { this->plater->config_wizard(); });
+        menuHelp->AppendSeparator();
         append_menu_item(menuHelp, _("Slic3r &Website"), _("Open this fork's page in your browser"), [=](wxCommandEvent& e) 
         {
             wxLaunchDefaultBrowser("https://github.com/hblok/Slic3r");

@@ -424,6 +424,7 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
     ${GUI_LIBDIR}/Dialogs/PresetEditor.cpp
     ${GUI_LIBDIR}/Dialogs/PresetRules.cpp
     ${GUI_LIBDIR}/Dialogs/ObjectSettings.cpp
+    ${GUI_LIBDIR}/Dialogs/ConfigWizard.cpp
     ${GUI_LIBDIR}/OptionsGroup/OptionControl.cpp
     ${GUI_LIBDIR}/Dialogs/PrintEditor.cpp
     ${GUI_LIBDIR}/Dialogs/PrinterEditor.cpp
