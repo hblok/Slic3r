@@ -23,6 +23,7 @@ public:
     const std::vector<Pointf>& shape() const { return this->_shape; }
     /// Mark a position (in bed coordinates).
     void set_position(const Pointf& position) { this->_position = position; this->_has_position = true; this->Refresh(); }
+    void clear_position() { this->_has_position = false; this->Refresh(); }
     /// Set: the bed can be clicked and dragged on.
     std::function<void(const Pointf&)> on_move {nullptr};
 private:

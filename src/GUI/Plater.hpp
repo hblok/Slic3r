@@ -160,6 +160,8 @@ public:
     /// Export the G-code to a temporary file and upload it to the print server; without
     /// asking about the name and the options when `skip_dialog`.
     void send_to_printer(bool skip_dialog);
+    /// Export the G-code and queue it for the printer in the Controller tab.
+    void print_with_controller();
     void export_config();
     void import_config_from_gcode();
     /// `file`: empty to ask for one. `only_with_id`: of the bundle's presets those that

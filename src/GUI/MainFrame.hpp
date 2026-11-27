@@ -34,6 +34,9 @@ public:
     bool has_plater_menu() { return this->plater_menu != nullptr; }
     wxMenu* plater_select_menu {nullptr};
     wxNotebook* tabs() { return tabpanel; }
+    /// Queue a G-code file for the selected printer and show the Controller tab.
+    void print_with_controller(const wxString& printer, const std::string& gcode_file,
+        const std::map<std::string, float>& filament);
 
     std::map<preset_t, PresetEditor*> preset_editor_tabs;
     Plater* get_plater() { return this->plater; }

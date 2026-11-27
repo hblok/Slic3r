@@ -168,6 +168,10 @@ The Perl GUI is the reference for behaviour and layout.
       and scale/rotate of a single part from the list's menu; "Layer heights" has the
       adaptive quality slider and a 3D view with a line at each layer (the Perl dialog
       showed the toolpaths there)
+- [x] Controller tab (2026-11-28): printer panels, connect, temperatures, print queue with
+      pause/resume/abort, log, manual control; "Print…" on the plater queues the G-code.
+      `cpp_gui_controller.sh` drives it with `utils/fake_printer.py` on a pseudo
+      terminal (skipped where there are none); not tried on a real printer
 - [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps

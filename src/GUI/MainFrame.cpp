@@ -7,6 +7,7 @@
 #include "misc_ui.hpp"
 #include "Dialogs/AboutDialog.hpp"
 #include "Dialogs/Preferences.hpp"
+#include "Controller/PrinterPanel.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -53,7 +54,13 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
             e.Veto();
             return;
         }
-        // TODO: ask before closing while the printer controller is printing
+        if (e.CanVeto() && this->controller != nullptr && this->controller->printing()
+                && wxMessageBox(_("You are currently printing. Do you want to stop printing and continue anyway?"),
+                    _("Unfinished Print"), wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION, this) != wxYES) {
+            e.Veto();
+            return;
+        }
+        if (this->controller != nullptr) this->controller->disconnect_all();
         // save window size
         ui_settings->save_window_pos(this, "main_frame");
 
@@ -70,24 +77,35 @@ void MainFrame::init_tabpanel()
 
     panel->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, ([=](wxNotebookEvent& e) 
     { 
-        auto tabpanel = this->tabpanel;
-        // TODO: trigger processing for activation event
-        if (tabpanel->GetSelection() > 1) {
-            tabpanel->SetWindowStyle(tabpanel->GetWindowStyleFlag());
-        } 
+        if (this->controller != nullptr && this->tabpanel->GetCurrentPage() == this->controller)
+            this->controller->activate();
+        e.Skip();
     }), panel->GetId());
 
     this->plater = new Slic3r::GUI::Plater(panel, _("Plater"));
-    this->controller = new Slic3r::GUI::Controller(panel, _("Controller"));
-
     panel->AddPage(this->plater, this->plater->GetName());
-    if (ui_settings->show_host) panel->AddPage(this->controller, this->controller->GetName());
+    if (ui_settings->show_host) {
+        this->controller = new Slic3r::GUI::Controller(panel, _("Controller"));
+        panel->AddPage(this->controller, this->controller->GetName());
+    }
     if (ui_settings->preset_editor_tabs) {
         this->plater->show_preset_editor(preset_t::Print,0);
         this->plater->show_preset_editor(preset_t::Material,0);
         this->plater->show_preset_editor(preset_t::Printer,0);
     }
     
+}
+
+void MainFrame::print_with_controller(const wxString& printer, const std::string& gcode_file,
+        const std::map<std::string, float>& filament) {
+    PrinterPanel* panel {this->controller != nullptr ? this->controller->add_printer(printer) : nullptr};
+    if (panel == nullptr) {
+        show_error(this, this->controller == nullptr ? _("The printer controller is disabled in the preferences.")
+            : _("The printer preset has no serial port."));
+        return;
+    }
+    panel->load_print_job(gcode_file, filament);
+    this->tabpanel->SetSelection(this->tabpanel->FindPage(this->controller));
 }
 
 void MainFrame::init_menubar()
@@ -189,7 +207,7 @@ void MainFrame::init_menubar()
         append_menu_item(menuWindow, _("&Plater"), _("Show the plater"),
             [this](wxCommandEvent&) { this->tabpanel->SetSelection(0); }, wxID_ANY, "application_view_tile.png", "Ctrl+T");
         append_menu_item(menuWindow, _("&Controller"), _("Show the printer controller"), [this](wxCommandEvent&) {
-            if (this->tabpanel->FindPage(this->controller) != wxNOT_FOUND) {
+            if (this->controller != nullptr) {
                 this->tabpanel->SetSelection(1);
             } else if (wxMessageBox(_("The printer controller is currently disabled in the preferences. Do you want to enable it?"),
                     _("Controller"), wxYES_NO | wxICON_QUESTION, this) == wxYES) {

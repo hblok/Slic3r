@@ -73,7 +73,9 @@ ctest --test-dir build-gui -L gui -j5 --output-on-failure
 
 That runs `utils/cpp_gui_smoke.sh` (slicing, presets, preview, quit prompt),
 `utils/cpp_gui_presets.sh` (preset editors, shortcuts, several extruders, upload to a
-stand-in print server; that step needs python3) and the four
+stand-in print server; that step needs python3), `utils/cpp_gui_controller.sh` (the
+Controller tab with a stand-in printer on a pseudo terminal; skipped where there are
+none, as in the chroot) and the four
 parts of `utils/cpp_gui_plate.sh` (plater, object operations, face and cut tools, File
 menu); screenshots end
 up in `build-gui/gui-*`. A part that nears 5 minutes gets split.

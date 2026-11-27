@@ -10,7 +10,6 @@ preferences, editor rules, object settings and modifiers, a one-page wizard.
 
 Missing, compared with the Perl GUI:
 
-- [ ] Printer controller (USB); the Controller tab is empty
 - [ ] SLA/projector (lower priority); the DLP/SLA tab is empty
 - [ ] Try the "Add…" dialog and drag and drop
 
@@ -40,6 +39,8 @@ Order: the missing features and the USB controller, then:
 
 ## Needs the printer
 
+- [ ] Controller tab on the real printer: connect, temperatures, manual moves, a print,
+      pause and resume (so far only against `utils/fake_printer.py`)
 - [ ] Read firmware version and capabilities (`M115`, `M503`)
 - [ ] Check the [profile values](../profiles/README.md#not-verified-yet)
 - [ ] Print one reference part

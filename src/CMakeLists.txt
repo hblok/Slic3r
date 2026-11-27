@@ -429,6 +429,9 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
     ${GUI_LIBDIR}/OptionsGroup/OverridePanel.cpp
     ${GUI_LIBDIR}/Dialogs/BedShapeDialog.cpp
     ${GUI_LIBDIR}/octoprint.cpp
+    ${GUI_LIBDIR}/Controller/Controller.cpp
+    ${GUI_LIBDIR}/Controller/PrinterPanel.cpp
+    ${GUI_LIBDIR}/Controller/ManualControlDialog.cpp
     ${GUI_LIBDIR}/Dialogs/PrintEditor.cpp
     ${GUI_LIBDIR}/Dialogs/PrinterEditor.cpp
     ${GUI_LIBDIR}/Dialogs/MaterialEditor.cpp
@@ -471,8 +474,8 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
         # full UI under Xvfb; this binary is also the command line they compare with.
         # Each takes its own X display.
         enable_testing()
-        foreach(name smoke plate objects tools files presets)
-            if (name STREQUAL smoke OR name STREQUAL presets)
+        foreach(name smoke plate objects tools files presets controller)
+            if (name STREQUAL smoke OR name STREQUAL presets OR name STREQUAL controller)
                 set(script ${name})
                 set(part "")
             else()
@@ -481,7 +484,8 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
             endif()
             add_test(NAME gui_${name} COMMAND ${CMAKE_SOURCE_DIR}/../utils/cpp_gui_${script}.sh
                 $<TARGET_FILE:slic3r> $<TARGET_FILE:slic3r> ${CMAKE_BINARY_DIR}/gui-${name} ${part})
-            set_tests_properties(gui_${name} PROPERTIES LABELS gui TIMEOUT 300)
+            # 77: skipped (the controller test needs pseudo terminals)
+            set_tests_properties(gui_${name} PROPERTIES LABELS gui TIMEOUT 300 SKIP_RETURN_CODE 77)
         endforeach()
     endif()
 

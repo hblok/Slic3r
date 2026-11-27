@@ -265,6 +265,7 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     this->btn_export_stl = button(_(L"Export STL…"), "brick_go.png");
     this->btn_export_stl->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { this->export_plate(IO::STL); });
     this->btn_print = button(_(L"Print…"), "arrow_up.png");
+    this->btn_print->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { this->print_with_controller(); });
     this->btn_send = button(_("Send to printer"), "arrow_up.png");
     this->btn_send->SetToolTip(_("Hold Shift to send without asking."));
     this->btn_send->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
@@ -528,6 +529,27 @@ void Plater::export_to(std::shared_ptr<SliceJob> job, const std::string& output_
     this->run_job(job);
 }
 
+void Plater::print_with_controller() {
+    if (this->objects.empty() || this->running != nullptr) return;
+    std::shared_ptr<SliceJob> job;
+    try {
+        job = this->make_job(*this->model);
+    } catch (std::exception& e) {
+        show_error(this, e.what());
+        return;
+    }
+    // the queue keeps the file until the program ends (as the Perl GUI)
+    const wxString directory {wxFileName::CreateTempFileName("slic3r_print_")};
+    wxRemoveFile(directory);
+    if (!wxMkdir(directory, 0700)) {
+        show_error(this, _("Could not create a temporary directory."));
+        return;
+    }
+    const wxString name {wxFileName(wxString::FromUTF8(job->print.output_filepath("").c_str())).GetFullName()};
+    job->then = SliceJob::Then::Print;
+    this->export_to(job, std::string((directory + "/" + name).ToUTF8().data()));
+}
+
 void Plater::send_to_printer(bool skip_dialog) {
     if (this->objects.empty() || this->running != nullptr) return;
     std::shared_ptr<SliceJob> job;
@@ -702,6 +724,15 @@ void Plater::on_job_done(std::shared_ptr<SliceJob> job, const std::string& error
             show_info(this, wxString::Format(_("%s was successfully sliced."),
                 wxFileName(wxString::FromUTF8(job->output_file.c_str())).GetFullName()), _("Slicing Done!"));
         if (job->then == SliceJob::Then::Send) this->upload(job->output_file, job->send_start);
+        if (job->then == SliceJob::Then::Print) {
+            std::map<std::string, float> filament;
+            for (const auto& used : job->print.filament_stats) {
+                const wxString material {this->_presets->selected(preset_t::Material, used.first)};
+                const wxString first {this->_presets->selected(preset_t::Material, 0)};
+                filament[std::string((material.IsEmpty() ? first : material).ToUTF8().data())] += used.second;
+            }
+            GetFrame()->print_with_controller(this->_presets->selected(preset_t::Printer), job->output_file, filament);
+        }
     }
     if (this->export_pending) {
         this->export_pending = false;
