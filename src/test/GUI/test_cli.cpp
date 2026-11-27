@@ -45,7 +45,7 @@ std::string read_to_string(const std::string& name) {
 char** to_cstr_array(std::vector<std::string> in, char** argv) {
     int i = 0;
     for (auto& str : in) {
-        argv[i] = new char[str.size()];
+        argv[i] = new char[str.size() + 1];  // + the terminating NUL
         strcpy(argv[i], str.c_str());
         i++;
     }
@@ -58,7 +58,7 @@ void clean_array(size_t argc, char** argv) {
     }
 }
 
-SCENARIO( "CLI Export Arguments", "[!mayfail]") {
+SCENARIO( "CLI Export Arguments") {
     char* args_cli[20];
     std::vector<std::string> in_args;
     in_args.reserve(20);
@@ -123,19 +123,15 @@ SCENARIO( "CLI Export Arguments", "[!mayfail]") {
         WHEN ( "[ ACTION ] is export-svg") {
             in_args.emplace(in_args.cend()-1, "--export-svg");
             CLI().run(in_args.size(), to_cstr_array(in_args, args_cli));
-            THEN ("SVG files are created.") {
-                REQUIRE(file_exists("test_cli/20mmbox_0", "svg"));
-                REQUIRE(file_exists("test_cli/20mmbox_1", "svg"));
-                REQUIRE(file_exists("test_cli/20mmbox_2", "svg"));
-                REQUIRE(file_exists("test_cli/20mmbox_3", "svg"));
-                REQUIRE(file_exists("test_cli/20mmbox_4", "svg"));
+            THEN ("One SVG file with all layers is created (as Perl).") {
+                REQUIRE(file_exists("test_cli/20mmbox", "svg"));
+                const std::string svg {read_to_string("test_cli/20mmbox.svg"s)};
+                REQUIRE(svg.find("<g id=\"layer0\" slic3r:z=\"0.175\">") != std::string::npos);  // mm, not unscaled twice
+                REQUIRE(svg.find("<g id=\"layer32\"") != std::string::npos);
+                REQUIRE(svg.find("<g id=\"layer33\"") == std::string::npos);
             }
-            clean_file("test_cli/20mmbox_0", "svg", true);
-            clean_file("test_cli/20mmbox_1", "svg", true);
-            clean_file("test_cli/20mmbox_2", "svg", true);
-            clean_file("test_cli/20mmbox_3", "svg", true);
-            clean_file("test_cli/20mmbox_4", "svg", true);
             clean_array(in_args.size(), args_cli);
+            clean_file("test_cli/20mmbox", "svg", true);
         }
         WHEN ( "[ ACTION ] is export-sla-svg") {
             in_args.emplace(in_args.cend()-1, "--export-sla-svg");
@@ -191,15 +187,49 @@ SCENARIO( "CLI Export Arguments", "[!mayfail]") {
     }
 }
 
-SCENARIO("CLI Transform arguments", "[!shouldfail]") {
-    char* args_cli[20];
-    std::vector<std::string> in_args;
-    in_args.reserve(20);
-    in_args.emplace_back("gui_test"s);
-    in_args.emplace_back(testfile("test_cli/20mmbox.stl"s));
-    WHEN("Tests are implemented for CLI model transform") {
-        THEN ("Tests should not fail :D") {
-            REQUIRE(false);
+// the transforms run before the objects have instances; they crashed until 2026-11-27
+SCENARIO("CLI Transform arguments") {
+    // size of the STL the CLI writes for the 20 x 20 x 10 mm box with these options
+    auto exported_size = [] (std::vector<std::string> options) {
+        char* args_cli[20];
+        std::vector<std::string> in_args {"gui_test"s};
+        in_args.insert(in_args.end(), options.begin(), options.end());
+        for (const auto &a : {"--export-stl"s, "--output"s, testfile("transformed.stl"s), testfile("test_cli/20mmbox.stl"s)})
+            in_args.push_back(a);
+        CLI().run(in_args.size(), to_cstr_array(in_args, args_cli));
+        clean_array(in_args.size(), args_cli);
+        const Sizef3 size = Model::read_from_file(testfile("transformed.stl"s)).mesh().bounding_box().size();
+        clean_file("transformed", "stl");
+        return size;
+    };
+    WHEN("--scale 2") {
+        const Sizef3 size = exported_size({"--scale", "2"});
+        THEN("the box is twice as large") {
+            REQUIRE(size.x == Approx(40)); REQUIRE(size.y == Approx(40)); REQUIRE(size.z == Approx(20));
+        }
+    }
+    WHEN("--rotate 45") {
+        const Sizef3 size = exported_size({"--rotate", "45"});
+        THEN("the footprint is the diagonal") {
+            REQUIRE(size.x == Approx(20 * std::sqrt(2))); REQUIRE(size.z == Approx(10));
+        }
+    }
+    WHEN("--rotate-x 90") {
+        const Sizef3 size = exported_size({"--rotate-x", "90"});
+        THEN("Y and Z swap") {
+            REQUIRE(size.x == Approx(20)); REQUIRE(size.y == Approx(10)); REQUIRE(size.z == Approx(20));
+        }
+    }
+    WHEN("--scale-to-fit 10,10,10") {
+        const Sizef3 size = exported_size({"--scale-to-fit", "10,10,10"});
+        THEN("the largest side is 10 mm") {
+            REQUIRE(size.x == Approx(10)); REQUIRE(size.z == Approx(5));
+        }
+    }
+    WHEN("--duplicate-grid 2,2") {
+        const Sizef3 size = exported_size({"--duplicate-grid", "2,2"});
+        THEN("four boxes 6 mm apart") {
+            REQUIRE(size.x == Approx(46)); REQUIRE(size.y == Approx(46)); REQUIRE(size.z == Approx(10));
         }
     }
 }
@@ -261,7 +291,7 @@ SCENARIO("CLI positioning arguments") {
                     auto reader {GCodeReader()};
                     std::string exported { read_to_string("test_cli/20mmbox.gcode"s)};
                     REQUIRE(exported != ""s);
-                    double min_x, max_x, min_y, max_y;
+                    double min_x = 50.0, max_x = -50.0, min_y = 50.0, max_y = -50.0;
                     reader.apply_config(cut.full_print_config_ref());
                     reader.parse(exported, [&min_x, &min_y, &max_x, &max_y] (GCodeReader& self, const GCodeReader::GCodeLine& line)
                     {

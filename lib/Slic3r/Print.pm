@@ -206,12 +206,16 @@ EOF
         if ($layer->slice_z == -1) {
             printf $fh qq{  <g id="layer%d">\n}, $layer_id;
         } else {
-            printf $fh qq{  <g id="layer%d" slic3r:z="%s">\n}, $layer_id, unscale($layer->slice_z);
+            printf $fh qq{  <g id="layer%d" slic3r:z="%s">\n}, $layer_id, $layer->slice_z;  # already in mm
         }
         
         my @current_layer_slices = ();
-        # sort slices so that the outermost ones come first
-        my @slices = sort { $a->contour->contains_point($b->contour->first_point) ? 0 : 1 } @{$layer->slices};
+        # sort slices so that the outermost ones come first: by nesting depth (the old
+        # comparator, "contains ? 0 : 1", was not an ordering); same in the C++ CLI
+        my @slices = @{$layer->slices};
+        my @depth = map { my $i = $_; scalar grep { $_ != $i
+            && $slices[$_]->contour->contains_point($slices[$i]->contour->first_point) } 0..$#slices } 0..$#slices;
+        @slices = @slices[ sort { $depth[$a] <=> $depth[$b] || $a <=> $b } 0..$#slices ];
         foreach my $copy (@{$layer->object->_shifted_copies}) {
             foreach my $slice (@slices) {
                 my $expolygon = $slice->clone;

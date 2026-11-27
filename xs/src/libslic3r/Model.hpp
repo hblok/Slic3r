@@ -342,6 +342,7 @@ class ModelObject
     void set_trafo_obj(TransformationMatrix const & trafo) {this->trafo_obj = trafo;};
 
     /// Flatten all volumes and instances into a single mesh and applying all the ModelInstances transformations.
+    /// Without instances: the volumes as they are.
     TriangleMesh mesh() const;
 
     /// Flatten all volumes into a single mesh.

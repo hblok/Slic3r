@@ -8,6 +8,7 @@
 #include "SimplePrint.hpp"
 #include "TriangleMesh.hpp"
 #include "libslic3r.h"
+#include <algorithm>
 #include <cmath>
 #include <chrono>
 #include <cstdio>
@@ -17,8 +18,10 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <numeric>
 #include <boost/filesystem.hpp>
 #include <boost/nowide/args.hpp>
+#include <boost/nowide/fstream.hpp>
 #include <boost/nowide/iostream.hpp>
 #include <stdexcept>
 #include <sstream>
@@ -248,7 +251,6 @@ int CLI::run(int argc, char **argv) {
         } else if (opt_key == "cut_grid") {
             std::vector<Model> new_models;
             for (auto &model : this->models) {
-                model.add_default_instances();  // mesh() is empty without them
                 TriangleMesh mesh = model.mesh();
                 mesh.repair();
             
@@ -338,6 +340,61 @@ int CLI::run(int argc, char **argv) {
             this->export_models(IO::TMF);
         } else if (opt_key == "export_sla") {
             Slic3r::Log::error("CLI") << "--export-sla is not implemented yet" << std::endl;
+        } else if (opt_key == "export_svg") {
+            // as Perl's Print::export_svg: the solid slices of every layer in one SVG.
+            // ponytail: Perl also draws lines to anchor unsupported islands when support
+            // is on (an SLA aid); left out, --export-sla-svg has SLA supports
+            for (const Model &model : this->models) {
+                SimplePrint print;
+                print.apply_config(this->print_config);
+                print.set_model(model);
+                const Print &p = print.print();
+                std::vector<const Layer*> layers;
+                for (PrintObject* o : p.objects) {
+                    o->slice();
+                    layers.insert(layers.end(), o->layers.begin(), o->layers.end());
+                }
+                std::stable_sort(layers.begin(), layers.end(),
+                    [](const Layer* a, const Layer* b) { return a->print_z < b->print_z; });
+                const BoundingBox bb = p.bounding_box();
+                const std::string outfile = this->output_filepath(model, IO::SVG);
+                boost::nowide::ofstream f(outfile);
+                f << std::setprecision(15);  // Perl prints numbers with 15 significant digits
+                f << "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+                  << "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.0//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\">\n"
+                  << "<svg width=\"" << unscale(bb.size().x) << "\" height=\"" << unscale(bb.size().y)
+                  << "\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:slic3r=\"http://slic3r.org/namespaces/slic3r\">\n"
+                  << "  <!-- \n  Generated using Slic3r " << SLIC3R_VERSION << "\n  https://slic3r.org/\n   -->\n";
+                auto polygon = [&f](const Polygon &poly, const char* type) {
+                    f << "    <polygon slic3r:type=\"" << type << "\" points=\"";
+                    for (size_t i = 0; i < poly.points.size(); ++i)
+                        f << (i ? " " : "") << unscale(poly.points[i].x) << "," << unscale(poly.points[i].y);
+                    f << "\" style=\"fill: " << (strcmp(type, "contour") == 0 ? "white" : "black") << "\" />\n";
+                };
+                for (size_t id = 0; id < layers.size(); ++id) {
+                    f << "  <g id=\"layer" << id << "\" slic3r:z=\"" << layers[id]->slice_z << "\">\n";
+                    // outermost first, so islands inside holes are painted on top. Perl sorts
+                    // with a comparator that is not an ordering; this uses the nesting depth.
+                    ExPolygons slices = layers[id]->slices.expolygons;
+                    std::vector<size_t> depth(slices.size(), 0);
+                    for (size_t i = 0; i < slices.size(); ++i)
+                        for (size_t j = 0; j < slices.size(); ++j)
+                            if (i != j && slices[j].contour.contains(slices[i].contour.first_point())) ++depth[i];
+                    std::vector<size_t> order(slices.size());
+                    std::iota(order.begin(), order.end(), 0);
+                    std::stable_sort(order.begin(), order.end(), [&depth](size_t a, size_t b) { return depth[a] < depth[b]; });
+                    for (const Point &copy : layers[id]->object()->_shifted_copies)
+                        for (const size_t i : order) {
+                            ExPolygon slice = slices[i];
+                            slice.translate(copy.x - bb.min.x, copy.y - bb.min.y);
+                            polygon(slice.contour, "contour");
+                            for (const Polygon &hole : slice.holes) polygon(hole, "hole");
+                        }
+                    f << "  </g>\n";
+                }
+                f << "</svg>\n";
+                boost::nowide::cout << "SVG file exported to " << outfile << std::endl;
+            }
         } else if (opt_key == "export_sla_svg") {
             for (const Model &model : this->models) {
                 SLAPrint print(&model); // initialize print with model

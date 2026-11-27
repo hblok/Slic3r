@@ -620,6 +620,13 @@ ModelObject::mesh() const
 {
     TriangleMesh mesh;
 
+    // not placed yet (CLI transforms, Perl --info, SLA export): the volumes as they
+    // are. This used to be an empty mesh, which made SLAPrint loop until out of memory.
+    if (this->instances.empty()) {
+        for (const ModelVolume* v : this->volumes) mesh.merge(v->mesh);
+        return mesh;
+    }
+
     for (ModelInstancePtrs::const_iterator i = this->instances.begin(); i != this->instances.end(); ++i) {
         TransformationMatrix instance_trafo = (*i)->get_trafo_matrix();
         for (ModelVolumePtrs::const_iterator v = this->volumes.begin(); v != this->volumes.end(); ++v) {
@@ -1020,12 +1027,7 @@ ModelObject::print_info() const
     cout << fixed;
     cout << "[" << boost::filesystem::path(this->input_file).filename().string() << "]" << endl;
     
-    // mesh() has one copy per instance: none before the instances exist (Perl --info)
-    TriangleMesh mesh;
-    if (this->instances.empty())
-        for (const ModelVolume* v : this->volumes) mesh.merge(v->mesh);
-    else
-        mesh = this->mesh();
+    TriangleMesh mesh = this->mesh();
     mesh.check_topology();
     BoundingBoxf3 bb = mesh.bounding_box();
     Sizef3 size = bb.size();

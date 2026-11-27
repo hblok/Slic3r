@@ -332,6 +332,9 @@ set(SLIC3R_TEST_SOURCES
     ${TESTDIR}/libslic3r/test_extrusion_entity.cpp
     ${TESTDIR}/libslic3r/test_3mf.cpp
     ${TESTDIR}/libslic3r/test_amf.cpp
+    # the CLI (main() is left out by BUILD_TEST) and its tests need no GUI
+    slic3r.cpp
+    ${GUI_TESTDIR}/test_cli.cpp
 )
 
 
@@ -562,7 +565,7 @@ if (SLIC3R_BUILD_TESTS)
     endif()
     configure_file("${TESTDIR}/test_options.hpp.in" "${TESTDIR}/test_options.hpp")
     add_executable(slic3r_test ${SLIC3R_TEST_SOURCES}) 
-    target_compile_options(slic3r_test PUBLIC -DSLIC3R_TEST)
+    target_compile_options(slic3r_test PUBLIC -DSLIC3R_TEST -DBUILD_TEST)
     add_test(NAME TestSlic3r COMMAND slic3r_test)
     target_compile_features(slic3r_test PUBLIC cxx_std_14)
     target_include_directories(slic3r_test PUBLIC cxx_std_14 ${SLIC3R_INCLUDES})

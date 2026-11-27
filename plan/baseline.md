@@ -156,7 +156,15 @@ Open:
   without instances, tiles never kept, all tiles under one name), `--repair` alone
   wrote nothing. They now give the same meshes as Perl; file names are
   `name_01.stl`, `name_0.stl`, `name_fixed.obj` (Perl: `name.stl_01.stl`,
-  `name.stl_1_1.stl`, `name_fixed.obj`). `--export-svg` is not implemented in C++.
+  `name.stl_1_1.stl`, `name_fixed.obj`).
+- `--export-svg` ported to C++ 2026-11-27 (output equals Perl, without Perl's SLA
+  anchor lines). Perl wrote `slic3r:z` unscaled twice (1.75e-07 for 0.175) and sorted
+  islands with a comparator that is not an ordering; both fixed. `--export-sla-svg`
+  ran out of memory on any model: `SLAPrintConfig` had no defaults (layer height 0).
+- `ModelObject::mesh()` was empty for an object without instances; now it is the
+  volumes as they are. That was the root of `--info`, `--cut-grid` and SLA failures.
+- The CLI tests (`src/test/GUI/test_cli.cpp`) run in `slic3r_test` since 2026-11-27;
+  they need no GUI.
 
 `src/test/libslic3r/test_support_material.cpp` is in the test build since 2026-11-27;
 its bridge speed test always passed (a helper returned true) and now ports

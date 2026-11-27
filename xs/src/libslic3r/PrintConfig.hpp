@@ -616,6 +616,10 @@ class SLAPrintConfig
     : public virtual StaticPrintConfig
 {
     public:
+    // it had no constructor, so all values were 0: layer_height 0 made SLAPrint::slice()
+    // add layers until out of memory
+    SLAPrintConfig() : StaticPrintConfig() { this->set_defaults(); };
+
     ConfigOptionFloat               fill_angle;
     ConfigOptionPercent             fill_density;
     ConfigOptionEnum<InfillPattern> fill_pattern;
