@@ -1016,7 +1016,12 @@ ModelObject::print_info() const
     cout << fixed;
     cout << "[" << boost::filesystem::path(this->input_file).filename().string() << "]" << endl;
     
-    TriangleMesh mesh = this->mesh();
+    // mesh() has one copy per instance: none before the instances exist (Perl --info)
+    TriangleMesh mesh;
+    if (this->instances.empty())
+        for (const ModelVolume* v : this->volumes) mesh.merge(v->mesh);
+    else
+        mesh = this->mesh();
     mesh.check_topology();
     BoundingBoxf3 bb = mesh.bounding_box();
     Sizef3 size = bb.size();

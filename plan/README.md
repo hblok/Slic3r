@@ -73,7 +73,7 @@ One at a time from [features.md](features.md), each with a test and a test print
 Recommendation: **A**.
 1. Get the Perl program running (phase 2).
 2. Fix C++ support generation (done 2026-11-26: same output as Perl), compare the rest
-   of the output with Perl (done 2026-11-27: 89 setups identical, `compare_perl.sh`;
+   of the output with Perl (done 2026-11-27: 91 setups identical, `compare_perl.sh`;
    transforms, adaptive slicing, both Perl-only filters, several extruders and modifiers included),
    retire Perl logic.
 3. Finish the C++ GUI (or replace it), then remove Perl.

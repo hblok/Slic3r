@@ -5,7 +5,7 @@
 #
 # Needs a built C++ CLI and a built XS module (xs/blib), see CLAUDE.md.
 # Usage: compare_perl.sh path/to/slic3r [name...]   (names: run only these setups)
-# 89 setups.
+# 91 setups.
 # Differing outputs are kept in $KEEP (default: a temporary directory, removed).
 set -u
 
@@ -116,6 +116,14 @@ compare two_parts --load two_extruders.ini $m/two_parts.amf
 compare two_extruders_infill --load two_extruders.ini --infill-extruder 2 $box
 compare two_extruders_support --load two_extruders.ini --support-material --support-material-extruder 2 table.stl
 compare ooze_prevention --load two_extruders.ini --ooze-prevention --infill-extruder 2 --skirts 2 $box
+# --info prints mesh statistics, not G-code
+for model in $m/sloping_hole.stl $m/modifier.amf; do
+    name=info_$(basename "$model" | tr . _)
+    if [ -n "$only" ] && ! echo " $only " | grep -q " $name "; then continue; fi
+    "$slicer" --info "$model" >"$tmp/$name.cpp" 2>&1
+    perl "$root/slic3r.pl" --info "$model" >"$tmp/$name.perl" 2>&1 || echo "(exit $?)" >>"$tmp/$name.perl"
+    if diff "$tmp/$name.cpp" "$tmp/$name.perl" >/dev/null; then echo "same $name"; else echo "DIFF $name"; failed=1; fi
+done
 }
 # Known difference, not in the list: --rotate, --rotate-x, --rotate-y. C++ rotates the
 # mesh, Perl the instance (Z) or the mesh after applying the instance (X, Y); E differs
