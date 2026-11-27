@@ -25,19 +25,19 @@ class GCodeReader {
         GCodeLine(GCodeReader* _reader) : reader(_reader) {};
         
         bool has(char arg) const { return this->args.count(arg) > 0; };
-        float get_float(char arg) const { return atof(this->args.at(arg).c_str()); };
-        float new_X() const { return this->has('X') ? atof(this->args.at('X').c_str()) : this->reader->X; };
-        float new_Y() const { return this->has('Y') ? atof(this->args.at('Y').c_str()) : this->reader->Y; };
-        float new_Z() const { return this->has('Z') ? atof(this->args.at('Z').c_str()) : this->reader->Z; };
-        float new_E() const { return this->has('E') ? atof(this->args.at('E').c_str()) : this->reader->E; };
-        float new_F() const { return this->has('F') ? atof(this->args.at('F').c_str()) : this->reader->F; };
-        float dist_X() const { return this->new_X() - this->reader->X; };
-        float dist_Y() const { return this->new_Y() - this->reader->Y; };
-        float dist_Z() const { return this->new_Z() - this->reader->Z; };
-        float dist_E() const { return this->new_E() - this->reader->E; };
-        float dist_XY() const {
-            float x = this->dist_X();
-            float y = this->dist_Y();
+        double get_float(char arg) const { return atof(this->args.at(arg).c_str()); };
+        double new_X() const { return this->has('X') ? atof(this->args.at('X').c_str()) : this->reader->X; };
+        double new_Y() const { return this->has('Y') ? atof(this->args.at('Y').c_str()) : this->reader->Y; };
+        double new_Z() const { return this->has('Z') ? atof(this->args.at('Z').c_str()) : this->reader->Z; };
+        double new_E() const { return this->has('E') ? atof(this->args.at('E').c_str()) : this->reader->E; };
+        double new_F() const { return this->has('F') ? atof(this->args.at('F').c_str()) : this->reader->F; };
+        double dist_X() const { return this->new_X() - this->reader->X; };
+        double dist_Y() const { return this->new_Y() - this->reader->Y; };
+        double dist_Z() const { return this->new_Z() - this->reader->Z; };
+        double dist_E() const { return this->new_E() - this->reader->E; };
+        double dist_XY() const {
+            double x = this->dist_X();
+            double y = this->dist_Y();
             return sqrt(x*x + y*y);
         };
         bool extruding() const { return this->cmd == "G1" && this->dist_E() > 0; };
@@ -47,7 +47,7 @@ class GCodeReader {
     };
     typedef std::function<void(GCodeReader&, const GCodeLine&)> callback_t;
     
-    float X, Y, Z, E, F;
+    double X, Y, Z, E, F;
     bool verbose;
     callback_t callback; 
     

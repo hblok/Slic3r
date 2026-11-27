@@ -142,8 +142,9 @@ Open:
   model not already on z = 0 was not moved. Slicing aligns its own copy, so only
   adaptive slicing (it reads the model meshes) saw it. Same bug in `--cut` (cut height
   counted from the mesh origin, not the bed); both now equal Perl.
-- Differ from Perl: `--vibration-limit`, `--pressure-advance` (filters Perl
-  implements itself).
+- ~~Differ from Perl: `--vibration-limit`, `--pressure-advance`~~ ported to C++
+  2026-11-27 (`GCode/VibrationLimit`, `GCode/PressureRegulator`); output equals Perl.
+  `GCodeReader` now keeps coordinates as double, like Perl.
 - Not compared yet: several extruders (Perl wants repeated options, e.g.
   `--temperature 200 --temperature 210`), modifier volumes, GUI-only steps.
   `--gcode-arcs` is refused by Perl as incomplete.
@@ -158,8 +159,7 @@ the golden `table_support` output covers the default case.
 - Not found in the code: ironing, monotonic fill, fuzzy skin, M486, thumbnails,
   Klipper flavour (keyword search, not an audit).
 - G2/G3 arc fitting exists in Perl but is disabled as incomplete
-  (`lib/Slic3r/GCode/ArcFitting.pm`). Pressure advance and vibration limit filters
-  also exist in Perl.
+  (`lib/Slic3r/GCode/ArcFitting.pm`); not ported.
 - ~~The C++ CLI aborts on `--merge` (or `-m`) with an unreadable `UnknownOptionException`~~
   fixed 2026-11-27: it read `--dont-arrange` without a default, and the config
   exceptions returned a pointer into a destroyed string from `what()`. Output equals Perl.

@@ -399,7 +399,15 @@ PrintGCode::output()
 std::string
 PrintGCode::filter(const std::string& in, bool wait)
 {
-    return in;
+    // same order as Perl (Print/GCode.pm); arc fitting is not ported (incomplete in Perl)
+    std::string gcode = in;
+    // injects pauses according to time (thus depends on actual speeds)
+    if (this->config.vibration_limit.value != 0)
+        gcode = this->_vibration_limit.process(gcode);
+    // depends on actual speeds; `wait` is a flush at the end of an object or the print
+    if (this->config.pressure_advance.value > 0)
+        gcode = this->_pressure_regulator.process(gcode, wait);
+    return gcode;
 }
 
 void
@@ -840,7 +848,9 @@ PrintGCode::PrintGCode(Slic3r::Print& print, std::ostream& _fh) :
         objects(_print.objects),
         fh(_fh),
         _cooling_buffer(Slic3r::CoolingBuffer(this->_gcodegen)),
-        _spiral_vase(Slic3r::SpiralVase(this->config))
+        _spiral_vase(Slic3r::SpiralVase(this->config)),
+        _vibration_limit(this->config),
+        _pressure_regulator(this->config)
 {
     size_t layer_count {0};
     if (config.complete_objects) {

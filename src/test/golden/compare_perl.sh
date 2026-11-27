@@ -107,6 +107,10 @@ compare merge --merge $box $m/cube_with_hole.stl
 compare adaptive_sloping_hole --adaptive-slicing $m/sloping_hole.stl
 compare adaptive_pyramid --adaptive-slicing --adaptive-slicing-quality 30 $m/pyramid.stl
 compare adaptive_table --adaptive-slicing --support-material table.stl
+compare vibration_limit --vibration-limit 30 $m/cube_with_hole.stl
+compare pressure_advance --pressure-advance 0.5 $box
+compare pressure_advance_relative --pressure-advance 0.5 --use-relative-e-distances $m/cube_with_hole.stl
+compare pressure_advance_complete --pressure-advance 0.5 --complete-objects --duplicate 2 $box
 }
 # Known difference, not in the list: --rotate, --rotate-x, --rotate-y. C++ rotates the
 # mesh, Perl the instance (Z) or the mesh after applying the instance (X, Y); E differs

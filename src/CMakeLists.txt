@@ -197,6 +197,8 @@ add_library(libslic3r STATIC
     ${LIBDIR}/libslic3r/PrintGCode.cpp
     ${LIBDIR}/libslic3r/GCode/CoolingBuffer.cpp
     ${LIBDIR}/libslic3r/GCode/SpiralVase.cpp
+    ${LIBDIR}/libslic3r/GCode/PressureRegulator.cpp
+    ${LIBDIR}/libslic3r/GCode/VibrationLimit.cpp
     ${LIBDIR}/libslic3r/GCodeReader.cpp
     ${LIBDIR}/libslic3r/GCodeSender.cpp
     ${LIBDIR}/libslic3r/GCodeTimeEstimator.cpp
