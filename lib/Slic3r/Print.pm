@@ -53,22 +53,6 @@ sub process {
     $_->generate_support_material for @{$self->objects};
     $self->make_skirt;
     $self->make_brim;  # must come after make_skirt
-    
-    # time to make some statistics
-    if (0) {
-        eval "use Devel::Size";
-        print  "MEMORY USAGE:\n";
-        printf "  meshes        = %.1fMb\n", List::Util::sum(map Devel::Size::total_size($_->meshes), @{$self->objects})/1024/1024;
-        printf "  layer slices  = %.1fMb\n", List::Util::sum(map Devel::Size::total_size($_->slices), map @{$_->layers}, @{$self->objects})/1024/1024;
-        printf "  region slices = %.1fMb\n", List::Util::sum(map Devel::Size::total_size($_->slices), map @{$_->regions}, map @{$_->layers}, @{$self->objects})/1024/1024;
-        printf "  perimeters    = %.1fMb\n", List::Util::sum(map Devel::Size::total_size($_->perimeters), map @{$_->regions}, map @{$_->layers}, @{$self->objects})/1024/1024;
-        printf "  fills         = %.1fMb\n", List::Util::sum(map Devel::Size::total_size($_->fills), map @{$_->regions}, map @{$_->layers}, @{$self->objects})/1024/1024;
-        printf "  print object  = %.1fMb\n", Devel::Size::total_size($self)/1024/1024;
-    }
-    if (0) {
-        eval "use Slic3r::Test::SectionCut";
-        Slic3r::Test::SectionCut->new(print => $self)->export_svg("section_cut.svg");
-    }
 }
 
 sub export_gcode {
