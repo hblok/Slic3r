@@ -47,8 +47,7 @@ presets: cp -r profiles/print profiles/filament profiles/printer ~/.Slic3r/
 
 Runtime packages (Debian 13):
 
-    sudo apt install libwxgtk3.2-1t64 libwxgtk-gl3.2-1t64 libgl1 libglu1-mesa \\
-      libboost-thread1.83.0 libboost-filesystem1.83.0
+    sudo apt install libwxgtk3.2-1t64 libwxgtk-gl3.2-1t64 libglu1-mesa libopengl0 libglx0
 
 If the 3D views stay empty on Wayland, try: GDK_BACKEND=x11 ./slic3r
 EOF2
