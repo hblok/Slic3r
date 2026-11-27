@@ -50,6 +50,20 @@ The first build downloads Catch2. CMake writes `src/test/test_options.hpp`
 its setups live on in the golden check. The GUI smoke test compares the GUI's G-code
 with the C++ CLI's.
 
+## Build and test (C++ GUI)
+
+Also needs `libwxgtk3.2-dev libgl-dev libglu1-mesa-dev xvfb xdotool imagemagick`.
+
+```sh
+cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
+cmake --build build-gui -j$(nproc) --target slic3r   # building every target fails
+utils/cpp_gui_smoke.sh build-gui/slic3r build/slic3r /tmp/gui-smoke   # slicing, presets, preview
+utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r /tmp/gui-plate   # plater, menus, dialogs
+```
+
+Run both after GUI changes. They click at fixed positions and count menu entries: a new
+menu entry or layout change needs the scripts adjusted (see their screenshots).
+
 ## Build and test (Perl application and GUI)
 
 Packages are listed in README and in the `perl` job of

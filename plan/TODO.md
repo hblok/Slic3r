@@ -23,7 +23,20 @@ Missing, compared with the Perl GUI:
 - [ ] SLA/projector (lower priority); the DLP/SLA tab is empty
 - [ ] Prompt about unsaved preset changes when closing (they are lost silently now)
 - [ ] Try the "Add…" dialog and drag and drop
-- [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` bindings, `t/`; packaging dependencies
+
+Order: the unsaved-changes prompt, the missing features and the USB controller, then:
+
+## Removing Perl (only when nothing would be lost)
+
+- [ ] Port what only the Perl scripts do (`utils/*.pl`, `utils/post-processing/`) and the
+      C++ command line lacks
+- [ ] Port the tests only Perl has: no C++ test file for points, lines, polylines,
+      clipper or the motion planner (`xs/t/`), and check `t/` case by case
+- [ ] Tag the last commit with Perl (`perl-final`)
+- [ ] Move the C++ core out of `xs/` (`LIBDIR` in `src/CMakeLists.txt`, keep
+      `xs/src/slic3r/GUI/3DScene.*`), drop the `NO_PERL` conditional
+- [ ] Delete `lib/`, `t/`, the bindings, `slic3r.pl`, `Build.PL`, `utils/gui_smoke.sh`,
+      the CI `perl` job; update docs and packaging dependencies
 
 ## Needs the printer
 
@@ -35,7 +48,7 @@ Missing, compared with the Perl GUI:
 
 ## Needs a real desktop
 
-- [ ] Try the GUI with a window manager and GPU (so far Xvfb only)
+- [ ] Try the C++ GUI with a window manager and GPU (`utils/make_dist.sh`, so far Xvfb only)
 
 ## Bugs
 
@@ -46,6 +59,8 @@ Missing, compared with the Perl GUI:
 
 ## Repo and release
 
+- [ ] Look at the first CI run after 2026-11-27 afternoon (new preview checks and the
+      `cpp_gui_plate.sh` step have not run on GitHub)
 - [ ] GitHub repo description and homepage (still slic3r.org)
 - [ ] Fetch upstream tags (none in the fork, so `git describe` fails)
 - [ ] `.deb` for Debian 13, built by CI, published as a GitHub release
