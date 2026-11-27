@@ -42,7 +42,7 @@ Sources: OrcaSlicer wiki (adaptive pressure advance calibration), Prusa help cen
 | Feature | Why |
 |---|---|
 | ~~Monotonic top infill~~ done 2026-11-27, needs a test print | `--top-infill-pattern monotonic` (also bottom): a line is printed only after the lines of the previous column next to it; neighbours are linked when the link stays inside. Follow-up: fewer travel moves on shapes with many holes (it does not plan regions like PrusaSlicer) |
-| Ironing | Smooth top surfaces; check upstream `merill_ironing` first |
+| ~~Ironing~~ done 2026-11-27, needs a test print | `--ironing`, `ironing_flowrate` (15 %), `ironing_spacing` (0.1 mm): after each top surface's infill, a monotonic pass at 45° with that flow, half an extrusion width inside the walls, at top infill speed. Upstream `merill_ironing` (a "smooth" pattern with 70 % / 30 % flow passes, 26 files incl. removed Perl) was looked at and not ported |
 | Seam placement control, scarf seam | Visible quality |
 | Adaptive cubic and lightning infill | Less filament and time |
 

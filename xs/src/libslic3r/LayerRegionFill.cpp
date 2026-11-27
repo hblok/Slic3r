@@ -288,6 +288,40 @@ LayerRegion::make_fill()
             
             coll->append(STDMOVE(polylines), templ);
         }
+        
+        // Ironing: go over the top surface again with dense lines and little flow. The
+        // pass belongs right after this surface's top infill, so the collection is put in
+        // its final order here and not reordered later.
+        if (surface.is_top() && !is_bridge && this->region()->config.ironing) {
+            const PrintRegionConfig &cfg = this->region()->config;
+            std::unique_ptr<Fill> iron(Fill::new_from_type(ipMonotonic));
+            iron->bounding_box = f->bounding_box;
+            iron->min_spacing  = cfg.ironing_spacing.value;
+            iron->density      = 1;
+            iron->dont_adjust  = true;
+            iron->layer_id     = f->layer_id;
+            iron->z            = f->z;
+            iron->angle        = f->angle + float(PI / 4);  // across the infill lines
+            
+            ExtrusionPath iron_templ(erTopSolidInfill);
+            // ironing_flowrate of one layer over the area: h * spacing per mm of line
+            iron_templ.mm3_per_mm = h * cfg.ironing_spacing.value * cfg.ironing_flowrate.value / 100.;
+            iron_templ.width      = cfg.ironing_spacing.value;
+            iron_templ.height     = h;
+            
+            ExtrusionEntityCollection ironing;
+            // stay off the perimeters: half an extrusion width inside the infill area
+            for (const ExPolygon &area : offset_ex(surface.expolygon, -flow.scaled_width() / 2)) {
+                Polylines lines = iron->fill_surface(Surface(surface.surface_type, area));
+                ironing.append(STDMOVE(lines), iron_templ);
+            }
+            if (!ironing.entities.empty()) {
+                ExtrusionEntityCollection ordered = coll->chained_path();
+                ordered.append(ironing.entities);
+                ordered.no_sort = true;
+                *coll = ordered;
+            }
+        }
     }
 
     // add thin fill regions

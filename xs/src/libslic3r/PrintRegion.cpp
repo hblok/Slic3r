@@ -112,6 +112,9 @@ PrintRegion::invalidate_state_by_config(const PrintConfigBase &config)
             || opt_key == "bottom_infill_pattern"
             || opt_key == "fill_angle"
             || opt_key == "fill_pattern"
+            || opt_key == "ironing"
+            || opt_key == "ironing_flowrate"
+            || opt_key == "ironing_spacing"
             || opt_key == "top_infill_extrusion_width"
             || opt_key == "first_layer_extrusion_width"
             || opt_key == "infill_overlap") {

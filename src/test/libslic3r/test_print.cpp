@@ -5,6 +5,7 @@
 #include "Print.hpp"
 #include "GCodeReader.hpp"
 #include <boost/filesystem.hpp>
+#include <algorithm>
 #include <map>
 #include <sstream>
 
@@ -205,6 +206,44 @@ SCENARIO("Fuzzy skin") {
         }
         THEN("the output is the same on every run") {
             REQUIRE(moves_by_z(config) == fuzzy);
+        }
+    }
+}
+
+SCENARIO("Ironing") {
+    // per layer: E per mm of each extrusion move, in printing order
+    auto flow_by_z = [] (std::shared_ptr<Slic3r::Config> config) {
+        Slic3r::Model model;
+        auto print {init_print({TestMesh::cube_20x20x20}, model, config)};
+        std::stringstream gcode;
+        Slic3r::Test::gcode(gcode, print);
+        std::map<double, std::vector<double>> flow;
+        Slic3r::GCodeReader().parse_stream(gcode, [&flow] (Slic3r::GCodeReader& self, const Slic3r::GCodeReader::GCodeLine& line) {
+            if (line.extruding() && line.dist_XY() > 0) flow[self.Z].push_back(line.dist_E() / line.dist_XY());
+        });
+        return flow;
+    };
+    auto max_of = [] (const std::vector<double> &v) { return *std::max_element(v.begin(), v.end()); };
+    GIVEN("a 20 mm cube") {
+        auto config {Slic3r::Config::new_from_defaults()};
+        THEN("without ironing there are no low-flow moves") {
+            for (const auto &layer : flow_by_z(config))
+                for (const double f : layer.second) REQUIRE(f > 0.25 * max_of(layer.second));
+        }
+        config->set("ironing", true);
+        const auto flow {flow_by_z(config)};
+        THEN("the top layer ends with a low-flow pass, and only the top layer has one") {
+            const auto &top = flow.rbegin()->second;
+            const double full = max_of(top);
+            size_t first_low = top.size();
+            for (size_t i = 0; i < top.size(); ++i)
+                if (top[i] < 0.25 * full) { first_low = i; break; }
+            REQUIRE(first_low < top.size());
+            REQUIRE(top.size() - first_low > 50);        // dense lines
+            for (size_t i = first_low; i < top.size(); ++i)
+                REQUIRE(top[i] < 0.25 * full);           // nothing printed after it
+            for (auto it = flow.begin(); it != std::prev(flow.end()); ++it)
+                for (const double f : it->second) REQUIRE(f > 0.25 * max_of(it->second));
         }
     }
 }

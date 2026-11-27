@@ -64,5 +64,6 @@ check ooze_prevention $box --load two_extruders.ini --ooze-prevention --infill-e
 # fuzzy skin: seeded, so the output is the same on every run (with libstdc++)
 check fuzzy_skin models/cube_with_hole.stl --fuzzy-skin
 check monotonic_top models/cube_with_hole.stl --top-infill-pattern monotonic --bottom-infill-pattern monotonic
+check ironing models/step.stl --ironing
 
 exit $failed

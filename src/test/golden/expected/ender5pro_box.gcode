@@ -2913,6 +2913,9 @@ M84 X Y E ; motors off except Z
 ; infill_extrusion_width = 0
 ; infill_overlap = 55%
 ; infill_speed = 60
+; ironing = 0
+; ironing_flowrate = 15%
+; ironing_spacing = 0.1
 ; min_shell_thickness = 0
 ; min_top_bottom_shell_thickness = 0
 ; overhangs = 1

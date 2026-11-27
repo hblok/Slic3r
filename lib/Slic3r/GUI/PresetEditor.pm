@@ -443,6 +443,7 @@ sub options {
         fuzzy_skin fuzzy_skin_thickness fuzzy_skin_point_dist
         seam_position external_perimeters_first
         fill_density fill_pattern top_infill_pattern bottom_infill_pattern fill_gaps
+        ironing ironing_flowrate ironing_spacing
         infill_every_layers infill_only_where_needed
         solid_infill_every_layers fill_angle solid_infill_below_area 
         only_retract_when_crossing_perimeters infill_first
@@ -571,6 +572,12 @@ sub build {
                 $line->append_option($optgroup->get_option('bottom_infill_pattern'));
                 $optgroup->append_line($line);
             }
+        }
+        {
+            my $optgroup = $page->new_optgroup('Ironing');
+            $optgroup->append_single_option_line('ironing');
+            $optgroup->append_single_option_line('ironing_flowrate');
+            $optgroup->append_single_option_line('ironing_spacing');
         }
         {
             my $optgroup = $page->new_optgroup('Reducing printing time');
@@ -925,7 +932,11 @@ sub _update {
         # solid_infill_extruder uses the same logic as in Print::extruders()
         $self->get_field($_)->toggle($have_solid_infill)
             for qw(top_infill_pattern bottom_infill_pattern infill_first solid_infill_extruder
-                    solid_infill_extrusion_width solid_infill_speed);
+                    solid_infill_extrusion_width solid_infill_speed ironing);
+    }
+    if (any { /$opt_key/ } qw(all_keys top_solid_layers bottom_solid_layers ironing)) {
+        $self->get_field($_)->toggle($have_solid_infill && $config->ironing)
+            for qw(ironing_flowrate ironing_spacing);
     }
 
     if (any { /$opt_key/ } qw(all_keys top_solid_layers bottom_solid_layers fill_density)) {

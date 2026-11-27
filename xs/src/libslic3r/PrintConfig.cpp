@@ -719,6 +719,31 @@ PrintConfigDef::PrintConfigDef()
     def->enum_labels.push_back("Duet");
     def->default_value = new ConfigOptionEnum<HostType>(htOctoprint);
     
+    def = this->add("ironing", coBool);
+    def->label = __TRANS("Ironing");
+    def->category = __TRANS("Infill");
+    def->tooltip = __TRANS("After the top solid infill, go over each top surface again with dense lines and very little flow, to smooth it. Slower; works best on flat tops.");
+    def->cli = "ironing!";
+    def->default_value = new ConfigOptionBool(false);
+
+    def = this->add("ironing_flowrate", coPercent);
+    def->label = __TRANS("Ironing flow");
+    def->category = __TRANS("Infill");
+    def->tooltip = __TRANS("How much plastic the ironing pass lays down, as a share of one layer of the same area.");
+    def->sidetext = "%";
+    def->cli = "ironing-flowrate=s";
+    def->min = 0;
+    def->default_value = new ConfigOptionPercent(15);
+
+    def = this->add("ironing_spacing", coFloat);
+    def->label = __TRANS("Ironing spacing");
+    def->category = __TRANS("Infill");
+    def->tooltip = __TRANS("Distance between the ironing lines.");
+    def->sidetext = __TRANS("mm");
+    def->cli = "ironing-spacing=f";
+    def->min = 0.01;
+    def->default_value = new ConfigOptionFloat(0.1);
+
     def = this->add("infill_acceleration", coFloat);
     def->label = __TRANS("Infill");
     def->category = __TRANS("Speed > Acceleration");
