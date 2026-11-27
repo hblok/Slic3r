@@ -1,6 +1,7 @@
 #include "Model.hpp"
 #include "Geometry.hpp"
 #include "IO.hpp"
+#include <algorithm>
 #include <iostream>
 #include <set>
 #include <boost/algorithm/string/predicate.hpp>
@@ -214,13 +215,16 @@ Model::repair()
 void
 Model::split()
 {
-    Model new_model;
-    for (ModelObject* o : this->objects)
-        o->split(&new_model.objects);
-    
-    this->clear_objects();
-    for (ModelObject* o : new_model.objects)
-        this->add_object(*o);
+    // ModelObject::split() adds the parts to this model (it used to go through a
+    // second Model whose pointers clear_objects() had just freed: a crash).
+    // Split the original objects, then delete those that were replaced.
+    const size_t n = this->objects.size();
+    ModelObjectPtrs parts;
+    for (size_t i = 0; i < n; ++i)
+        this->objects[i]->split(&parts);  // index: split() appends to this->objects
+    for (size_t i = n; i-- > 0;)
+        if (std::find(parts.begin(), parts.end(), this->objects[i]) == parts.end())
+            this->delete_object(i);  // multi-volume objects are kept whole
 }
 
 void

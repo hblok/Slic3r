@@ -51,5 +51,7 @@ check table_support table.stl --support-material --gcode-comments
 # CLI transforms run before the objects have instances (they crashed until 2026-11-27)
 check box_transforms $box --scale 1.5 --rotate 30 --rotate-x 90 --scale-to-fit 25,25,25
 check box_duplicate_grid $box --duplicate-grid 2,2
+# --split before slicing: two objects from one mesh (crashed until 2026-11-27)
+check split_two_squares models/two_hollow_squares.stl --split
 
 exit $failed

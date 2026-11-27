@@ -37,6 +37,14 @@ main(int argc, char **argv) {
 }
 #endif // BUILD_TEST
 
+/// path/name.ext -> path/name<suffix>.ext
+static std::string
+with_suffix(const std::string &file, const std::string &suffix)
+{
+    const boost::filesystem::path p(file);
+    return (p.parent_path() / (p.stem().string() + suffix + p.extension().string())).string();
+}
+
 int CLI::run(int argc, char **argv) {
     #ifdef SLIC3R_DEBUG
         slic3r_log->set_level(log_t::DEBUG);
@@ -240,6 +248,7 @@ int CLI::run(int argc, char **argv) {
         } else if (opt_key == "cut_grid") {
             std::vector<Model> new_models;
             for (auto &model : this->models) {
+                model.add_default_instances();  // mesh() is empty without them
                 TriangleMesh mesh = model.mesh();
                 mesh.repair();
             
@@ -249,7 +258,8 @@ int CLI::run(int argc, char **argv) {
                     Model out;
                     auto o = out.add_object();
                     o->add_volume(*m);
-                    o->input_file += "_" + std::to_string(i++);
+                    o->input_file = with_suffix(model.objects.front()->input_file, "_" + std::to_string(i++));
+                    new_models.push_back(out);
                     delete m;
                 }
             }
@@ -260,11 +270,36 @@ int CLI::run(int argc, char **argv) {
             if (this->actions.empty())
                 this->actions.push_back("export_stl");
         } else if (opt_key == "split") {
-            for (auto &model : this->models)
+            std::vector<Model> new_models;
+            for (auto &model : this->models) {
+                const std::string input_file = model.objects.front()->input_file;  // parts have none
                 model.split();
+                for (auto &o : model.objects)
+                    if (o->input_file.empty()) o->input_file = input_file;  // output names come from it
+                if (!this->actions.empty()) continue;
+                // on its own (as Perl): one STL file per part
+                for (size_t i = 0; i < model.objects.size(); ++i) {
+                    Model part;
+                    char number[16];
+                    snprintf(number, sizeof(number), "_%02zu", i + 1);
+                    part.add_object(*model.objects[i])->input_file = with_suffix(input_file, number);
+                    new_models.push_back(part);
+                }
+            }
+            if (this->actions.empty()) {
+                this->models = new_models;
+                this->actions.push_back("export_stl");
+            }
         } else if (opt_key == "repair") {
             for (auto &model : this->models)
                 model.repair();
+            if (this->actions.empty()) {
+                // on its own (as Perl): write <name>_fixed.obj
+                for (auto &model : this->models)
+                    for (auto &o : model.objects)
+                        o->input_file = with_suffix(o->input_file, "_fixed");
+                this->actions.push_back("export_obj");
+            }
         } else {
 	    Slic3r::Log::error("CLI") << " option not implemented yet: " << opt_key << std::endl;
 	    exit(EXIT_FAILURE);

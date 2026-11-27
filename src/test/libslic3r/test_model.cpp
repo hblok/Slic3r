@@ -48,3 +48,25 @@ SCENARIO("Model construction") {
     }
 
 }
+
+SCENARIO("Model::split") {
+    GIVEN("A model with one object made of two separate cubes") {
+        TriangleMesh mesh = TriangleMesh::make_cube(10, 10, 10);
+        TriangleMesh other = TriangleMesh::make_cube(10, 10, 10);
+        other.translate(20, 0, 0);
+        mesh.merge(other);
+        mesh.repair();  // split() needs it; loading a file does it
+        Model model;
+        model.add_object()->add_volume(mesh);
+        WHEN("it is split") {
+            model.split();  // crashed: it copied parts from freed memory
+            THEN("there are two objects of one cube each") {
+                REQUIRE(model.objects.size() == 2);
+                for (const ModelObject* o : model.objects) {
+                    REQUIRE(o->volumes.size() == 1);
+                    REQUIRE(o->volumes.front()->mesh.facets_count() == 12);
+                }
+            }
+        }
+    }
+}

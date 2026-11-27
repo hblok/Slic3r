@@ -2020,7 +2020,7 @@ CLITransformConfigDef::CLITransformConfigDef()
     def->cli = "cut";
     def->default_value = new ConfigOptionFloat(0);
     
-    def = this->add("cut_grid", coFloat);
+    def = this->add("cut_grid", coPoint);
     def->label = __TRANS("Cut");
     def->tooltip = __TRANS("Cut model in the XY plane into tiles of the specified max size.");
     def->cli = "cut-grid";

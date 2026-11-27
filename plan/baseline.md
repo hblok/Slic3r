@@ -151,6 +151,12 @@ Open:
   `--ooze-prevention` placed no standby points in C++ (a `TODO: PORT THIS` block in
   `PrintGCode.cpp`); ported, now identical.
 - Not compared yet: GUI-only steps. `--gcode-arcs` is refused by Perl as incomplete.
+- Non-slicing actions, fixed 2026-11-27: C++ `--split` crashed (`Model::split()` copied
+  parts that `clear_objects()` had freed), `--cut-grid` exported nothing (empty mesh
+  without instances, tiles never kept, all tiles under one name), `--repair` alone
+  wrote nothing. They now give the same meshes as Perl; file names are
+  `name_01.stl`, `name_0.stl`, `name_fixed.obj` (Perl: `name.stl_01.stl`,
+  `name.stl_1_1.stl`, `name_fixed.obj`). `--export-svg` is not implemented in C++.
 
 `src/test/libslic3r/test_support_material.cpp` is in the test build since 2026-11-27;
 its bridge speed test always passed (a helper returned true) and now ports
