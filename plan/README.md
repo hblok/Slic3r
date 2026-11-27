@@ -5,6 +5,7 @@ Target: Debian 13, unmodified Creality Ender 5 Pro.
 
 | File | Content |
 |---|---|
+| [TODO.md](TODO.md) | Open items |
 | [baseline.md](baseline.md) | What we found in the repo and what works today |
 | [features.md](features.md) | Candidate features, ranked for the Ender 5 Pro |
 | [DECISIONS.md](DECISIONS.md) | Settled decisions |
