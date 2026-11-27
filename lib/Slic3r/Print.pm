@@ -71,34 +71,6 @@ sub process {
     }
 }
 
-sub escaped_split {
-    my ($line) = @_;
-
-    # Free up three characters for temporary replacement
-    $line =~ s/%/%%/g;
-    $line =~ s/#/##/g;
-    $line =~ s/\?/\?\?/g;
-
-    # replace escaped !'s
-    $line =~ s/\!\!/%#\?/g;
-    
-    # split on non-escaped whitespace
-    my @split = split /(?<=[^\!])\s+/, $line, -1;
-
-    for my $part (@split) {
-      # replace escaped whitespace with the whitespace
-      $part =~ s/\!(\s+)/$1/g;
-
-      # resub temp symbols
-      $part =~ s/%#\?/\!/g;
-      $part =~ s/%%/%/g;
-      $part =~ s/##/#/g;
-      $part =~ s/\?\?/\?/g;
-    }
-
-    return @split;
-}
-
 sub export_gcode {
     my $self = shift;
     my %params = @_;
@@ -106,57 +78,17 @@ sub export_gcode {
     # prerequisites
     $self->process;
     
-    # output everything to a G-code file
+    if ($params{output_fh}) {
+        # the C++ G-code export (PrintGCode) as one string, UTF-8 bytes
+        print {$params{output_fh}} $self->_export_gcode;
+        return;
+    }
+    
     my $output_file = $self->output_filepath($params{output_file} // '');
     $self->status_cb->(90, "Exporting G-code" . ($output_file ? " to $output_file" : ""));
-    
-    {
-        # open output gcode file if we weren't supplied a file-handle
-        my ($fh, $tempfile);
-        if ($params{output_fh}) {
-            $fh = $params{output_fh};
-        } else {
-            $tempfile = "$output_file.tmp";
-            Slic3r::open(\$fh, ">", $tempfile)
-                or die "Failed to open $tempfile for writing\n";
-    
-            # the C++ export returns UTF-8 bytes (user text in fields like notes)
-            binmode $fh;
-        }
-
-        # the C++ G-code export (PrintGCode); the Perl port was removed
-        print $fh $self->_export_gcode;
-
-        # close our gcode file
-        close $fh;
-        if ($tempfile) {
-            my $renamed = 0;
-            for my $i (1..5) {
-                last if $renamed = rename Slic3r::encode_path($tempfile), Slic3r::encode_path($output_file);
-                # Wait for 1/4 seconds and try to rename once again.
-                select(undef, undef, undef, 0.25);
-            }
-            Slic3r::debugf "Failed to remove the output G-code file from $tempfile to $output_file. Is $tempfile locked?\n"
-                if !$renamed;
-        }
-    }
-    
-    # run post-processing scripts
-    if (@{$self->config->post_process}) {
-        $self->status_cb->(95, "Running post-processing scripts");
-        $self->config->setenv;
-        for my $script (@{$self->config->post_process}) {
-            Slic3r::debugf "  '%s' '%s'\n", $script, $output_file;
-            my @parsed_script = escaped_split $script;
-            my $executable = shift @parsed_script ;
-            push @parsed_script, $output_file;
-            # -x doesn't return true on Windows except for .exe files
-            if (($^O eq 'MSWin32') ? !(-e $executable) : !(-x $executable)) {
-                die "The configured post-processing script is not executable: check permissions or escape whitespace/exclamation points. ($executable) \n";
-            }
-            system($executable, @parsed_script);
-        }
-    }
+    $self->status_cb->(95, "Running post-processing scripts") if @{$self->config->post_process};
+    # C++: temporary file and rename, then the post-processing scripts (no shell)
+    $self->_export_gcode_file($params{output_file} // '');
 }
 
 # Export SVG slices for the offline SLA printing (written by the C++ Print::export_svg).

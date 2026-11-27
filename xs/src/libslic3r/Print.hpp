@@ -331,6 +331,11 @@ using shared_Print = std::shared_ptr<Print>;
 #define FOREACH_LAYER(object, layer)        FOREACH_BASE(LayerPtrs, (object)->layers, layer)
 #define FOREACH_LAYERREGION(layer, layerm)  FOREACH_BASE(LayerRegionPtrs, (layer)->regions, layerm)
 
+/// Post-processing scripts: split a configured line like Perl's escaped_split, and run it
+/// on the G-code file without a shell.
+std::vector<std::string> split_post_process_script(const std::string &line);
+void run_post_process_script(const std::string &script, const std::string &gcode_file);
+
 }
 
 #endif

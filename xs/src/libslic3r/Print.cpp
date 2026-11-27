@@ -11,8 +11,12 @@
 #include <boost/lexical_cast.hpp>
 #include <cstdio>
 #include <cstdlib>
+#include <cctype>
 #include <fstream>
 #include <iomanip>
+#include <spawn.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <numeric>
 #include <thread>
 #include <sstream>
@@ -704,6 +708,11 @@ Print::export_gcode(std::string outfile, bool quiet)
     const std::string tempfile{ outfile + ".tmp" };
     std::ofstream outstream(tempfile);
     this->export_gcode(outstream);
+    // close before renaming: the last buffered block used to be written when the stream
+    // went out of scope, after the post-processing scripts, over their changes
+    outstream.close();
+    if (!outstream)
+        throw std::runtime_error("Failed to write the G-code file " + tempfile);
     
     // rename the temporary file to the destination file
     // When renaming, some other application (thank you, Windows Explorer) 
@@ -726,22 +735,54 @@ Print::export_gcode(std::string outfile, bool quiet)
             this->status_cb(95, "Running post-processing scripts...");
         
         this->config.setenv_();
-        for (std::string ppscript : this->config.post_process.values) {
-            #ifdef __cpp_lib_quoted_string_io
-                std::stringstream _tmp_string(ppscript);
-                _tmp_string << " " << std::quoted(outfile);
-                ppscript = _tmp_string.str();
-            #else
-                boost::replace_all(ppscript, "\"", "\\\"");
-                ppscript += " \"" + outfile + "\"";
-            #endif
-            system(ppscript.c_str());
-        
-            // TODO: system() should be only used if user enabled an option for explicitly
-            // supporting arguments, otherwise we should use exec*() and call the executable
-            // directly without launching a shell. #4000
+        for (const std::string &script : this->config.post_process.values)
+            run_post_process_script(script, outfile);
+    }
+}
+
+std::vector<std::string>
+split_post_process_script(const std::string &line)
+{
+    // as the Perl version (escaped_split): split on whitespace; "!" before whitespace
+    // keeps it, "!!" is a "!"
+    std::vector<std::string> parts;
+    std::string part;
+    bool in_part = false;
+    for (size_t i = 0; i < line.size(); ++i) {
+        const char c = line[i];
+        if (c == '!' && i + 1 < line.size() && (line[i+1] == '!' || isspace((unsigned char)line[i+1]))) {
+            part += line[++i];
+            in_part = true;
+        } else if (isspace((unsigned char)c)) {
+            if (in_part) parts.push_back(part);
+            part.clear();
+            in_part = false;
+        } else {
+            part += c;
+            in_part = true;
         }
     }
+    if (in_part) parts.push_back(part);
+    return parts;
+}
+
+void
+run_post_process_script(const std::string &script, const std::string &gcode_file)
+{
+    // run the program directly with the G-code file as last argument, no shell (as the
+    // Perl version did)
+    std::vector<std::string> args = split_post_process_script(script);
+    if (args.empty()) return;
+    if (access(args.front().c_str(), X_OK) != 0)
+        throw std::runtime_error("The configured post-processing script is not executable: "
+            "check permissions or escape whitespace/exclamation points. (" + args.front() + ")");
+    args.push_back(gcode_file);
+    std::vector<char*> argv;
+    for (std::string &a : args) argv.push_back(&a[0]);
+    argv.push_back(nullptr);
+    pid_t pid;
+    if (posix_spawn(&pid, argv.front(), nullptr, nullptr, argv.data(), environ) == 0)
+        waitpid(pid, nullptr, 0);
 }
 
 void

@@ -300,6 +300,15 @@ _constant()
             THIS->export_gcode(ss, true);
             RETVAL = ss.str();
         %};
+    // the same into a file: temporary file and rename, then the post-processing scripts
+    void _export_gcode_file(std::string outfile)
+        %code%{
+            try {
+                THIS->export_gcode(outfile, true);
+            } catch (std::exception &e) {
+                croak("%s\n", e.what());
+            }
+        %};
     // the C++ SVG export (replaces the Perl Print::export_svg)
     std::string _export_svg()
         %code%{

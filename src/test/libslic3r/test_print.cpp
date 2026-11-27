@@ -2,6 +2,8 @@
 #include <string>
 #include "test_data.hpp"
 #include "libslic3r.h"
+#include "Print.hpp"
+#include <boost/filesystem.hpp>
 
 using namespace Slic3r::Test;
 using namespace std::literals;
@@ -140,6 +142,34 @@ SCENARIO("Print: Brim generation") {
             print->make_brim();
             THEN("Brim Extrusion collection has 12 loops in it") {
                 REQUIRE(print->brim.items_count() == 12);
+            }
+        }
+    }
+}
+
+SCENARIO("Post-processing scripts (as the Perl escaped_split)") {
+    using namespace Slic3r;
+    GIVEN("script lines") {
+        THEN("they split on whitespace") {
+            REQUIRE(split_post_process_script("/bin/script  --flag x") == std::vector<std::string>({"/bin/script", "--flag", "x"}));
+        }
+        THEN("'!' before whitespace keeps it, '!!' is '!'") {
+            REQUIRE(split_post_process_script("/my! dir/script a!!b c!d") == std::vector<std::string>({"/my dir/script", "a!b", "c!d"}));
+        }
+    }
+    GIVEN("a program that creates the file it gets") {
+        const std::string file {(boost::filesystem::temp_directory_path()
+            / boost::filesystem::unique_path("slic3r-pp-%%%%%%.gcode")).string()};
+        WHEN("it is run as a post-processing script") {
+            run_post_process_script("/usr/bin/touch", file);
+            THEN("it got the G-code file as last argument, without a shell") {
+                REQUIRE(boost::filesystem::exists(file));
+                boost::filesystem::remove(file);
+            }
+        }
+        WHEN("the script is not executable") {
+            THEN("it is an error") {
+                REQUIRE_THROWS(run_post_process_script("/nonexistent/script", file));
             }
         }
     }
