@@ -1,17 +1,16 @@
 // The Perl GUI's Controller/ManualControlDialog.pm.
 #include "Controller/ManualControlDialog.hpp"
 
-#include "Controller/PrinterPanel.hpp"
 #include "Dialogs/BedShapeDialog.hpp"
 #include "GCodeWriter.hpp"
 #include "misc_ui.hpp"
 
 namespace Slic3r { namespace GUI {
 
-ManualControlDialog::ManualControlDialog(PrinterPanel* parent, const DynamicPrintConfig& config, GCodeSender& sender,
-        ManualSettings& settings) :
+ManualControlDialog::ManualControlDialog(wxWindow* parent, const DynamicPrintConfig& config, GCodeSender& sender,
+        ManualSettings& settings, std::function<void(const wxString&)> log) :
     wxDialog(parent, wxID_ANY, _("Manual Control"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
-    _panel(parent), _config(config), _sender(sender), _settings(settings)
+    _log(log), _config(config), _sender(sender), _settings(settings)
 {
     auto button = [this](wxSizer* sizer, const wxString& label, const wxString& icon, bool bold, std::function<void()> action) {
         auto* out {new wxButton(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT)};
@@ -120,7 +119,7 @@ ManualControlDialog::ManualControlDialog(PrinterPanel* parent, const DynamicPrin
 
 /// Through the priority queue, and into the log.
 void ManualControlDialog::_command(const std::string& line) {
-    this->_panel->append_to_log(">> " + wxString::FromUTF8(line.c_str()) + "\n");
+    if (this->_log) this->_log(">> " + wxString::FromUTF8(line.c_str()) + "\n");
     this->_sender.send(line, true);
 }
 

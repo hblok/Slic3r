@@ -1,6 +1,8 @@
 #ifndef MANUALCONTROLDIALOG_HPP
 #define MANUALCONTROLDIALOG_HPP
 
+#include <functional>
+
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
     #include <wx/wx.h>
@@ -12,7 +14,6 @@
 namespace Slic3r { namespace GUI {
 
 class Bed2D;
-class PrinterPanel;
 
 /// What the manual control remembers between its openings.
 struct ManualSettings {
@@ -24,9 +25,11 @@ struct ManualSettings {
 /// Move the head, home, set temperatures and send commands (ManualControlDialog.pm).
 class ManualControlDialog : public wxDialog {
 public:
-    ManualControlDialog(PrinterPanel* parent, const DynamicPrintConfig& config, GCodeSender& sender, ManualSettings& settings);
+    /// `log` gets the commands sent (may be null).
+    ManualControlDialog(wxWindow* parent, const DynamicPrintConfig& config, GCodeSender& sender, ManualSettings& settings,
+        std::function<void(const wxString&)> log);
 private:
-    PrinterPanel* _panel;
+    std::function<void(const wxString&)> _log;
     const DynamicPrintConfig _config;
     GCodeSender& _sender;
     ManualSettings& _settings;

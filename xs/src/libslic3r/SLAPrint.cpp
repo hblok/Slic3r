@@ -7,6 +7,7 @@
 #include <iostream>
 #include <complex>
 #include <cstdio>
+#include <stdexcept>
 #include <boost/version.hpp>
 #if BOOST_VERSION >= 107300
 #include <boost/bind/bind.hpp>
@@ -224,6 +225,7 @@ SLAPrint::write_svg(const std::string &outputfile) const
     const double support_material_radius = sm_pillars_radius();
     
     FILE* f = fopen(outputfile.c_str(), "w");
+    if (f == nullptr) throw std::runtime_error("Cannot write " + outputfile);
     fprintf(f,
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
         "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.0//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\">\n"

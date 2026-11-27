@@ -27,7 +27,6 @@
 #include "Plater/Plate3D.hpp"
 #include "Plater/Preview2D.hpp"
 #include "Plater/Preview3D.hpp"
-#include "Plater/PreviewDLP.hpp"
 #include "Plater/PresetChooser.hpp"
 #include "PrintConfig.hpp"
 
@@ -162,6 +161,8 @@ public:
     void send_to_printer(bool skip_dialog);
     /// Export the G-code and queue it for the printer in the Controller tab.
     void print_with_controller();
+    /// Window > DLP Projector: the print options, then the projector.
+    void dlp_projector();
     void export_config();
     void import_config_from_gcode();
     /// `file`: empty to ask for one. `only_with_id`: of the bundle's presets those that
@@ -215,7 +216,6 @@ private:
     Preview2D* preview2D {nullptr}; //< 2D Preview 
     Preview3D* preview3D {nullptr}; //< 3D Preview 
 
-    PreviewDLP* previewDLP {nullptr}; //< DLP/SLA Preview canvas
 
     wxStaticBoxSizer* object_info_size {nullptr};
     wxButton* btn_export_gcode {nullptr};

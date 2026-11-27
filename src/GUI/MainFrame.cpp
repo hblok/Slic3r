@@ -8,6 +8,7 @@
 #include "Dialogs/AboutDialog.hpp"
 #include "Dialogs/Preferences.hpp"
 #include "Controller/PrinterPanel.hpp"
+#include "Projector/Projector.hpp"
 
 namespace Slic3r { namespace GUI {
 
@@ -61,6 +62,7 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
             return;
         }
         if (this->controller != nullptr) this->controller->disconnect_all();
+        close_projector_screen();
         // save window size
         ui_settings->save_window_pos(this, "main_frame");
 
@@ -217,6 +219,8 @@ void MainFrame::init_menubar()
             }
         }, wxID_ANY, "printer_empty.png", "Ctrl+Y");
     }
+    append_menu_item(menuWindow, _(L"DLP Projector…"), _("Open projector window for DLP printing"),
+        [this](wxCommandEvent&) { this->plater->dlp_projector(); }, wxID_ANY, "film.png", "Ctrl+P");
     wxMenu* menuHelp = new wxMenu();
     {
         append_menu_item(menuHelp, _(L"&Configuration Wizard…"), _("Set up a printer and a material"),

@@ -14,6 +14,7 @@
 #include "OptionsGroup/OverridePanel.hpp"
 #include "OptionsGroup/OptionControl.hpp"
 #include "octoprint.hpp"
+#include "Projector/Projector.hpp"
 #include "ProgressStatusBar.hpp"
 #include "Log.hpp"
 #include "MainFrame.hpp"
@@ -130,9 +131,6 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     // one camera for the 3D plater and the 3D preview
     canvas3D->on_view_changed = [this]() { this->preview3D->scene().copy_view(*this->canvas3D); };
     preview3D->scene().on_view_changed = [this]() { this->canvas3D->copy_view(this->preview3D->scene()); };
-
-    previewDLP = new PreviewDLP(preview_notebook, wxDefaultSize, objects, model, config);
-    preview_notebook->AddPage(previewDLP, _("DLP/SLA"));
 
     preview_notebook->Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, [this](wxBookCtrlEvent& e) {
         this->failed_revision = static_cast<unsigned long>(-1);  // opening the tab tries again
@@ -529,6 +527,25 @@ void Plater::export_to(std::shared_ptr<SliceJob> job, const std::string& output_
     this->run_job(job);
 }
 
+void Plater::dlp_projector() {
+    if (this->objects.empty()) {
+        show_error(this, _("Load an object first."));
+        return;
+    }
+    DynamicPrintConfig config;
+    config.apply(this->full_config().config());
+    DynamicPrintConfig sla;
+    if (!ask_sla_options(this, config, sla)) return;
+    config.apply(sla);
+    const auto* app {dynamic_cast<App*>(wxTheApp)};
+    // its own copy of the plate: the projector slices it while the main window is hidden
+    const Slic3r::Model model(*this->model);
+    ProjectorDialog projector(model, config, app->datadir);
+    GetFrame()->Hide();
+    projector.ShowModal();
+    GetFrame()->Show();
+}
+
 void Plater::print_with_controller() {
     if (this->objects.empty() || this->running != nullptr) return;
     std::shared_ptr<SliceJob> job;
@@ -884,8 +901,6 @@ void Plater::refresh_canvases() {
         this->canvas2D->Refresh();
     if (this->canvas3D != nullptr)
         this->canvas3D->update();
-    if (this->previewDLP != nullptr)
-        this->previewDLP->reload_print();
 
 }
 

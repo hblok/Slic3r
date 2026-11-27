@@ -83,7 +83,8 @@ PrinterPanel::PrinterPanel(wxWindow* parent, const wxString& printer_name, const
     this->_manual_control = icon_button(inside, _("Manual control"), "cog.png");
     this->_manual_control->Hide();
     this->_manual_control->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        ManualControlDialog dialog(this, this->_config, *this->_sender, this->_manual);
+        ManualControlDialog dialog(this, this->_config, *this->_sender, this->_manual,
+            [this](const wxString& text) { this->append_to_log(text); });
         dialog.ShowModal();
     });
     left->Add(this->_manual_control, 0, wxTOP, 15);

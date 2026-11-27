@@ -10,7 +10,6 @@ preferences, editor rules, object settings and modifiers, a one-page wizard.
 
 Missing, compared with the Perl GUI:
 
-- [ ] SLA/projector (lower priority); the DLP/SLA tab is empty
 - [ ] Try the "Add…" dialog and drag and drop
 
 Done since: closing (and leaving a preset) asks to save or discard modified presets,

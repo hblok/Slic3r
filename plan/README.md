@@ -172,8 +172,11 @@ The Perl GUI is the reference for behaviour and layout.
       pause/resume/abort, log, manual control; "Print…" on the plater queues the G-code.
       `cpp_gui_controller.sh` drives it with `utils/fake_printer.py` on a pseudo
       terminal (skipped where there are none); not tried on a real printer
-- [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
-      SLA/projector: decide before porting
+- [x] SLA/DLP projector (2026-11-28): Window > "DLP Projector…": the SLA options, the
+      full-screen layer view, `DLP.ini` (same file as Perl), manual control, the print
+      sequence and SVG export (`cpp_gui_projector.sh`; the print part needs pseudo
+      terminals). Not tried with a projector. Custom G-code now has its placeholders filled
+- [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md)
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps
 
 If phase 2 turns out to be hopeless, go to B. (It did not: see phase 2.)
