@@ -5,7 +5,7 @@
 #
 # Needs a built C++ CLI and a built XS module (xs/blib), see CLAUDE.md.
 # Usage: compare_perl.sh path/to/slic3r [name...]   (names: run only these setups)
-# All 74 setups take about 20 seconds.
+# 89 setups.
 # Differing outputs are kept in $KEEP (default: a temporary directory, removed).
 set -u
 
