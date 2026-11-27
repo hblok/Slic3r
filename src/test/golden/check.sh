@@ -53,5 +53,13 @@ check box_transforms $box --scale 1.5 --rotate 30 --rotate-x 90 --scale-to-fit 2
 check box_duplicate_grid $box --duplicate-grid 2,2
 # --split before slicing: two objects from one mesh (crashed until 2026-11-27)
 check split_two_squares models/two_hollow_squares.stl --split
+# Output proven identical to the former Perl pipeline on 2026-11-27 (compare_perl.sh,
+# removed when the Perl command line was handed to C++); kept so it stays that way.
+check pressure_advance $box --pressure-advance 0.5
+check vibration_limit models/cube_with_hole.stl --vibration-limit 30
+check adaptive_sloping_hole models/sloping_hole.stl --adaptive-slicing
+check modifier models/modifier.amf
+check two_extruders_parts models/two_parts.amf --load two_extruders.ini
+check ooze_prevention $box --load two_extruders.ini --ooze-prevention --infill-extruder 2 --skirts 2
 
 exit $failed

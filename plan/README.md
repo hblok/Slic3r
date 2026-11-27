@@ -1,6 +1,6 @@
 # Plan
 
-Started 2026-11-26. Status: **phases 0 to 2 mostly done, Perl logic retired except the `slic3r.pl` command line; phase 3 started, needs the printer**.
+Started 2026-11-26. Status: **phases 0 to 2 mostly done, only the GUI is Perl; phase 3 started, needs the printer**.
 Target: Debian 13, unmodified Creality Ender 5 Pro.
 
 | File | Content |
@@ -89,13 +89,13 @@ Still Perl outside the GUI, and what to do with it:
 
 | Part | Lines | Next step |
 |---|---|---|
-| `slic3r.pl` command line (repair, cut, split, info, slicing) | ~400 of 645 | Hand off to the C++ CLI (`slic3r` / `slic3r-cli`): option names differ (`--print-center` / `--center`, C++ needs `-g`). Then `compare_perl.sh` loses its purpose; keep the GUI smoke test. **Needs a decision**: it changes how `slic3r.pl` is called |
-| `Print/Simple.pm`, `Print.pm`, `Print/Object.pm` | ~350 | Glue the GUI uses (quick slice, status messages); thin wrappers over C++ |
+| ~~`slic3r.pl` command line~~ | 645 -> 210 | Done 2026-11-27: with files, `slic3r.pl` hands its arguments to the C++ CLI (`--print-center` becomes `--center`, `-j` `--threads`, `-g` added when no other action is given). `compare_perl.sh` removed; six of its setups are golden files now; the GUI smoke test compares the GUI with the C++ CLI |
+| `Print/Simple.pm`, `Print.pm`, `Print/Object.pm` | ~300 | Glue the GUI uses (quick slice, status messages); thin wrappers over C++ |
 | `Config.pm`, `Model.pm`, `Slic3r.pm`, `Geometry.pm`, small wrappers | ~1,300 | Used by the GUI; they go with it |
 | `Test.pm`, `SVG.pm`, `GCode/Reader.pm` | ~480 | Only for `t/`; `t/` tests the pipeline through Perl and goes when the GUI does (most cases have C++ ports) |
 
-So "only the UI uses Perl" is reached once the `slic3r.pl` command line hands off to
-C++: everything else left is GUI glue or Perl tests.
+So only the UI uses Perl now: everything left is GUI glue or Perl tests. Next for Perl:
+the C++ GUI (step 3).
 
 If phase 2 turns out to be hopeless, go to B. (It did not: see phase 2.)
 

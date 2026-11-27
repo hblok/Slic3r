@@ -14,7 +14,7 @@ before proposing a change of direction.
 | `xs/src/libslic3r/` | C++ slicing core |
 | `src/` | C++ CLI (`slic3r.cpp`), CMake build, Catch2 tests (`src/test/`) |
 | `src/GUI/` | C++ GUI: unfinished skeleton, many `//TODO` stubs |
-| `lib/Slic3r/`, `slic3r.pl` | Perl application and the full GUI; slicing, support and G-code run in C++ through XS |
+| `lib/Slic3r/`, `slic3r.pl` | Perl GUI; slicing, support and G-code run in C++ through XS; command line use goes to the C++ CLI |
 | `xs/xsp/`, `xs/t/`, `t/` | Perl/C++ bindings and Perl tests |
 | `package/` | Linux desktop entry only; packaging not built yet |
 
@@ -44,9 +44,11 @@ Expected output is recorded on Debian 13.
 The first build downloads Catch2. CMake writes `src/test/test_options.hpp`
 (ignored by git).
 
-`src/test/golden/compare_perl.sh build/slic3r` slices with the C++ CLI and with
-`slic3r.pl` and compares (needs the XS module built). It once compared two pipelines;
-now it checks that the Perl front end (Simple.pm, config handling) feeds C++ the same.
+`slic3r.pl` with files hands its arguments to the C++ CLI (`build/slic3r`, or
+`slic3r-cli` in a run directory); only the GUI start is Perl. The former parity check
+(`compare_perl.sh`, 94 setups identical) was removed with the Perl command line; some of
+its setups live on in the golden check. The GUI smoke test compares the GUI's G-code
+with the C++ CLI's.
 
 ## Build and test (Perl application and GUI)
 

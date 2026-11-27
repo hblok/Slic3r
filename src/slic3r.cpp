@@ -77,7 +77,7 @@ int CLI::run(int argc, char **argv) {
     for (auto const &file : config.getStrings("load", {})) {
         try{
             if (!boost::filesystem::exists(file)) {
-                if (config.getBool("ignore_nonexistent_file", false)) {
+                if (config.getBool("ignore_nonexistent_config", false)) {
                     continue;
                 } else {
                     throw std::invalid_argument("No such file");
@@ -374,7 +374,7 @@ int CLI::run(int argc, char **argv) {
                 print.center = !this->config.has("center")
                     && !this->config.has("align_xy")
                     && print.arrange;
-                Slic3r::Log::error("CLI") << "Arrange: " << print.arrange<< ", center: " << print.center << std::endl;
+                Slic3r::Log::debug("CLI") << "Arrange: " << print.arrange<< ", center: " << print.center << std::endl;
                 print.set_model(model);
                 
                 // start chronometer

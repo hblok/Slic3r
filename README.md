@@ -61,8 +61,9 @@ The core parts of Slic3r are written in C++11, with multithreading. The graphica
 
 No packages are provided yet. Both programs build from source on Debian 13.
 
-**The Perl application** has the graphical interface and working support material.
-Use it for printing.
+**The Perl application** is the graphical interface. Slicing, support material and
+G-code come from the C++ core (through the XS module); command line use of `slic3r.pl`
+is handed to the C++ command line tool, so build that too.
 
 ```sh
 sudo apt install g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev \
@@ -74,11 +75,12 @@ sudo apt install g++ libboost-dev libboost-thread-dev libboost-filesystem-dev li
 export PERL5LIB=$PWD/xs/blib/arch:$PWD/xs/blib/lib
 prove -j$(nproc) t/
 perl slic3r.pl            # graphical interface
-perl slic3r.pl --help     # command line
+perl slic3r.pl --help     # GUI options, then the C++ command line options
 ```
 
-**The C++ command line tool** is the future core. Its support material matches the Perl
-program's since 2026-11-26; see [plan/baseline.md](plan/baseline.md).
+**The C++ command line tool** (`build/slic3r`) does the command line work, also when
+called through `slic3r.pl`. Its output equals what the Perl program produced; see
+[plan/baseline.md](plan/baseline.md).
 
 ```sh
 sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev

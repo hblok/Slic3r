@@ -1,6 +1,7 @@
-# A simple wrapper to quickly print a single model without a GUI.
-# Used by the command line slic3r.pl, by command line utilities pdf-slic3s.pl and view-toolpaths.pl,
-# and by the quick slice menu of the Slic3r GUI.
+# A simple wrapper to quickly print a single model.
+# Used by the quick slice menu of the Slic3r GUI and by utils/pdf-slices.pl and
+# utils/view-toolpaths.pl. (The command line slic3r.pl hands its work to the C++ CLI;
+# the transform options it used here were removed.)
 #
 # It creates and owns an instance of Slic3r::Print  to perform the slicing
 # and it accepts an instance of Slic3r::Model from the outside.
@@ -8,7 +9,6 @@
 package Slic3r::Print::Simple;
 use Moo;
 
-use Slic3r::Geometry qw(X Y);
 use Slic3r::Geometry::Clipper qw(diff);
 
 has '_print' => (
@@ -24,31 +24,6 @@ has 'duplicate' => (
     default => sub { 1 },
 );
 
-has 'scale' => (
-    is      => 'rw',
-    default => sub { 1 },
-);
-
-has 'rotate' => (
-    is      => 'rw',
-    default => sub { 0 },
-);
-
-has 'rotate_x' => (
-    is      => 'rw',
-    default => sub { 0 },
-);
-
-has 'rotate_y' => (
-    is      => 'rw',
-    default => sub { 0 },
-);
-
-has 'duplicate_grid' => (
-    is      => 'rw',
-    default => sub { [1,1] },
-);
-
 has 'status_cb' => (
     is      => 'rw',
     default => sub { sub {} },
@@ -56,11 +31,6 @@ has 'status_cb' => (
 
 has 'print_center' => (
     is      => 'rw',
-);
-
-has 'dont_arrange' => (
-    is      => 'rw',
-    default => sub { 0 },
 );
 
 has 'output_file' => (
@@ -82,35 +52,12 @@ sub set_model {
     $self->_print->clear_objects;
     
     # make sure all objects have at least one defined instance
-    my $need_arrange = $model->add_default_instances && ! $self->dont_arrange;
-    
-    # apply scaling and rotation supplied from command line if any
-    foreach my $model_object (@{$model->objects}) {
-      foreach my $instance (@{$model_object->instances}) {
-        $instance->set_scaling_factor($instance->scaling_factor * $self->scale);
-        $instance->set_rotation($instance->rotation + $self->rotate);
-        #$instance->set_x_rotation($instance->x_rotation + $self->rotate_x);
-        #$instance->set_y_rotation($instance->y_rotation + $self->rotate_y);
-	if ($self->rotate_x != 0 || $self->rotate_y != 0) {
-	  $model_object->transform_by_instance($instance, 1);
-	  if ($self->rotate_x != 0) {
-	    $model_object->rotate($self->rotate_x, X);
-	  }
-	  if ($self->rotate_y != 0) {
-	    $model_object->rotate($self->rotate_y, Y);
-	  }
-	  # realign object to Z = 0
-	  $model_object->center_around_origin;
-	}
-      }
-    }
+    my $need_arrange = $model->add_default_instances;
     
     my $bed_shape = $self->_print->config->bed_shape;
     my $bb = Slic3r::Geometry::BoundingBoxf->new_from_points($bed_shape);
     
-    if ($self->duplicate_grid->[X] > 1 || $self->duplicate_grid->[Y] > 1) {
-        $model->duplicate_objects_grid($self->duplicate_grid->[X], $self->duplicate_grid->[Y], $self->_print->config->duplicate_distance);
-    } elsif ($need_arrange) {
+    if ($need_arrange) {
         $model->duplicate_objects($self->duplicate, $self->_print->config->min_object_distance, $bb);
     } elsif ($self->duplicate > 1) {
         # if all input objects have defined position(s) apply duplication to the whole model
@@ -119,11 +66,9 @@ sub set_model {
     $_->translate(0,0,-$_->bounding_box->z_min) for @{$model->objects} ;
     
     
-    if (!$self->dont_arrange) {
-        my $print_center = $self->print_center
-            // Slic3r::Pointf->new_unscale(@{ $self->_bed_polygon->centroid });
-        $model->center_instances_around_point($print_center);
-    }
+    my $print_center = $self->print_center
+        // Slic3r::Pointf->new_unscale(@{ $self->_bed_polygon->centroid });
+    $model->center_instances_around_point($print_center);
     
     foreach my $model_object (@{$model->objects}) {
         $self->_print->auto_assign_extruders($model_object);

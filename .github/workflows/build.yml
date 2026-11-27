@@ -55,15 +55,14 @@ jobs:
         run: cd xs && ./Build test
       - name: Perl tests
         run: PERL5LIB="$PWD/xs/blib/arch:$PWD/xs/blib/lib" prove -j"$(nproc)" t/
-      - name: GUI smoke test
-        run: utils/gui_smoke.sh gui-smoke
       - name: Build C++ CLI
+        # slic3r.pl hands command line slicing to it; the smoke test compares with it
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build -j"$(nproc)" --target slic3r
-      - name: C++ and Perl G-code parity
-        run: src/test/golden/compare_perl.sh build/slic3r
+      - name: GUI smoke test
+        run: utils/gui_smoke.sh gui-smoke
       - name: Keep GUI screenshots
         if: always()
         uses: actions/upload-artifact@v7
