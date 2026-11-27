@@ -90,10 +90,6 @@ ctest --test-dir build -L quick --output-on-failure   # tests, a few seconds
 ./build/slic3r --help
 ```
 
-### Can I help?
-
-Please read [CONTRIBUTING](.github/CONTRIBUTING.md) first.
-
 ### Directory structure
 
 * `package/`: Linux desktop entry (packaging is to be rebuilt)
