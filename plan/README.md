@@ -1,6 +1,6 @@
 # Plan
 
-Started 2026-11-26. Status: **phases 0 to 2 mostly done; phase 3 started, needs the printer**.
+Started 2026-11-26. Status: **phases 0 to 2 mostly done, Perl logic retired except the `slic3r.pl` command line; phase 3 started, needs the printer**.
 Target: Debian 13, unmodified Creality Ender 5 Pro.
 
 | File | Content |
@@ -59,7 +59,7 @@ One at a time from [features.md](features.md), each with a test and a test print
 | Part | Lines |
 |---|---|
 | GUI (`lib/Slic3r/GUI*`) | 17,800 |
-| Logic (`lib/`, rest): support, G-code export, config, geometry, filters | 5,500 |
+| Logic (`lib/`, rest): support, G-code export, config, geometry, filters | 5,500 (2,200 since 2026-11-27) |
 | CLI, utilities, build scripts | 2,200 |
 | Tests (`t/`, `xs/t/`) | 7,800 |
 | For comparison: C++ core | 35,500 |
@@ -75,8 +75,27 @@ Recommendation: **A**.
 2. Fix C++ support generation (done 2026-11-26: same output as Perl), compare the rest
    of the output with Perl (done 2026-11-27: 94 setups identical, `compare_perl.sh`;
    transforms, adaptive slicing, both Perl-only filters, several extruders and modifiers included),
-   retire Perl logic.
+   retire Perl logic (mostly done 2026-11-27, see below).
 3. Finish the C++ GUI (or replace it), then remove Perl.
+
+### Retiring Perl logic (step 2), status 2026-11-27
+
+The Perl program now calls C++ (through `Print.xsp`) for slicing, support generation,
+G-code export, SVG export and post-processing scripts. Deleted: `Print/GCode.pm`,
+`Print/SupportMaterial.pm`, the Perl G-code filters, `MotionPlanner.pm`,
+`Test/SectionCut.pm` and unused helpers. Non-GUI Perl in `lib/`: 5,500 -> 2,200 lines.
+
+Still Perl outside the GUI, and what to do with it:
+
+| Part | Lines | Next step |
+|---|---|---|
+| `slic3r.pl` command line (repair, cut, split, info, slicing) | ~400 of 645 | Hand off to the C++ CLI (`slic3r` / `slic3r-cli`): option names differ (`--print-center` / `--center`, C++ needs `-g`). Then `compare_perl.sh` loses its purpose; keep the GUI smoke test. **Needs a decision**: it changes how `slic3r.pl` is called |
+| `Print/Simple.pm`, `Print.pm`, `Print/Object.pm` | ~350 | Glue the GUI uses (quick slice, status messages); thin wrappers over C++ |
+| `Config.pm`, `Model.pm`, `Slic3r.pm`, `Geometry.pm`, small wrappers | ~1,300 | Used by the GUI; they go with it |
+| `Test.pm`, `SVG.pm`, `GCode/Reader.pm` | ~480 | Only for `t/`; `t/` tests the pipeline through Perl and goes when the GUI does (most cases have C++ ports) |
+
+So "only the UI uses Perl" is reached once the `slic3r.pl` command line hands off to
+C++: everything else left is GUI glue or Perl tests.
 
 If phase 2 turns out to be hopeless, go to B. (It did not: see phase 2.)
 
