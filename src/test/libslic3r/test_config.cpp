@@ -261,3 +261,12 @@ SCENARIO("FullPrintConfig validation has the checks of the Perl version") {
         }
     }
 }
+
+SCENARIO("Saving a config reports a failed write.") {
+    GIVEN("A config and a directory that does not exist") {
+        auto config {Slic3r::Config::new_from_defaults()};
+        THEN("save() throws instead of losing the settings quietly") {
+            REQUIRE_THROWS_AS(config->config().save("no-such-directory/config.ini"), std::runtime_error);
+        }
+    }
+}

@@ -116,8 +116,8 @@ public:
     /// One of the standard views of the 3D plater and preview: yaw and pitch in degrees.
     void select_view(float phi, float theta);
 
-    /// Ask if there are any unsaved changes.
-    bool prompt_unsaved_changes() { return true; }
+    /// Before closing: ask to save or discard each modified preset. False: stay open.
+    bool prompt_unsaved_changes();
 
     /// Create menu for object.
     wxMenu* object_menu();

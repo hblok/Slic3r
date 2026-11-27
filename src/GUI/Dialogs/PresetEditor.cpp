@@ -129,29 +129,49 @@ void PresetEditor::_changed(const std::string& opt_key) {
     this->_preset->apply_dirty(this->config);
     // mark the preset as modified in the list (as the Perl GUI)
     const int sel {this->_presets_choice->GetSelection()};
-    if (sel >= 0 && !this->_presets_choice->GetString(sel).EndsWith(_(" (modified)")))
-        this->_presets_choice->SetString(sel, this->_preset->name + _(" (modified)"));
+    if (sel >= 0) this->_presets_choice->SetString(sel, this->_preset->dropdown_name());
     if (this->on_value_change != nullptr) this->on_value_change(opt_key);
+}
+
+wxString ask_preset_name(wxWindow* parent, const wxString& question, const wxString& suggestion) {
+    wxTextEntryDialog dialog(parent, question, _("Save preset"), suggestion);
+    if (dialog.ShowModal() != wxID_OK) return "";
+    const wxString name {dialog.GetValue().Strip(wxString::both)};
+    if (name.IsEmpty() || name.Contains("/") || name.Contains("\\") || name == "- default -") {
+        show_error(parent, _("Invalid preset name."));
+        return "";
+    }
+    return name;
+}
+
+bool write_preset(wxWindow* parent, preset_t group, DynamicPrintConfig config, const wxString& name) {
+    try {
+        for (const auto& key : config.keys())
+            if (key.size() > 12 && key.compare(key.size() - 12, 12, "_settings_id") == 0)
+                config.set_deserialize(key, std::string(name.ToUTF8().data()));
+        const wxString dir {SLIC3RAPP->preset_ini.at(get_preset(group))};
+        if (!wxDirExists(dir)) wxMkdir(dir);
+        config.save((dir + "/" + name + ".ini").ToUTF8().data());
+        return true;
+    } catch (std::exception& e) {
+        show_error(parent, wxString::FromUTF8(e.what()));
+        return false;
+    }
 }
 
 void PresetEditor::save_preset() {
     if (this->_preset == nullptr) return;
-    wxTextEntryDialog dialog(this, _("Save ") + this->title() + _(" as:"), _("Save preset"),
-        this->_preset->default_preset ? wxString("") : this->_preset->name);
-    if (dialog.ShowModal() != wxID_OK) return;
-    const wxString name {dialog.GetValue().Strip(wxString::both)};
-    if (name.IsEmpty() || name.Contains("/") || name.Contains("\\") || name == "- default -") {
-        show_error(this, _("Invalid preset name."));
-        return;
-    }
+    const wxString name {ask_preset_name(this, _("Save ") + this->title() + _(" as:"),
+        this->_preset->default_preset ? wxString("") : this->_preset->name)};
+    if (name.IsEmpty()) return;
     // the editor's options (all of them, as the Perl GUI), with the preset's id
-    for (const auto& key : known_keys(this->my_options()))
-        if (key.size() > 12 && key.compare(key.size() - 12, 12, "_settings_id") == 0)
-            this->config->set(key, std::string(name.ToUTF8().data()));
-    const wxString dir {SLIC3RAPP->preset_ini.at(this->typeId())};
-    if (!wxDirExists(dir)) wxMkdir(dir);
-    this->config->config().save((dir + "/" + name + ".ini").ToStdString());
-    
+    if (!write_preset(this, this->type(), this->config->config(), name)) return;
+    // the changes are in the file now: neither the preset edited nor the one written
+    // over keeps its own
+    this->_preset->dismiss_changes();
+    for (auto& preset : SLIC3RAPP->presets.at(this->typeId()))
+        if (preset.name == name) preset.dismiss_changes();
+
     SLIC3RAPP->load_presets();
     this->_preset = nullptr;
     this->load_presets();
@@ -251,7 +271,7 @@ void PresetEditor::load_presets() {
     this->_presets_choice->Clear();
     int select {0};
     for (size_t i = 0; i < presets.size(); ++i) {
-        this->_presets_choice->Append(presets[i].name);
+        this->_presets_choice->Append(presets[i].dropdown_name());
         if (presets[i].name == current) select = int(i);
     }
     if (presets.empty()) return;

@@ -5,6 +5,7 @@
 
 #include <wx/filedlg.h>
 #include <wx/filename.h>
+#include <wx/msgdlg.h>
 #include <wx/textfile.h>
 
 #include "Plater.hpp"
@@ -12,6 +13,7 @@
 #include "MainFrame.hpp"
 #include "GUI.hpp"
 #include "Dialogs/ConfigWizard.hpp"
+#include "OptionsGroup/OptionControl.hpp"
 #include "IO.hpp"
 #include "BoundingBox.hpp"
 
@@ -82,6 +84,57 @@ void Plater::config_wizard() {
     ui_settings->save_settings();  // also when the list had selected them by itself
     this->refresh_config();
     this->invalidate_slices();
+}
+
+bool Plater::prompt_unsaved_changes() {
+    // a value typed into a text field is stored when the field loses the focus
+    if (wxWindow* focused {wxWindow::FindFocus()}) {
+        wxFocusEvent left(wxEVT_KILL_FOCUS, focused->GetId());
+        focused->ProcessWindowEvent(left);
+    }
+    const wxString kinds[] {_("Print"), _("Material"), _("Printer")};  // preset_t order
+    bool proceed {true}, changed {false};
+    for (size_t group = 0; group < preset_types && proceed; ++group) {
+        for (auto& preset : SLIC3RAPP->presets.at(group)) {
+            if (!preset.dirty()) continue;
+            wxString options;
+            for (const auto& key : preset.dirty_options()) options << "\n- " << option_name(key);
+            wxMessageDialog dialog(this, wxString::Format(
+                    _("%s preset \"%s\" has unsaved changes:\n%s\n\nDo you want to save them?"),
+                    kinds[group], preset.name, options),
+                _("Unsaved Changes"), wxYES_NO | wxCANCEL | wxICON_QUESTION);
+            dialog.SetYesNoCancelLabels(_("Save"), _("Discard"), _("Cancel"));
+            const int answer {dialog.ShowModal()};
+            if (answer == wxID_YES) {
+                // the default preset and loaded config files are saved under a new name
+                const bool rename {preset.default_preset || preset.external};
+                const wxString name {!rename ? preset.name : ask_preset_name(this,
+                    wxString::Format(_("Save %s settings as:"), kinds[group]),
+                    preset.default_preset ? wxString() : preset.name)};
+                proceed = !name.IsEmpty()
+                    && write_preset(this, preset.group, preset.config_to_save().config(), name);
+                // selected: the new preset is the selected one from now on
+                auto& selected {ui_settings->default_presets.at(group)};
+                if (proceed && rename && !selected.empty() && selected.front() == preset.name) {
+                    selected.front() = name;
+                    ui_settings->save_settings();
+                }
+            } else {
+                proceed = answer == wxID_NO;
+            }
+            if (!proceed) break;
+            preset.dismiss_changes();
+            changed = true;
+        }
+    }
+    if (changed && !proceed) {  // staying open: show what was saved or discarded
+        SLIC3RAPP->load_presets();
+        this->_presets->load();
+        for (auto& editor : GetFrame()->preset_editor_tabs) editor.second->reload_list();
+        this->refresh_config();
+        this->invalidate_slices();
+    }
+    return proceed;
 }
 
 void Plater::load_config_file() {

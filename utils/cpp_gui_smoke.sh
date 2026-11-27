@@ -24,7 +24,14 @@ out=$(realpath -m "$3")
 cd "$(dirname "$0")/.."
 root=$PWD
 model=$root/src/test/golden/table.stl
-mkdir -p "$out"
+# an earlier run's files break the next one (the save dialogs ask to replace them):
+# start clean, but only ever remove a directory that a test run made
+if [ -e "$out/.gui-test" ]; then
+    rm -rf "$out"
+elif [ -n "$(ls -A "$out" 2>/dev/null)" ]; then
+    echo "$out is not empty and not from a test run; not touching it" >&2; exit 2
+fi
+mkdir -p "$out"; : >"$out/.gui-test"
 export DISPLAY=":${SMOKE_DISPLAY:-98}"
 export HOME="$out/home"
 mkdir -p "$HOME"
@@ -133,3 +140,41 @@ edit=edit_layer_height after=save_as_my_print run editor "$out/data-editor" \
 grep -q '^layer_height = 0.3' "$out/data-editor/print/My-Print.ini" || fail "editor: My-Print.ini not saved with the change"
 grep -q '^print = My-Print' "$out/data-editor/slic3r.ini" || fail "editor: the saved preset is not selected"
 echo "ok   editor: saved as My-Print and selected"
+
+# unsaved changes at quit: Cancel stays open, Discard writes nothing, Save writes. A
+# material saved in between must not drop the print preset's change.
+start_modified() { # datadir
+    cp -r "$out/data-ender" "$1"
+    "$gui_bin" --datadir "$1" >"$1.log" 2>&1 & gui=$!
+    sleep 8
+    main=$(xdotool search --onlyvisible --name Slic3r | head -1)
+    edit_layer_height
+}
+quit_asks() { # name: File > Quit (the last entry), then the dialog gets the keyboard
+    click 19 12; xdotool key Up; sleep 0.3; xdotool key Return; sleep 2
+    import -window root "$out/$1.png"
+    dialog=$(xdotool search --onlyvisible --name '^Unsaved Changes$') || fail "$1: no question"
+    xdotool windowfocus "$dialog"; sleep 0.3
+}
+exited() { sleep 3; ! kill -0 "$gui" 2>/dev/null || fail "$1: the GUI did not quit"; wait "$gui" || :; }
+ini=print/Ender-5-Pro-0.20mm.ini
+
+start_modified "$out/data-quit-save"
+click 361 43; click 167 85; sleep 1                       # "Material Settings": save under
+xdotool type My-Material; xdotool key Return; sleep 2     # a new name
+click 40 43
+quit_asks quit.cancel
+xdotool key Escape; sleep 1
+kill -0 "$gui" 2>/dev/null || fail "quit: Cancel closed the program"
+quit_asks quit.save
+xdotool key Return                                        # "Save" is the default
+exited "quit, Save"
+grep -q '^layer_height = 0.3' "$out/data-quit-save/$ini" || fail "quit: Save did not write the change"
+echo "ok   quit: asked (also after saving another preset), Cancel, Save"
+
+start_modified "$out/data-quit-discard"
+quit_asks quit.discard
+xdotool mousemove --window "$dialog" 74 131 click 1       # "Discard"
+exited "quit, Discard"
+cmp -s "$p/$ini" "$out/data-quit-discard/$ini" || fail "quit: Discard changed the preset file"
+echo "ok   quit: Discard"

@@ -21,10 +21,12 @@ Missing, compared with the Perl GUI:
       plater
 - [ ] Printer controller (USB); the Controller tab is empty
 - [ ] SLA/projector (lower priority); the DLP/SLA tab is empty
-- [ ] Prompt about unsaved preset changes when closing (they are lost silently now)
 - [ ] Try the "Add…" dialog and drag and drop
 
-Order: the unsaved-changes prompt, the missing features and the USB controller, then:
+Done since: closing asks to save or discard modified presets, and saving or deleting a
+preset keeps the unsaved changes of the others.
+
+Order: the missing features and the USB controller, then:
 
 ## Removing Perl (only when nothing would be lost)
 

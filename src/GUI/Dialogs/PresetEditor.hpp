@@ -26,6 +26,12 @@ namespace Slic3r { namespace GUI {
 
 class PresetPage;
 
+/// Ask for the name to save a preset under; empty when cancelled or not usable.
+wxString ask_preset_name(wxWindow* parent, const wxString& question, const wxString& suggestion);
+
+/// Write a preset file; false (after telling the user) when that fails.
+bool write_preset(wxWindow* parent, preset_t group, DynamicPrintConfig config, const wxString& name);
+
 class PresetEditor : public wxPanel {
 
 public: 

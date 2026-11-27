@@ -669,6 +669,8 @@ ConfigBase::save(const std::string &file) const
     for (t_config_option_keys::const_iterator opt_key = my_keys.begin(); opt_key != my_keys.end(); ++opt_key)
         c << *opt_key << " = " << this->serialize(*opt_key) << endl;
     c.close();
+    // failing quietly loses the user's settings (no such directory, disk full, ...)
+    if (c.fail()) throw std::runtime_error("Could not write " + file);
 }
 
 void

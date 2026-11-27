@@ -316,7 +316,12 @@ int CLI::run(int argc, char **argv) {
         } else if (opt_key == "help_options") {
             this->print_help(true);
         } else if (opt_key == "save") {
-            this->print_config.save(config.getString("save"));
+            try {
+                this->print_config.save(config.getString("save"));
+            } catch (std::exception &e) {
+                Slic3r::Log::error("CLI") << e.what() << std::endl;
+                exit(EXIT_FAILURE);
+            }
         } else if (opt_key == "info") {
             // --info works on unrepaired model
             for (Model &model : this->models) {

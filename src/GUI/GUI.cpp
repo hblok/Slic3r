@@ -147,18 +147,24 @@ void App::load_presets() {
     // default preset on every call.
     for (size_t group = 0; group < preset_types; ++group) {
         Presets& preset_list = this->presets.at(group);
+        const Presets before {std::move(preset_list)};
         preset_list.clear();
         preset_list.push_back(Preset(true, "- default -"s, static_cast<preset_t>(group)));
         const wxString& ini = this->preset_ini.at(group);
-        if (!wxDirExists(ini)) continue;
-        wxArrayString files;
-        wxDir::GetAllFiles(ini, &files, "*.ini", wxDIR_FILES);
-        files.Sort();
-        for (const auto& file : files) {
-            wxString path, name, ext;
-            wxFileName::SplitPath(file, &path, &name, &ext);
-            preset_list.push_back(Preset(path.ToStdString(), (name + "." + ext).ToStdString(), static_cast<preset_t>(group)));
+        if (wxDirExists(ini)) {
+            wxArrayString files;
+            wxDir::GetAllFiles(ini, &files, "*.ini", wxDIR_FILES);
+            files.Sort();
+            for (const auto& file : files) {
+                wxString path, name, ext;
+                wxFileName::SplitPath(file, &path, &name, &ext);
+                preset_list.push_back(Preset(path.ToStdString(), (name + "." + ext).ToStdString(), static_cast<preset_t>(group)));
+            }
         }
+        // saving or deleting one preset must not drop the unsaved changes of the others
+        for (auto& preset : preset_list)
+            for (const auto& old : before)
+                if (old.name == preset.name) preset.keep_changes(old);
     }
 }
 

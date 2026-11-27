@@ -59,20 +59,9 @@ public:
     bool compatible(const Preset& other) const {return (this->group == preset_t::Printer || (compatible(other.name) && other.group == preset_t::Printer));}
 
     /// Format the name appropriately.
-    wxString dropdown_name() { return (this->dirty() ? this->name << " " << _("(modified)") : this->name); }
+    wxString dropdown_name() const { return this->dirty() ? this->name + " " + _("(modified)") : this->name; }
 
     bool file_exists() const { return this->_file.IsFileReadable(); }
-
-    bool prompt_unsaved_changes(wxWindow* parent);
-
-    /// Apply dirty config to config and save.
-    bool save(t_config_option_keys opt_keys);
-
-    /// Apply dirty config to config and save with an alternate name.
-    bool save_as(wxString name, t_config_option_keys opt_keys);
-
-    /// Delete this preset from the system.
-    void delete_preset();
 
     /// Returns list of options that have been modified from the config.
     t_config_option_keys dirty_options() const;
@@ -94,6 +83,13 @@ public:
 
     /// Clear the dirty config.
     void dismiss_changes();
+
+    /// Take over the unsaved changes of this preset's former self (the list was read
+    /// again), unless the file has changed since: then the file wins.
+    void keep_changes(const Preset& before);
+
+    /// What saving writes: every option of the group, with the unsaved changes.
+    Slic3r::Config config_to_save();
 
     void apply_dirty(const Slic3r::Config& other) { this->_dirty_config->apply(other); }
     void apply_dirty(const config_ptr& other) { this->apply_dirty(*other); }

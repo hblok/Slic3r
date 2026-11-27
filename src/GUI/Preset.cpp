@@ -59,11 +59,36 @@ t_config_option_keys Preset::dirty_options() const {
             [this](const std::string x) { return this->_config->has(x) && !this->_dirty_config->has(x);}),
             dirty.end());
 
+    // options a partial preset file lacks: changed once they differ from the default
+    t_config_option_keys missing;
+    for (const auto& key : this->_dirty_config->config().keys())
+        if (!this->_config->has(key) && std::find(dirty.begin(), dirty.end(), key) == dirty.end())
+            missing.push_back(key);
+    if (!missing.empty()) {
+        const auto changed {Slic3r::Config::new_from_defaults(missing)->diff(this->_dirty_config)};
+        dirty.insert(dirty.end(), changed.begin(), changed.end());
+    }
+
     return dirty;
 }
 
 bool Preset::dirty() const { 
     return this->dirty_options().size() > 0;
+}
+
+void Preset::dismiss_changes() {
+    this->_dirty_config = std::make_shared<Slic3r::Config>(*this->_config);
+}
+
+void Preset::keep_changes(const Preset& before) {
+    if (!before.external && before.dirty() && before._config->diff(this->_config).empty())
+        this->_dirty_config = before._dirty_config;
+}
+
+Slic3r::Config Preset::config_to_save() {
+    auto result {Slic3r::Config::new_from_defaults(this->_group_keys())};
+    result->apply(this->dirty_config());
+    return *result;
 }
 
 Slic3r::Config Preset::dirty_config() {
