@@ -170,7 +170,7 @@ sub export_svg {
     
     my $fh = $params{output_fh};
     if (!$fh) {
-        my $output_file = $self->output_filepath($params{output_file});
+        my $output_file = $self->output_filepath($params{output_file} // '');
         $output_file =~ s/\.gcode$/.svg/i;
         Slic3r::open(\$fh, ">", $output_file) or die "Failed to open $output_file for writing\n";
         print "Exporting to $output_file..." unless $params{quiet};
