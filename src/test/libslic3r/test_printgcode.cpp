@@ -153,6 +153,29 @@ SCENARIO( "PrintGCode basic functionality") {
                 REQUIRE(reset == true);
             }
         }
+        WHEN("complete objects, and the shorter object has the larger priority number") {
+            Slic3r::Model model;
+            config->set("first_layer_height", 0.3);
+            config->set("complete_objects", true);
+            config->set("between_objects_gcode", "; between-object-gcode");
+            auto print {Slic3r::Test::init_print({TestMesh::cube_20x20x20, TestMesh::ipadstand}, model, config)};
+            for (auto* object : print->objects)
+                if (object->size.z < scale_(25)) object->config.sequential_print_priority.value = 1;
+            Slic3r::Test::gcode(gcode, print);
+            auto exported {gcode.str()};
+            THEN("The taller object is printed first.") {
+                const auto between {exported.find("; between-object-gcode\n")};
+                REQUIRE(between != std::string::npos);
+                double first_height {0.0};
+                auto reader {GCodeReader()};
+                reader.apply_config(print->config);
+                reader.parse(exported.substr(0, between), [&first_height] (GCodeReader& self, const GCodeReader::GCodeLine&)
+                {
+                    first_height = std::max(first_height, static_cast<double>(self.Z));
+                });
+                REQUIRE(first_height > 25.0);
+            }
+        }
         WHEN("the output is executed with support material") {
             Slic3r::Model model;
             config->set("first_layer_extrusion_width", 0);

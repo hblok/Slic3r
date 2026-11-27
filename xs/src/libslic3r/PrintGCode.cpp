@@ -7,6 +7,7 @@
 #include <ctime>
 #include <iostream>
 #include <iterator>
+#include <tuple>
 #include <boost/nowide/fstream.hpp>
 #include <miniz/miniz.h>
 
@@ -226,10 +227,11 @@ PrintGCode::output()
     // Do all objects for each layer.
 
     if (config.complete_objects) {
-        // print objects from the smallest to the tallest to avoid collisions
-        // when moving onto next object starting point
+        // by priority (smaller first), then from the smallest to the tallest to avoid
+        // collisions when moving onto next object starting point
         std::sort(_print.objects.begin(), _print.objects.end(), [] (const PrintObject* a, const PrintObject* b) {
-            return (a->config.sequential_print_priority < a->config.sequential_print_priority) || (a->size.z < b->size.z);
+            return std::make_tuple(a->config.sequential_print_priority.value, a->size.z)
+                < std::make_tuple(b->config.sequential_print_priority.value, b->size.z);
         });
         size_t finished_objects {0};
 
