@@ -63,6 +63,11 @@ public:
 
     /// Cycle through active presets and prompt user to save dirty configs, if necessary.
     bool prompt_unsaved_changes();
+    
+    /// The configuration to slice with: the defaults, then the selected print, material
+    /// (first extruder) and printer presets, including unsaved changes (as Perl's
+    /// Plater::config).
+    Slic3r::Config full_config();
 private:
     wxFlexGridSizer* _local_sizer {};
     wxWindow* _parent {};

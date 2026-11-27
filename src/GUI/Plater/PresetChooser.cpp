@@ -172,6 +172,19 @@ std::vector<wxString> PresetChooser::_get_selected_presets(preset_t group) const
         return selected;
 }
 
+Slic3r::Config PresetChooser::full_config() {
+    auto config {Slic3r::Config::new_from_defaults()};
+    for (const auto group : {preset_t::Print, preset_t::Material, preset_t::Printer}) {
+        const wxString name {this->_get_selected_preset(group, 0)};
+        for (auto& preset : this->_presets[get_preset(group)])
+            if (preset.name == name) {
+                config->apply(preset.dirty_config());
+                break;
+            }
+    }
+    return *config;
+}
+
 wxString PresetChooser::_get_selected_preset(preset_t group, size_t index) const {
     auto selected { this->_get_selected_presets(group) };
     if (index > selected.size()) { return wxString(""); }

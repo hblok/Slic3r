@@ -44,15 +44,17 @@ jobs:
           apt-get install -y --no-install-recommends ca-certificates git cmake make g++ \
             libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev \
             libwxgtk3.2-dev libgl-dev libglu1-mesa-dev \
-            xvfb xauth imagemagick libgl1-mesa-dri
+            xvfb xauth xdotool imagemagick libgl1-mesa-dri
       - uses: actions/checkout@v7
       - name: Build
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
           cmake --build build-gui -j"$(nproc)" --target slic3r
+          cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j"$(nproc)" --target slic3r
       - name: C++ GUI smoke test
-        run: utils/cpp_gui_smoke.sh build-gui/slic3r cpp-gui-smoke
+        run: utils/cpp_gui_smoke.sh build-gui/slic3r build/slic3r cpp-gui-smoke
       - name: Keep the screenshot
         if: always()
         uses: actions/upload-artifact@v7

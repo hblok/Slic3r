@@ -88,13 +88,9 @@ bool App::OnInit()
     // Load init bundle
     //
 
-    // Run the wizard if we don't have an initial config
-    /*
-    $self->check_version
-        if $self->have_version_check
-            && ($Settings->{_}{version_check} // 1)
-            && (!$Settings->{_}{last_version_check} || (time - $Settings->{_}{last_version_check}) >= 86400);
-    */
+    // files from the command line go to the plater (as the Perl GUI did)
+    if (!this->input_files.empty())
+        this->CallAfter([frame, this]() { frame->get_plater()->load_files(this->input_files); });
     
     // run callback functions during idle on the main frame
     this->Bind(wxEVT_IDLE, 

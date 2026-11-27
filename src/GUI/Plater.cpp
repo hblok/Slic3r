@@ -14,6 +14,10 @@
 #include "Geometry.hpp"
 #include "Dialogs/AnglePicker.hpp"
 #include "Dialogs/ObjectCutDialog.hpp"
+#include "GCodeTimeEstimator.hpp"
+#include "GUI.hpp"
+#include <wx/filedlg.h>
+#include <wx/filename.h>
 
 
 namespace Slic3r { namespace GUI {
@@ -215,11 +219,17 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     // Finally assemble the sizers into the display.
     
     // export/print/send/export buttons
+    auto* buttons_sizer {new wxBoxSizer(wxHORIZONTAL)};
+    this->btn_export_gcode = new wxButton(this, wxID_ANY, _(L"Export G-code…"));
+    this->btn_export_gcode->SetFont(ui_settings->small_font());
+    this->btn_export_gcode->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { this->export_gcode(); });
+    buttons_sizer->AddStretchSpacer(1);
+    buttons_sizer->Add(this->btn_export_gcode, 0, 0, 0);
 
     // right panel sizer
     auto* right_sizer {this->right_sizer};
     right_sizer->Add(this->_presets, 0, wxEXPAND | wxTOP, 10);
-//    $right_sizer->Add($buttons_sizer, 0, wxEXPAND | wxBOTTOM, 5);
+    right_sizer->Add(buttons_sizer, 0, wxEXPAND | wxBOTTOM, 5);
 //    $right_sizer->Add($self->{settings_override_panel}, 1, wxEXPAND, 5);
     right_sizer->Add(object_info_sizer, 0, wxEXPAND, 0);
 //    $right_sizer->Add($object_info_sizer, 0, wxEXPAND, 0);
@@ -272,6 +282,71 @@ void Plater::add() {
     //this->add_undo_operation("ADD", nullptr, new_model, start_object_id);
    
 
+}
+
+void Plater::refresh_config() {
+    auto full {std::make_shared<Slic3r::Config>(this->_presets->full_config())};
+    this->config->apply(full, this->config->config().keys());
+    this->canvas2D->update_bed_size();
+}
+
+void Plater::load_files(const std::vector<std::string>& files) {
+    this->refresh_config();  // objects are placed on the selected printer's bed
+    for (const auto& file : files) this->load_file(file);
+    this->on_model_change();
+}
+
+void Plater::export_gcode() {
+    if (this->objects.empty()) {
+        GetFrame()->statusbar->SetStatusText(_("Nothing to export."));
+        return;
+    }
+    this->refresh_config();
+    const Slic3r::Config config {this->_presets->full_config()};
+    
+    // the print gets the plater's objects with their positions (as the Perl GUI)
+    this->print->clear_objects();
+    this->print->apply_config(config.config());
+    for (auto* object : this->model->objects) {
+        this->print->auto_assign_extruders(object);
+        this->print->add_model_object(object);
+    }
+    try {
+        this->print->validate();
+    } catch (std::exception& e) {
+        show_error(this, e.what());
+        return;
+    }
+    
+    const auto* app {dynamic_cast<App*>(wxTheApp)};
+    std::string output_file {app != nullptr ? app->output_file : std::string()};
+    if (output_file.empty()) {
+        const wxFileName default_file {wxString(this->print->output_filepath(""))};
+        wxFileDialog dialog(this, _("Save G-code file as:"), default_file.GetPath(), default_file.GetFullName(),
+            _("G-code files (*.gcode)|*.gcode;*.GCODE;*.g;*.ngc|All files|*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if (dialog.ShowModal() != wxID_OK) return;
+        output_file = dialog.GetPath().ToStdString();
+    }
+    
+    // ponytail: slices on the GUI thread with a busy cursor; the background process
+    // (Perl GUI) is a later step
+    try {
+        wxBusyCursor busy;
+        GetFrame()->statusbar->SetStatusText(_(L"Exporting G-code…"));
+        wxYield();
+        this->print->export_gcode(output_file);
+    } catch (std::exception& e) {
+        show_error(this, e.what());
+        GetFrame()->statusbar->SetStatusText(_("Export failed"));
+        return;
+    }
+    this->processed = true;
+    wxString message;
+    message << _("G-code file exported to ") << wxString(this->print->output_filepath(output_file))
+            << wxString::Format(_(" (%.2f m filament, %s)"), this->print->total_used_filament / 1000.,
+                   wxString(GCodeTimeEstimator::format_time(this->print->estimated_print_time)));
+    GetFrame()->statusbar->SetStatusText(message);
+    this->refresh_canvases();
 }
 
 std::vector<int> Plater::load_file(const std::string file, const int obj_idx_to_load) {

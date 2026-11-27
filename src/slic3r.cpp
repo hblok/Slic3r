@@ -468,6 +468,8 @@ int CLI::run(int argc, char **argv) {
             // if no datadir on the CLI, set a default.
             gui->datadir = GUI::home().ToStdString();
         }
+        gui->input_files = this->input_files;
+        gui->output_file = this->config.getString("output", "");
         GUI::App::SetInstance(gui);
         wxEntry(argc, argv);
 #else

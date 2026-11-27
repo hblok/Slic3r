@@ -109,7 +109,12 @@ public:
     void select_prev() {};
     void zoom(Zoom dir) {};
 
-    void export_gcode() {};
+    /// Slice with the selected presets and write G-code: to the --output file when one
+    /// was given on the command line, else where a file dialog says.
+    void export_gcode();
+    
+    /// Load model files (from the command line or a drop) into the plater.
+    void load_files(const std::vector<std::string>& files);
     void export_amf() {};
     void export_tmf() {};
     void export_stl() {};
@@ -149,6 +154,10 @@ private:
     PreviewDLP* previewDLP {nullptr}; //< DLP/SLA Preview canvas
 
     wxStaticBoxSizer* object_info_size {nullptr};
+    wxButton* btn_export_gcode {nullptr};
+    
+    /// Take the plater's own settings (bed shape, ...) from the selected presets.
+    void refresh_config();
 
     /// Handles the actual load of the file from the dialog handoff.
     std::vector<int> load_file(const std::string file, const int obj_idx_to_load = -1);

@@ -36,6 +36,7 @@ public:
     wxNotebook* tabs() { return tabpanel; }
 
     std::map<preset_t, PresetEditor*> preset_editor_tabs;
+    Plater* get_plater() { return this->plater; }
 private:
     wxDECLARE_EVENT_TABLE();
 

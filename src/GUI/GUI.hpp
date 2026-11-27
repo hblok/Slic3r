@@ -24,6 +24,11 @@ public:
     /// The directory where presets and config are stored. If empty, Slic3r will default to the location provided by wxWidgets.
     wxString datadir {""};
     
+    /// Model files from the command line, loaded into the plater at start
+    std::vector<std::string> input_files {};
+    /// --output from the command line: the G-code export writes there without asking
+    std::string output_file {""};
+    
     virtual bool OnInit() override;
     App() : wxApp() {}
 
