@@ -9,6 +9,7 @@ directory, one preset per file:
 | [printer/Ender-5-Pro.ini](printer/Ender-5-Pro.ini) | bed, nozzle, retraction, start and end G-code |
 | [filament/Ender-5-Pro-PLA.ini](filament/Ender-5-Pro-PLA.ini) | PLA: 205/200 °C, bed 60 °C, fan from layer 2 |
 | [print/Ender-5-Pro-0.20mm.ini](print/Ender-5-Pro-0.20mm.ini) | 0.2 mm layers, speeds for the stock machine |
+| [calibration/](calibration/README.md) | temperature tower and single-wall flow test |
 
 Only settings that differ from the Slic3r defaults are listed. The files have no
 comments: the C++ loader accepts only `;` comments and the Perl loader only `#`.
