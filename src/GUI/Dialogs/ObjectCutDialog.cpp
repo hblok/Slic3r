@@ -5,22 +5,27 @@
 
 namespace Slic3r { namespace GUI {
 
-ObjectCutCanvas::ObjectCutCanvas(wxWindow* parent, ModelObject* object) :
-    Scene3D(parent, wxSize(420, 420)), bb(object->instance_bounding_box(0))
+ObjectCanvas::ObjectCanvas(wxWindow* parent, const ModelObject& object) :
+    Scene3D(parent, wxSize(420, 420)), bb(object.instance_bounding_box(0))
 {
     // the object around the origin of an empty bed, as large as the object needs
     const Pointf3 center {bb.center()};
-    for (auto* volume : object->volumes) {
-        TriangleMesh mesh {volume->mesh};
-        object->instances.front()->transform_mesh(&mesh, true);  // as bb: without the offset
-        GLVertexArray vertices;
-        vertices.load_mesh(mesh);
-        volumes.push_back(Volume {ui_settings->color->COLOR_PARTS(), Pointf3(-center.x, -center.y, -bb.min.z),
-            vertices, mesh.bounding_box()});
-    }
-    bb.translate(-center.x, -center.y, -bb.min.z);
+    shift = Pointf3(-center.x, -center.y, -bb.min.z);
+    bb.translate(shift.x, shift.y, shift.z);
+    this->show_objects({&object});
     const coord_t half {scale_(std::max(bb.size().x, bb.size().y))};
     set_bed_shape({Point(-half, -half), Point(half, -half), Point(half, half), Point(-half, half)});
+}
+
+void ObjectCanvas::show_objects(const std::vector<const ModelObject*>& objects) {
+    volumes.clear();
+    for (const auto* object : objects)
+        for (const auto* volume : object->volumes) {
+            GLVertexArray vertices;
+            vertices.load_mesh(volume->mesh);
+            volumes.push_back(Volume {ui_settings->color->COLOR_PARTS(), shift, vertices, volume->mesh.bounding_box()});
+        }
+    Refresh();
 }
 
 void ObjectCutCanvas::set_plane(Axis new_axis, double new_height) {
@@ -58,9 +63,9 @@ void ObjectCutCanvas::after_render() {
 
 ObjectCutDialog::ObjectCutDialog(wxWindow* parent, ModelObject* object) :
     wxDialog(parent, wxID_ANY, _("Cut"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
-    size(object->instance_bounding_box(0).size())
+    object(object), size(object->instance_bounding_box(0).size())
 {
-    canvas = new ObjectCutCanvas(this, object);
+    canvas = new ObjectCutCanvas(this, *object);
     auto* grid {new wxFlexGridSizer(2, 5, 5)};
     auto add = [this, grid](const wxString& label, wxWindow* field) {
         grid->Add(new wxStaticText(this, wxID_ANY, label), 0, wxALIGN_CENTER_VERTICAL);
@@ -82,6 +87,20 @@ ObjectCutDialog::ObjectCutDialog(wxWindow* parent, ModelObject* object) :
     add(_("Keep"), keep_upper);
     add("", keep_lower);
     add("", rotate_lower);
+    preview = new wxCheckBox(this, wxID_ANY, _("Show preview"));
+    preview->SetToolTip(_("With one part kept, show that part as it will be cut."));
+    preview->SetValue(true);
+    add("", preview);
+    auto tile = [this](wxSpinCtrlDouble*& field) {
+        field = new wxSpinCtrlDouble(this, wxID_ANY);
+        field->SetRange(1, 10000);
+        field->SetValue(100);
+        return field;
+    };
+    add(_("Tile width X"), tile(grid_x));
+    add(_("Tile width Y"), tile(grid_y));
+    auto* cut_grid {new wxButton(this, wxID_ANY, _("Cut by grid"))};
+    add("", cut_grid);
 
     auto* left {new wxBoxSizer(wxVERTICAL)};
     left->Add(grid, 0, wxALL, 10);
@@ -107,6 +126,8 @@ ObjectCutDialog::ObjectCutDialog(wxWindow* parent, ModelObject* object) :
     height->Bind(wxEVT_TEXT, [this](wxCommandEvent& e) { this->update(); e.Skip(); });
     keep_upper->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { this->update(); });
     keep_lower->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { this->update(); });
+    preview->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { this->update(); });
+    cut_grid->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { by_grid = true; this->EndModal(wxID_OK); });
     height->SetRange(0, size.z);
     height->SetValue(size.z / 2);
     this->update();
@@ -116,6 +137,16 @@ void ObjectCutDialog::update() {
     canvas->set_plane(static_cast<Axis>(axis->GetSelection()), height->GetValue());
     rotate_lower->Enable(axis->GetSelection() == Z && keep_lower->GetValue());
     if (auto* cut {this->FindWindow(wxID_OK)}) cut->Enable(keep_upper->GetValue() || keep_lower->GetValue());
+    // live preview: only when one of the two parts is to survive
+    const bool one {keep_upper->GetValue() != keep_lower->GetValue()};
+    preview->Enable(one);
+    if (one && preview->GetValue()) {
+        Slic3r::Model halves;
+        object->cut(this->options().axis, this->options().at(object->instance_bounding_box(0)), &halves);
+        canvas->show_objects({halves.objects.at(keep_upper->GetValue() ? 0 : 1)});
+    } else {
+        canvas->show_objects({object});
+    }
 }
 
 CutOptions ObjectCutDialog::options() const {
@@ -125,6 +156,7 @@ CutOptions ObjectCutDialog::options() const {
     o.keep_upper = keep_upper->GetValue();
     o.keep_lower = keep_lower->GetValue();
     o.rotate_lower = rotate_lower->IsEnabled() && rotate_lower->GetValue();
+    if (by_grid) o.grid = Pointf(grid_x->GetValue(), grid_y->GetValue());
     return o;
 }
 

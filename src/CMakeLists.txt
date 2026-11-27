@@ -430,6 +430,7 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
     ${GUI_LIBDIR}/Dialogs/PrinterEditor.cpp
     ${GUI_LIBDIR}/Dialogs/MaterialEditor.cpp
     ${GUI_LIBDIR}/Dialogs/ObjectCutDialog.cpp
+    ${GUI_LIBDIR}/Dialogs/ObjectFaceDialog.cpp
     ${GUI_LIBDIR}/Dialogs/Preferences.cpp
     ${GUI_LIBDIR}/GUI.cpp
     ${GUI_LIBDIR}/MainFrame.cpp
@@ -466,7 +467,7 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
         # full UI under Xvfb; this binary is also the command line they compare with.
         # Each takes its own X display.
         enable_testing()
-        foreach(name smoke plate objects files)
+        foreach(name smoke plate objects tools files)
             if (name STREQUAL smoke)
                 set(script smoke)
                 set(part "")

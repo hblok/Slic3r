@@ -634,6 +634,53 @@ TriangleMesh::cut_by_grid(const Pointf &grid) const
     return meshes;
 }
 
+namespace {
+Pointf3 sub(const stl_vertex &a, const stl_vertex &b) { return Pointf3(a.x - b.x, a.y - b.y, a.z - b.z); }
+Pointf3 cross(const Pointf3 &a, const Pointf3 &b) {
+    return Pointf3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
+}
+double dot(const Pointf3 &a, const Pointf3 &b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
+}
+
+int
+TriangleMesh::first_facet_hit(const Linef3 &line) const
+{
+    // Moeller-Trumbore, over every facet: one click, no search structure needed
+    const Pointf3 direction = line.a.vector_to(line.b);
+    int hit = -1;
+    double nearest = 1;  // as a fraction of the line
+    for (int i = 0; i < this->stl.stats.number_of_facets; ++i) {
+        const stl_facet &f = this->stl.facet_start[i];
+        const Pointf3 edge1 = sub(f.vertex[1], f.vertex[0]);
+        const Pointf3 edge2 = sub(f.vertex[2], f.vertex[0]);
+        const Pointf3 p = cross(direction, edge2);
+        const double det = dot(edge1, p);
+        if (std::abs(det) < 1e-12) continue;  // parallel to the facet
+        const Pointf3 from(line.a.x - f.vertex[0].x, line.a.y - f.vertex[0].y, line.a.z - f.vertex[0].z);
+        const double u = dot(from, p) / det;
+        if (u < 0 || u > 1) continue;
+        const Pointf3 q = cross(from, edge1);
+        const double v = dot(direction, q) / det;
+        if (v < 0 || u + v > 1) continue;
+        const double t = dot(edge2, q) / det;
+        if (t >= 0 && t <= nearest) {
+            nearest = t;
+            hit = i;
+        }
+    }
+    return hit;
+}
+
+Vectorf3
+TriangleMesh::facet_normal(int facet) const
+{
+    const stl_facet &f = this->stl.facet_start[facet];
+    Pointf3 n = cross(sub(f.vertex[1], f.vertex[0]), sub(f.vertex[2], f.vertex[0]));
+    const double length = std::sqrt(dot(n, n));
+    if (length > 0) n.scale(1 / length);
+    return n;
+}
+
 void
 TriangleMesh::merge(const TriangleMesh &mesh)
 {

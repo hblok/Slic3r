@@ -10,7 +10,7 @@ preferences, editor rules, object settings and modifiers, a one-page wizard.
 
 Missing, compared with the Perl GUI:
 
-- [ ] Layer heights (adaptive spline dialog), rotate to face, cut by grid, live cut preview
+- [ ] Layer heights (adaptive spline dialog)
 - [ ] "Create modifier" (box, cylinder, slab) and moving parts in Object > Settings;
       layer height ranges
 - [ ] Preset editors: hand-made page layouts, several extruders (extruder count),

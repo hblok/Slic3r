@@ -39,7 +39,6 @@ private:
     Pointf3 _camera_target = Pointf3(0.0f,0.0f,0.0f);
     
     // Optional point used for dragging calculations
-    bool dragging = false;
     Point drag_start = Point(0,0);
     
     // Bed Stuff
@@ -61,6 +60,9 @@ private:
     void draw_axes(Pointf3 center, float length, int width, bool alwaysvisible);
     
 protected:
+    bool dragging = false;         ///< the mouse moved with a button down
+    /// The line through the scene under a point of the window, near to far.
+    Linef3 ray_at(const wxPoint& at);
     bool dirty = true;             // Resize needs to be called before render
     Linef3 mouse_ray(Point win); // Utility for backtracking from window coordinates
     void draw_volumes();         // Draws volumes (for use in before_render)

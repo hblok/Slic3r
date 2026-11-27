@@ -7,10 +7,10 @@
 # layout or a menu changes.
 #
 # Needs the GUI and CLI builds, Xvfb, xdotool and ImageMagick.
-# It is in three parts, each with its own start of the program, to stay well under the
+# It is in four parts, each with its own start of the program, to stay well under the
 # time limit.
 # Usage: utils/cpp_gui_plate.sh path/to/gui/slic3r path/to/cli/slic3r OUTDIR PART
-#        PART: plate | objects | files
+#        PART: plate | objects | tools | files
 set -eu
 # hang guard: after 290 s the whole run is killed, Xvfb and the program included
 [ "${GUI_TEST_GUARD:-}" = "$0" ] || GUI_TEST_GUARD=$0 exec timeout -v -k 5 290 "$0" "$@"
@@ -22,7 +22,8 @@ case $part in
     plate) display=97 ;;
     objects) display=96 ;;
     files) display=95 ;;
-    *) echo "usage: $0 GUI CLI OUTDIR plate|objects|files" >&2; exit 2 ;;
+    tools) display=94 ;;
+    *) echo "usage: $0 GUI CLI OUTDIR plate|objects|tools|files" >&2; exit 2 ;;
 esac
 cd "$(dirname "$0")/.."
 root=$PWD
@@ -88,7 +89,7 @@ export_plate() { # name: "Export plate as STL"
     "$cli_bin" --info "$out/$1.stl" >"$out/$1.info"
 }
 export_object() {
-    object_menu 16
+    object_menu 17
     answer "$out/$1.stl"
     alive "$1"
     [ -s "$out/$1.stl" ] || fail "$1: no STL exported"
@@ -152,10 +153,10 @@ near flat size_z 6
 
 object_menu 13                                          # Cut at half the height, keep both
 shot cut-dialog
-xdotool mousemove 275 101 click 1; sleep 1              # height "+": 3.5
+xdotool mousemove 293 101 click 1; sleep 1              # height "+": 3.5
 shot cut-dialog-raised
-xdotool mousemove 240 101 click 1; sleep 1              # height "-": back to 3
-xdotool mousemove 238 427 click 1; sleep 2              # "Perform cut" 
+xdotool mousemove 258 101 click 1; sleep 1              # height "-": back to 3
+xdotool mousemove 255 427 click 1; sleep 2              # "Perform cut" 
 shot cut
 export_plate cut
 near cut size_z 3
@@ -163,9 +164,9 @@ near cut volume "$(info flat volume)"
 undo
 select_first
 object_menu 13                                          # Cut across Y, at half the depth
-xdotool mousemove 193 61 click 1; sleep 0.5; key Up; key Up; key Return
+xdotool mousemove 210 61 click 1; sleep 0.5; key Up; key Up; key Return
 shot cut-y-dialog
-xdotool mousemove 238 427 click 1; sleep 2
+xdotool mousemove 255 427 click 1; sleep 2
 select_first
 export_object half
 near half size_x 20
@@ -180,26 +181,26 @@ near mirrored size_x 20
 near mirrored volume "$(info flat volume)"
 cp "$root/src/test/inputs/test_cli/20mmbox.stl" "$out/part.stl"
 select_first
-object_menu 15                                          # Reload from Disk
+object_menu 16                                          # Reload from Disk
 export_plate reloaded
 near reloaded size_z 10                                  # the box is 20 x 20 x 10
 near reloaded number_of_facets 12
 ok "mirror and reload from disk"
 
 select_first
-object_menu 14                                          # Settings: a modifier with a setting
+object_menu 15                                          # Settings: a modifier with a setting
 xdotool mousemove 172 351 click 1; sleep 2              # "Load modifier…"
 answer_open "$root/src/test/inputs/test_cli/20mmbox.stl"
 xdotool mousemove 559 59 click 1; sleep 1               # "Add setting": the second one
 key Down; key Down; key Return; sleep 1
 shot object-settings
 xdotool mousemove 680 435 click 1; sleep 1              # "Close"
-object_menu 17; answer "$out/modified.amf"              # Export object and modifiers as AMF
+object_menu 18; answer "$out/modified.amf"              # Export object and modifiers as AMF
 grep -q 'type="slic3r.modifier">1<' "$out/modified.amf" || fail "no modifier in modified.amf"
 grep -q 'type="slic3r.bridge_flow_ratio"' "$out/modified.amf" || fail "the modifier's setting is not in modified.amf"
 undo
 select_first
-object_menu 17; answer "$out/unmodified.amf"
+object_menu 18; answer "$out/unmodified.amf"
 ! grep -q 'slic3r.modifier' "$out/unmodified.amf" || fail "undo kept the modifier"
 ok "object settings: modifier with a setting, undo"
 
@@ -209,6 +210,46 @@ shot preferences
 xdotool mousemove 508 365 click 1; sleep 1              # "OK"
 grep -q '^background_processing = 1' "$out/data/slic3r.ini" || fail "the preference is not in slic3r.ini"
 ok "preferences"
+fi
+
+if [ "$part" = tools ]; then
+export_plate loaded
+select_first
+object_menu 14                                          # Rotate face to plane
+xdotool mousemove 502 200 click 1; sleep 1              # the top face
+shot face-selected
+xdotool mousemove 190 88 click 1; sleep 0.5; key Down; key Return    # plane XZ
+xdotool mousemove 214 427 click 1; sleep 2              # "Rotate to plane"
+export_plate faced
+near faced size_z 20                                    # the table stands on its side
+near faced size_y 12
+near faced volume "$(info loaded volume)"
+undo
+ok "rotate face to plane"
+
+# yellow (the object, lit) pixels in the cut dialog's picture
+object_pixels() { # name
+    shot "$1"
+    convert "$out/$1.png" -crop 420x420+321+35 +repage -fx '(r-b>0.15 && g-b>0.15)?1:0' \
+        -format '%[fx:round(mean*w*h)]' info: | tail -n 1
+}
+select_first
+object_menu 13                                          # Cut, keeping only the lower part
+both=$(object_pixels cut-both)
+xdotool mousemove 123 133 click 1; sleep 2              # not the "Upper part"
+lower=$(object_pixels cut-preview)
+[ "$both" -gt 5000 ] && [ "$lower" -lt $((both * 3 / 4)) ] \
+    || fail "cut preview: $both pixels of the object, $lower with only the lower part"
+ok "cut preview ($both pixels, $lower with the lower part only)"
+xdotool mousemove 175 243 click 1; key ctrl+a; xdotool type 10    # tile width X
+xdotool mousemove 175 282 click 1; key ctrl+a; xdotool type 10    # tile width Y
+xdotool mousemove 210 321 click 1; sleep 2              # "Cut by grid"
+export_plate tiles
+near tiles size_x 25                                    # 2 x 2 tiles, 5 mm apart
+near tiles size_y 25
+near tiles volume "$(info loaded volume)"
+undo
+ok "cut by grid"
 fi
 
 # ---- the File menu ----

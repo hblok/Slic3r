@@ -59,6 +59,8 @@ jobs:
         run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-plate plate
       - name: C++ GUI object operations test
         run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-objects objects
+      - name: C++ GUI face rotation and cut test
+        run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-tools tools
       - name: C++ GUI File menu test
         run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-files files
       - name: Keep the screenshot
@@ -70,6 +72,7 @@ jobs:
             cpp-gui-smoke/*.png
             cpp-gui-plate/*.png
             cpp-gui-objects/*.png
+            cpp-gui-tools/*.png
             cpp-gui-files/*.png
 
   # Perl application: XS module, Perl tests, and a GUI smoke test under Xvfb.

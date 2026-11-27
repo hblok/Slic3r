@@ -101,6 +101,10 @@ class TriangleMesh
 
     TriangleMeshPtrs split() const;
     TriangleMeshPtrs cut_by_grid(const Pointf &grid) const;
+    /// The facet the line from line.a to line.b meets first (picking in 3D), or -1.
+    int first_facet_hit(const Linef3 &line) const;
+    /// Unit normal of a facet from its corners (counter-clockwise seen from outside).
+    Vectorf3 facet_normal(int facet) const;
     void merge(const TriangleMesh &mesh);
     ExPolygons horizontal_projection() const;
     Polygon convex_hull();

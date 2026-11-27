@@ -138,6 +138,8 @@ The Perl GUI is the reference for behaviour and layout.
       per-axis scale)
 - [x] Preferences, editor rules, Object > Settings (parts, modifiers, own settings),
       configuration wizard (2026-11-27)
+- [x] Rotate face to plane, cut by grid, live cut preview (2026-11-27, `cpp_gui_plate.sh`
+      part `tools`). The preview leaves out the Perl GUI's section outline
 - [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps

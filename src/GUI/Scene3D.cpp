@@ -62,6 +62,11 @@ Linef3 Scene3D::mouse_ray(Point win){
     return Linef3(first,Pointf3(x,y,z)); 
 }
 
+Linef3 Scene3D::ray_at(const wxPoint& at){
+    this->SetCurrent(*(this->glContext));  // the matrices of the last picture
+    return this->mouse_ray(Point(at.x, at.y));
+}
+
 void Scene3D::mouse_move(wxMouseEvent &e){
     if(e.Dragging()){
         //const auto s = GetSize();

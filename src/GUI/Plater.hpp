@@ -105,6 +105,8 @@ public:
     void changescale(int axis = -1, bool to_size = false);
     void split_object();
     void object_cut_dialog();
+    /// Turn the selected object so that a chosen face lies parallel to a plane.
+    void rotate_face();
     void reload_from_disk();
     void export_plate(IO::ExportFormat format);
     void export_object(IO::ExportFormat format);
@@ -203,6 +205,8 @@ private:
     std::shared_ptr<SliceJob> make_job(const Slic3r::Model& what);
     wxString quick_slice_input, quick_slice_output;
     /// Select a configuration file as the print, material and printer preset.
+    /// Replace an object by the tiles of a grid; `object` has its transforms applied.
+    void cut_by_grid(int idx, const ModelObject& object, const Pointf& grid);
     void select_external_config(const wxString& file);
     void run_job(std::shared_ptr<SliceJob> job);
     /// Back on the GUI thread when the background job has ended.

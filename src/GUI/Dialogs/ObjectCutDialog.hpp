@@ -12,16 +12,27 @@
 
 namespace Slic3r { namespace GUI {
 
-/// The object with the cutting plane through it.
-class ObjectCutCanvas : public Scene3D {
+/// One object, alone around the origin of an empty bed. The object must have its
+/// instance rotation and scale applied to the mesh.
+class ObjectCanvas : public Scene3D {
 public:
-    ObjectCutCanvas(wxWindow* parent, ModelObject* object);
+    ObjectCanvas(wxWindow* parent, const ModelObject& object);
+    /// Show these objects (parts of the first one) instead, where they are.
+    void show_objects(const std::vector<const ModelObject*>& objects);
+protected:
+    BoundingBoxf3 bb;   ///< of the object given to the constructor, in the scene
+    Pointf3 shift;      ///< from the object's coordinates to the scene's
+};
+
+/// The object with the cutting plane through it.
+class ObjectCutCanvas : public ObjectCanvas {
+public:
+    using ObjectCanvas::ObjectCanvas;
     /// A cut across `axis`, `height` mm above the object's lowest point on that axis.
     void set_plane(Axis axis, double height);
 protected:
     void after_render() override;
 private:
-    BoundingBoxf3 bb;
     Axis axis {Z};
     double height {0};
 };
@@ -30,6 +41,7 @@ struct CutOptions {
     Axis axis {Z};
     double height {0};          ///< from the object's lowest point on that axis, mm
     bool keep_upper {true}, keep_lower {true}, rotate_lower {false};
+    Pointf grid {0, 0};         ///< tile widths when cutting by grid, else 0
     /// The coordinate ModelObject::cut() wants: the mesh's own, as is
     /// ModelObject::instance_bounding_box() (it leaves out the instance's offset).
     double at(const BoundingBoxf3& instance_bb) const {
@@ -50,6 +62,11 @@ private:
     wxCheckBox* keep_upper;
     wxCheckBox* keep_lower;
     wxCheckBox* rotate_lower;
+    wxCheckBox* preview;
+    wxSpinCtrlDouble* grid_x;
+    wxSpinCtrlDouble* grid_y;
+    bool by_grid {false};
+    const ModelObject* object;
     Sizef3 size;
     /// Fits the height's range to the axis and enables what makes sense.
     void update();

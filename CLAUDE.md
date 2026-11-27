@@ -27,7 +27,7 @@ GUI, then not at all (plan/README.md, "Perl and the GUI path").
 | Set | Command | What | Limit |
 |---|---|---|---|
 | `quick` | `ctest --test-dir build -L quick -j8 --output-on-failure` | unit and functional tests, golden G-code (about 6 s) | 2 min each |
-| `gui` | `ctest --test-dir build-gui -L gui -j4 --output-on-failure` | full C++ GUI under Xvfb (about 3 min) | 5 min each |
+| `gui` | `ctest --test-dir build-gui -L gui -j5 --output-on-failure` | full C++ GUI under Xvfb (about 3 min) | 5 min each |
 
 Build first (below). Run `quick` while working, `gui` after GUI changes. A new test gets
 one of the two labels and a `TIMEOUT` in `src/CMakeLists.txt`. The GUI scripts also kill
@@ -68,11 +68,12 @@ Also needs `libwxgtk3.2-dev libgl-dev libglu1-mesa-dev xvfb xdotool imagemagick`
 ```sh
 cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
 cmake --build build-gui -j$(nproc)
-ctest --test-dir build-gui -L gui -j4 --output-on-failure
+ctest --test-dir build-gui -L gui -j5 --output-on-failure
 ```
 
-That runs `utils/cpp_gui_smoke.sh` (slicing, presets, preview, quit prompt) and the three
-parts of `utils/cpp_gui_plate.sh` (plater, object operations, File menu); screenshots end
+That runs `utils/cpp_gui_smoke.sh` (slicing, presets, preview, quit prompt) and the four
+parts of `utils/cpp_gui_plate.sh` (plater, object operations, face and cut tools, File
+menu); screenshots end
 up in `build-gui/gui-*`. A part that nears 5 minutes gets split.
 Run it after GUI changes. They click at fixed positions and count menu entries: a new
 menu entry or layout change needs the scripts adjusted (see their screenshots).

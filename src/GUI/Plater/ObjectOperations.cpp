@@ -1,6 +1,9 @@
 // What the plater does to its objects: load, remove, copies, transforms, split, export,
 // reload and undo. objects[i] (what the GUI keeps) belongs to model->objects[i] (what is
 // sliced); every operation ends in on_model_change(), which records it for undo.
+#include <cmath>
+#include <memory>
+
 #include <wx/filedlg.h>
 #include <wx/filename.h>
 #include <wx/numdlg.h>
@@ -11,6 +14,7 @@
 #include "MainFrame.hpp"
 #include "Dialogs/AnglePicker.hpp"
 #include "Dialogs/ObjectCutDialog.hpp"
+#include "Dialogs/ObjectFaceDialog.hpp"
 #include "BoundingBox.hpp"
 #include "Geometry.hpp"
 #include "IO.hpp"
@@ -388,6 +392,10 @@ void Plater::object_cut_dialog() {
     ObjectCutDialog dialog(this, object);
     if (dialog.ShowModal() != wxID_OK) return;
     const CutOptions options {dialog.options()};
+    if (options.grid.x > 0) {
+        this->cut_by_grid(idx, *object, options.grid);
+        return;
+    }
 
     Slic3r::Model halves;
     const auto bb {object->instance_bounding_box(0)};
@@ -410,6 +418,53 @@ void Plater::object_cut_dialog() {
     this->select_object();
     for (const int i : this->load_model_objects(keep)) this->objects[i].input_file.clear();  // not the file any more
     this->arrange();
+}
+
+void Plater::cut_by_grid(int idx, const ModelObject& object, const Pointf& grid) {
+    wxBusyCursor busy;
+    TriangleMesh mesh {object.raw_mesh()};
+    mesh.repair();
+    const Pointf3 center {mesh.bounding_box().center()};
+    const Pointf place {object.instances.front()->offset};
+    Slic3r::Model tiles;
+    for (TriangleMesh* part : mesh.cut_by_grid(grid)) {
+        std::unique_ptr<TriangleMesh> tile {part};
+        if (tile->facets_count() == 0) continue;  // nothing of the object in this field
+        ModelObject* piece {tiles.add_object()};
+        piece->name = object.name + " (" + std::to_string(tiles.objects.size()) + ")";
+        piece->add_volume(*tile)->name = piece->name;
+        piece->center_around_origin();
+        // where it was, moved 5 mm away from its neighbours (as the Perl GUI)
+        const Pointf at(-piece->origin_translation().x, -piece->origin_translation().y);
+        ModelInstance* instance {piece->add_instance()};
+        instance->offset = Pointf(
+            place.x + at.x + 5 * std::ceil((at.x - center.x) / grid.x),
+            place.y + at.y + 5 * std::ceil((at.y - center.y) / grid.y));
+    }
+    if (tiles.objects.empty()) return;
+    this->model->delete_object(idx);
+    this->objects.erase(this->objects.begin() + idx);
+    this->select_object();
+    for (const int i : this->load_model_objects(tiles.objects)) this->objects[i].input_file.clear();
+    this->on_model_change();
+}
+
+void Plater::rotate_face() {
+    const int idx {this->selected_index()};
+    if (idx < 0) return;
+    // the face is chosen on the object as it stands on the plate
+    Slic3r::Model work(*this->model);
+    ModelObject* shown {work.objects.at(idx)};
+    shown->transform_by_instance(*shown->instances.front(), true);
+    ObjectFaceDialog dialog(this, *shown);
+    if (dialog.ShowModal() != wxID_OK) return;
+
+    ModelObject* object {this->model->objects.at(idx)};
+    object->transform_by_instance(*object->instances.front(), true);
+    object->rotate(dialog.normal(), dialog.target());
+    object->align_to_ground();
+    this->make_thumbnail(idx);
+    this->on_model_change();
 }
 
 // ---- files ----

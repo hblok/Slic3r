@@ -426,3 +426,30 @@ TEST_CASE("Profile test for issue #4486 - files take forever to slice") {
 
 }
 #endif //BUILD_PROFILE
+
+SCENARIO("TriangleMesh: picking a facet with a line") {
+    GIVEN("A 20 mm cube") {
+        auto cube {TriangleMesh::make_cube(20, 20, 20)};
+        cube.repair();
+        WHEN("a line goes down through it") {
+            const int facet {cube.first_facet_hit(Linef3(Pointf3(5, 6, 100), Pointf3(5, 6, -100)))};
+            THEN("the top is hit first, and its normal points up") {
+                REQUIRE(facet >= 0);
+                REQUIRE(cube.facet_normal(facet).z == Approx(1));
+            }
+        }
+        WHEN("a line comes from the side") {
+            const int facet {cube.first_facet_hit(Linef3(Pointf3(-50, 5, 6), Pointf3(50, 5, 6)))};
+            THEN("the near side is hit") {
+                REQUIRE(facet >= 0);
+                REQUIRE(cube.facet_normal(facet).x == Approx(-1));
+            }
+        }
+        WHEN("a line misses, or ends before it") {
+            THEN("nothing is hit") {
+                REQUIRE(cube.first_facet_hit(Linef3(Pointf3(30, 6, 100), Pointf3(30, 6, -100))) == -1);
+                REQUIRE(cube.first_facet_hit(Linef3(Pointf3(5, 6, 100), Pointf3(5, 6, 50))) == -1);
+            }
+        }
+    }
+}
