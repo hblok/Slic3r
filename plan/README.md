@@ -110,7 +110,10 @@ The Perl GUI is the reference for behaviour and layout.
       background with progress (it runs on the GUI thread), the "Add…" dialog untested
       under Xvfb, export STL/AMF/3MF, undo
 - [ ] Presets: print/filament/printer editors and choosers, read and write the data directory
-      (`~/.Slic3r`, same files as the Perl GUI)
+      (`~/.Slic3r`, same files as the Perl GUI). Done 2026-11-27: presets from the data
+      directory, the selection read from and written to `slic3r.ini` (Perl format, other
+      keys kept), slicing with them equals the CLI (`cpp_gui_smoke.sh`, Ender presets).
+      Open: the preset editors (editing, saving), several extruders, the wizard
 - [ ] Preview: layers and toolpaths (3D and 2D)
 - [ ] The rest of what the Perl GUI has and is worth keeping: object settings and
       modifiers, cut, rotate to face, wizard, preferences. Printer controller (USB) and

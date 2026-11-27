@@ -50,6 +50,9 @@ class Settings {
 
         wxString skein_directory {}; //< Recently-opened skien directory.
 
+        /// slic3r.ini in the data directory, in the Perl GUI's format ([_] general
+        /// settings, [presets] selected presets); keys this GUI does not use are kept.
+        wxString ini_file {};
         void save_settings();
         void load_settings();
 
@@ -75,6 +78,8 @@ class Settings {
         
         Settings();
     private:
+        /// everything read from slic3r.ini: category -> key -> value
+        std::map<std::string, std::map<std::string, std::string>> _ini {};
         Settings& operator=(const Settings&) = default;
         Settings(const Settings&) = default;
 

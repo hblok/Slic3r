@@ -397,8 +397,13 @@ ConfigBase::apply_only(const ConfigBase &other, const t_config_option_keys &opt_
             }
             continue;
         }
+        const ConfigOption* other_opt = other.option(opt_key);
+        if (other_opt == NULL) {  // was dereferenced as is: a crash
+            if (ignore_nonexistent == false) throw UnknownOptionException(opt_key);
+            continue;
+        }
         // not the most efficient way, but easier than casting pointers to subclasses
-        bool res = my_opt->deserialize( other.option(opt_key)->serialize() );
+        bool res = my_opt->deserialize( other_opt->serialize() );
         if (!res) {
             std::string error = "Unexpected failure when deserializing serialized value for " + opt_key;
             CONFESS(error.c_str());

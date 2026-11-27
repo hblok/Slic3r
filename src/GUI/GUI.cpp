@@ -61,19 +61,9 @@ bool App::OnInit()
 
     ui_settings = Settings::init_settings();
 
-    // Load gui settings from slic3r.ini
-    if (wxFileExists(slic3r_ini)) {
-    /*
-        my $ini = eval { Slic3r::Config->read_ini("$datadir/slic3r.ini") };
-        if ($ini) {
-            $last_version = $ini->{_}{version};
-            $ini->{_}{$_} = $Settings->{_}{$_}
-                for grep !exists $ini->{_}{$_}, keys %{$Settings->{_}};
-            $Settings = $ini;
-        }
-        delete $Settings->{_}{mode};  # handle legacy
-    */
-    }
+    // Load gui settings from slic3r.ini (the Perl GUI's file and format)
+    ui_settings->ini_file = slic3r_ini;
+    ui_settings->load_settings();
 
     ui_settings->save_settings();
 

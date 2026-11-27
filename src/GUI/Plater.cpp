@@ -287,7 +287,12 @@ void Plater::add() {
 
 void Plater::refresh_config() {
     auto full {std::make_shared<Slic3r::Config>(this->_presets->full_config())};
-    this->config->apply(full, this->config->config().keys());
+    // only the keys the presets have: some of the plater's (e.g. shortcuts) are not in a
+    // preset loaded from a file, and applying a missing key crashed (null option)
+    t_config_option_keys keys;
+    for (const auto& key : this->config->config().keys())
+        if (full->has(key)) keys.push_back(key);
+    this->config->apply(full, keys);
     this->canvas2D->update_bed_size();
 }
 
