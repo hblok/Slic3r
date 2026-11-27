@@ -57,11 +57,7 @@ use Slic3r::ExPolygon;
 use Slic3r::ExtrusionLoop;
 use Slic3r::ExtrusionPath;
 use Slic3r::Flow;
-use Slic3r::GCode::ArcFitting;
-use Slic3r::GCode::MotionPlanner;
-use Slic3r::GCode::PressureRegulator;
 use Slic3r::GCode::Reader;
-use Slic3r::GCode::VibrationLimit;
 use Slic3r::Geometry qw(PI);
 use Slic3r::Geometry::Clipper;
 use Slic3r::Layer;
@@ -71,10 +67,8 @@ use Slic3r::Point;
 use Slic3r::Polygon;
 use Slic3r::Polyline;
 use Slic3r::Print;
-use Slic3r::Print::GCode;
 use Slic3r::Print::Object;
 use Slic3r::Print::Simple;
-use Slic3r::Print::SupportMaterial;
 use Slic3r::Surface;
 our $build = eval "use Slic3r::Build; 1";
 use Thread::Semaphore;
@@ -95,7 +89,6 @@ use constant LOOP_CLIPPING_LENGTH_OVER_NOZZLE_DIAMETER => 0.15;
 my @my_threads = ();
 my @threads : shared = ();
 my $pause_sema = Thread::Semaphore->new;
-my $parallel_sema;
 my $paused = 0;
 
 sub spawn_thread {
@@ -114,7 +107,6 @@ sub spawn_thread {
         
         local $SIG{'KILL'} = sub {
             Slic3r::debugf "Exiting thread %d...\n", threads->tid;
-            $parallel_sema->up if $parallel_sema;
             kill_all_threads();
             Slic3r::thread_cleanup();
             threads->exit();
@@ -129,57 +121,6 @@ sub spawn_thread {
     push @my_threads, $thread->tid;
     push @threads, $thread->tid;
     return $thread;
-}
-
-# If the threading is enabled, spawn a set of threads.
-# Otherwise run the task on the current thread.
-# Used for 
-#   Slic3r::Print::Object->layers->make_perimeters
-#   Slic3r::Print::Object->layers->make_fill
-#   Slic3r::Print::SupportMaterial::generate_toolpaths
-sub parallelize {
-    my %params = @_;
-    
-    lock @threads;
-    if (!$params{disable} && $Slic3r::have_threads && $params{threads} > 1) {
-        my @items = (ref $params{items} eq 'CODE') ? $params{items}->() : @{$params{items}};
-        my $q = Thread::Queue->new;
-        $q->enqueue(@items, (map undef, 1..$params{threads}));
-        
-        $parallel_sema = Thread::Semaphore->new(-$params{threads});
-        $parallel_sema->up;
-        my $thread_cb = sub {
-            # execute thread callback
-            $params{thread_cb}->($q);
-            
-            # signal the parent thread that we're done
-            $parallel_sema->up;
-            
-            # cleanup before terminating thread
-            Slic3r::thread_cleanup();
-            
-            # This explicit exit avoids an untrappable 
-            # "Attempt to free unreferenced scalar" error
-            # triggered on Ubuntu 12.04 32-bit when we're running 
-            # from the Wx plater and
-            # we're reusing the same plater object more than once.
-            # The downside to using this exit is that we can't return
-            # any value to the main thread but we're not doing that
-            # anymore anyway.
-            threads->exit;
-        };
-            
-        @_ = ();
-        my @my_threads = map spawn_thread($thread_cb), 1..$params{threads};
-        
-        # We use a semaphore instead of $th->join because joined threads are
-        # not listed by threads->list or threads->object anymore, thus can't
-        # be signalled.
-        $parallel_sema->down;
-        $_->detach for @my_threads;
-    } else {
-        $params{no_threads_cb}->();
-    }
 }
 
 # call this at the very end of each thread (except the main one)

@@ -1,4 +1,4 @@
-use Test::More tests => 29;
+use Test::More tests => 16;
 use strict;
 use warnings;
 
@@ -15,57 +15,7 @@ use Slic3r::Geometry qw(epsilon scale PI);
 use Slic3r::Geometry::Clipper qw(diff);
 use Slic3r::Test;
 
-{
-    my $config = Slic3r::Config->new_from_defaults;
-    $config->set('support_material', 1);
-    my @contact_z = my @top_z = ();
-    
-    my $test = sub {
-        my $print = Slic3r::Test::init_print('20mm_cube', config => $config);
-        my $flow = $print->print->objects->[0]->support_material_flow(FLOW_ROLE_SUPPORT_MATERIAL);
-        my $support = Slic3r::Print::SupportMaterial->new(
-            object_config       => $print->print->objects->[0]->config,
-            print_config        => $print->print->config,
-            flow                => $flow,
-            interface_flow      => $flow,
-            first_layer_flow    => $flow,
-        );
-        my $support_z = $support->support_layers_z(\@contact_z, \@top_z, $config->layer_height);
-        my $expected_top_spacing = $support->contact_distance($config->layer_height, $config->nozzle_diameter->[0]);
-        
-        is $support_z->[0], $config->first_layer_height,
-            'first layer height is honored';
-        is scalar(grep { $support_z->[$_]-$support_z->[$_-1] <= 0 } 1..$#$support_z), 0,
-            'no null or negative support layers';
-        is scalar(grep { $support_z->[$_]-$support_z->[$_-1] > $config->nozzle_diameter->[0] + epsilon } 1..$#$support_z), 0,
-            'no layers thicker than nozzle diameter';
-        
-        my $wrong_top_spacing = 0;
-        foreach my $top_z (@top_z) {
-            # find layer index of this top surface
-            my $layer_id = first { abs($support_z->[$_] - $top_z) < epsilon } 0..$#$support_z;
-            
-            # check that first support layer above this top surface (or the next one) is spaced with nozzle diameter
-            $wrong_top_spacing = 1
-                if ($support_z->[$layer_id+1] - $support_z->[$layer_id]) != $expected_top_spacing
-                && ($support_z->[$layer_id+2] - $support_z->[$layer_id]) != $expected_top_spacing;
-        }
-        ok !$wrong_top_spacing, 'layers above top surfaces are spaced correctly';
-    };
-    
-    $config->set('layer_height', 0.2);
-    $config->set('first_layer_height', 0.3);
-    @contact_z = (1.9);
-    @top_z = (1.1);
-    $test->();
-    
-    $config->set('first_layer_height', 0.4);
-    $test->();
-    
-    $config->set('layer_height', $config->nozzle_diameter->[0]);
-    $test->();
-}
-
+# support_layers_z checks: ported to src/test/libslic3r/test_support_material.cpp
 {
     my $config = Slic3r::Config->new_from_defaults;
     $config->set('raft_layers', 3);
@@ -312,33 +262,5 @@ use Slic3r::Test;
     ok !defined(first { abs($_ - $config->layer_height) < epsilon }
         @{ $layer_heights_by_tool{$config->support_material_extruder-1} }),
         'no support material layer is as thin as object layers';
-}
-{
-    my $config = Slic3r::Config->new_from_defaults;
-    $config->set('support_material_enforce_layers', 100);
-    $config->set('support_material', 0);
-    my @contact_z = my @top_z = ();
-    
-    my $test = sub {
-        my $print = Slic3r::Test::init_print('20mm_cube', config => $config);
-        my $flow = $print->print->objects->[0]->support_material_flow(FLOW_ROLE_SUPPORT_MATERIAL);
-        my $support = Slic3r::Print::SupportMaterial->new(
-            object_config       => $print->print->objects->[0]->config,
-            print_config        => $print->print->config,
-            flow                => $flow,
-            interface_flow      => $flow,
-            first_layer_flow    => $flow,
-        );
-        my $support_z = $support->support_layers_z(\@contact_z, \@top_z, $config->layer_height);
-        
-        is scalar(grep { $support_z->[$_]-$support_z->[$_-1] <= 0 } 1..$#$support_z), 0,
-            'forced support is generated';
-        
-    };
-    $config->set('layer_height', 0.2);
-    $config->set('first_layer_height', 0.3);
-    @contact_z = (1.9);
-    @top_z = (1.1);
-    $test->();
 }
 __END__

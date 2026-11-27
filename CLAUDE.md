@@ -14,13 +14,13 @@ before proposing a change of direction.
 | `xs/src/libslic3r/` | C++ slicing core |
 | `src/` | C++ CLI (`slic3r.cpp`), CMake build, Catch2 tests (`src/test/`) |
 | `src/GUI/` | C++ GUI: unfinished skeleton, many `//TODO` stubs |
-| `lib/Slic3r/`, `slic3r.pl` | Perl application and the full GUI; has its **own** G-code and support generation |
+| `lib/Slic3r/`, `slic3r.pl` | Perl application and the full GUI; slicing, support and G-code run in C++ through XS |
 | `xs/xsp/`, `xs/t/`, `t/` | Perl/C++ bindings and Perl tests |
 | `package/` | Linux desktop entry only; packaging not built yet |
 
-**Two pipelines:** a change to G-code or support generation in C++ does not
-automatically affect the Perl GUI. Check both (`lib/Slic3r/Print/GCode.pm`,
-`lib/Slic3r/Print/SupportMaterial.pm`).
+**One pipeline** since 2026-11-27: the Perl program calls the C++ G-code export and
+support generation (`Print.xsp`); their Perl ports are deleted. Goal: Perl only for the
+GUI, then not at all (plan/README.md, "Perl and the GUI path").
 
 ## Build and test (C++ core)
 
@@ -44,9 +44,9 @@ Expected output is recorded on Debian 13.
 The first build downloads Catch2. CMake writes `src/test/test_options.hpp`
 (ignored by git).
 
-C++ support material was fixed on 2026-11-26 to match Perl (see `plan/baseline.md`).
-When changing either pipeline, compare its output with the other one:
-`src/test/golden/compare_perl.sh build/slic3r` (needs the XS module built too).
+`src/test/golden/compare_perl.sh build/slic3r` slices with the C++ CLI and with
+`slic3r.pl` and compares (needs the XS module built). It once compared two pipelines;
+now it checks that the Perl front end (Simple.pm, config handling) feeds C++ the same.
 
 ## Build and test (Perl application and GUI)
 
