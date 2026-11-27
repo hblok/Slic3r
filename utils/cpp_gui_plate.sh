@@ -7,17 +7,34 @@
 # layout or a menu changes.
 #
 # Needs the GUI and CLI builds, Xvfb, xdotool and ImageMagick.
-# Usage: utils/cpp_gui_plate.sh path/to/gui/slic3r path/to/cli/slic3r OUTDIR
+# It is in three parts, each with its own start of the program, to stay well under the
+# time limit.
+# Usage: utils/cpp_gui_plate.sh path/to/gui/slic3r path/to/cli/slic3r OUTDIR PART
+#        PART: plate | objects | files
 set -eu
 # hang guard: after 290 s the whole run is killed, Xvfb and the program included
 [ "${GUI_TEST_GUARD:-}" = "$0" ] || GUI_TEST_GUARD=$0 exec timeout -v -k 5 290 "$0" "$@"
 gui_bin=$(realpath "$1")
 cli_bin=$(realpath "$2")
 out=$(realpath -m "$3")
+part=${4:-}
+case $part in
+    plate) display=97 ;;
+    objects) display=96 ;;
+    files) display=95 ;;
+    *) echo "usage: $0 GUI CLI OUTDIR plate|objects|files" >&2; exit 2 ;;
+esac
 cd "$(dirname "$0")/.."
 root=$PWD
-mkdir -p "$out"
-export DISPLAY=":${SMOKE_DISPLAY:-97}"
+# an earlier run's files break the next one (the save dialogs ask to replace them):
+# start clean, but only ever remove a directory that a test run made
+if [ -e "$out/.gui-test" ]; then
+    rm -rf "$out"
+elif [ -n "$(ls -A "$out" 2>/dev/null)" ]; then
+    echo "$out is not empty and not from a test run; not touching it" >&2; exit 2
+fi
+mkdir -p "$out"; : >"$out/.gui-test"
+export DISPLAY=":${SMOKE_DISPLAY:-$display}"
 export HOME="$out/home"
 mkdir -p "$HOME" "$out/data"
 cp "$root/src/test/golden/table.stl" "$out/part.stl"
@@ -55,7 +72,7 @@ object_menu() { menu 121 "$@"; }
 answer() { sleep 1; key ctrl+a; xdotool type "$1"; sleep 0.5; key Return; sleep 2; }
 # A dialog that opens a file also needs the keyboard handed to it (there is no window
 # manager to do it), or its inline completion mangles the typed path.
-answer_open() { sleep 1; xdotool search --onlyvisible --name "^(Choose|Select) " windowfocus --sync; answer "$1"; }
+answer_open() { sleep 1; xdotool search --onlyvisible --name "^(Choose|Select) " windowfocus; answer "$1"; }
 
 info() { sed -n "s/^$2 = *//p" "$out/$1.info"; }
 near() { # name key value
@@ -88,6 +105,7 @@ select_first() { plater_menu 4; }                    # "Select Next Object"
 # the menu works wherever the keyboard focus went
 undo() { plater_menu 2; }
 
+if [ "$part" = plate ]; then
 export_plate loaded
 near loaded number_of_facets 24
 near loaded size_z 12
@@ -124,6 +142,13 @@ export_object part1
 near part1 number_of_facets 12
 undo
 ok "split"
+fi
+
+if [ "$part" = objects ]; then
+select_first
+object_menu 10 4; answer 50                             # half the height to start with
+export_plate flat
+near flat size_z 6
 
 object_menu 13                                          # Cut at half the height, keep both
 shot cut-dialog
@@ -184,8 +209,10 @@ shot preferences
 xdotool mousemove 508 365 click 1; sleep 1              # "OK"
 grep -q '^background_processing = 1' "$out/data/slic3r.ini" || fail "the preference is not in slic3r.ini"
 ok "preferences"
+fi
 
 # ---- the File menu ----
+if [ "$part" = files ]; then
 file_menu 3; answer "$out/exported.ini"                 # Export Config
 grep -q '^layer_height = 0.3' "$out/exported.ini" || fail "exported.ini lacks the default layer height"
 sed 's/^layer_height = .*/layer_height = 0.25/' "$out/exported.ini" >"$out/loaded-config.ini"
@@ -229,6 +256,7 @@ done
 grep -q '^bed_shape = 0x0,200' "$out/data/printer/My Settings.ini" || fail "wizard: bed shape"
 grep -q '^selected\|^printer = My Settings' "$out/data/slic3r.ini" || fail "wizard: preset not selected"
 ok "configuration wizard"
+fi
 
 alive end
 if grep -q "wx assertion" "$out/gui.log"; then

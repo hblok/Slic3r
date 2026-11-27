@@ -464,12 +464,19 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
 
     if (UNIX)
         # full UI under Xvfb; this binary is also the command line they compare with.
-        # Each script takes its own X display.
+        # Each takes its own X display.
         enable_testing()
-        foreach(script smoke plate)
-            add_test(NAME gui_${script} COMMAND ${CMAKE_SOURCE_DIR}/../utils/cpp_gui_${script}.sh
-                $<TARGET_FILE:slic3r> $<TARGET_FILE:slic3r> ${CMAKE_BINARY_DIR}/gui-${script})
-            set_tests_properties(gui_${script} PROPERTIES LABELS gui TIMEOUT 300)
+        foreach(name smoke plate objects files)
+            if (name STREQUAL smoke)
+                set(script smoke)
+                set(part "")
+            else()
+                set(script plate)
+                set(part ${name})
+            endif()
+            add_test(NAME gui_${name} COMMAND ${CMAKE_SOURCE_DIR}/../utils/cpp_gui_${script}.sh
+                $<TARGET_FILE:slic3r> $<TARGET_FILE:slic3r> ${CMAKE_BINARY_DIR}/gui-${name} ${part})
+            set_tests_properties(gui_${name} PROPERTIES LABELS gui TIMEOUT 300)
         endforeach()
     endif()
 
