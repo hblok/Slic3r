@@ -107,7 +107,6 @@ void Plate2D::repaint(wxPaintEvent& e) {
     dc.SetPen(dark_pen); 
     this->clean_instance_thumbnails();
     for (auto& obj : this->objects) {
-        Slic3r::Log::info(LogChannel, LOG_WSTRING("Iterating over object " << obj.identifier));
         auto model_object {this->model->objects.at(&obj - this->objects.data())};
         Slic3r::Log::info(LogChannel, "at() didn't crash");
         if (obj.thumbnail.expolygons.size() == 0) 
@@ -226,7 +225,7 @@ void Plate2D::mouse_down(wxMouseEvent& e) {
     // Iterate through the list backwards to catch the highest object (last placed/drawn), which 
     // is usually what the user wants.
     for (auto obj = this->objects.rbegin(); obj != this->objects.rend(); obj++) {
-        const auto& obj_idx {obj->identifier};
+        const auto obj_idx {static_cast<long>(&*obj - this->objects.data())};
         for (auto thumbnail = obj->instance_thumbnails.crbegin(); thumbnail != obj->instance_thumbnails.crend(); thumbnail++) {
             Slic3r::Log::info(LogChannel, LOG_WSTRING("First point: " << thumbnail->contours()[0].points[0].x << "," << thumbnail->contours()[0].points[0].y));
             if (thumbnail->contains(point)) {

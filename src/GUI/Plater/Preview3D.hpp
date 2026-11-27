@@ -33,6 +33,7 @@ private:
 class Preview3D : public PreviewPanel {
 public:
     explicit Preview3D(wxWindow* parent);
+    Scene3D& scene() { return *canvas; }
 protected:
     void load() override;
     void show_level(size_t level) override { canvas->show(level); }

@@ -55,12 +55,16 @@ jobs:
           cmake --build build -j"$(nproc)" --target slic3r
       - name: C++ GUI smoke test
         run: utils/cpp_gui_smoke.sh build-gui/slic3r build/slic3r cpp-gui-smoke
+      - name: C++ GUI plater and File menu test
+        run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-plate
       - name: Keep the screenshot
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: cpp-gui-smoke
-          path: cpp-gui-smoke/*.png
+          path: |
+            cpp-gui-smoke/*.png
+            cpp-gui-plate/*.png
 
   # Perl application: XS module, Perl tests, and a GUI smoke test under Xvfb.
   perl:

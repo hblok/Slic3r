@@ -144,6 +144,21 @@ void Scene3D::mouse_wheel(wxMouseEvent &e){
         Refresh();
 }
 
+void Scene3D::zoom_by(double factor){
+    zoom *= factor;
+    user_view = true;
+    dirty = true;
+    Refresh();
+}
+
+void Scene3D::select_view(float new_phi, float new_theta){
+    phi = new_phi;
+    theta = clamp(0, new_theta, 170);  // as the mouse: short of gimbal lock
+    user_view = false;
+    dirty = true;
+    Refresh();
+}
+
 void Scene3D::mouse_dclick(wxMouseEvent &e){
     // fit the objects (or the bed) again, as the Perl GUI
     user_view = false;

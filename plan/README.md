@@ -129,8 +129,15 @@ The Perl GUI is the reference for behaviour and layout.
       had no depth buffer (what was drawn last covered the rest); fixed. Left out: colour by
       extruder, greying thicker layers that overlap the shown one (2D), a camera shared
       with the 3D plater. An export waits until a preview has finished slicing
+- [x] Plater and menus (2026-11-27, `cpp_gui_plate.sh`): copies, rotate, mirror, scale,
+      split, cut (plane preview, no live cut), undo/redo (whole copies of the plate),
+      reload from disk, export plate/object as STL/AMF/3MF, drag and drop (not tried);
+      File menu: load/export config and bundles, config from G-code, quick slice, SVG,
+      repair STL; Settings and View menus. A loaded config file lasts until the presets
+      are read again. Reload loses changes made to the mesh (X/Y rotation, mirror,
+      per-axis scale)
 - [ ] The rest of what the Perl GUI has and is worth keeping: object settings and
-      modifiers, cut, rotate to face, wizard, preferences. Printer controller (USB) and
+      modifiers, rotate to face, wizard, preferences. Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps
 

@@ -1,3 +1,4 @@
+#include <fstream>
 #include <memory>
 #include <climits>
 #include <cmath>
@@ -13,11 +14,10 @@
 #include "MainFrame.hpp"
 #include "BoundingBox.hpp"
 #include "Geometry.hpp"
-#include "Dialogs/AnglePicker.hpp"
-#include "Dialogs/ObjectCutDialog.hpp"
 #include "GCodeTimeEstimator.hpp"
 #include "GUI.hpp"
 #include <wx/filedlg.h>
+#include <wx/dnd.h>
 #include <wx/filename.h>
 
 
@@ -93,6 +93,8 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     // initialize 2D Preview Canvas
     canvas2D = new Plate2D(preview_notebook, wxDefaultSize, objects, model, config);
     preview_notebook->AddPage(canvas2D, _("2D"));
+
+    this->commit();  // the empty plate, where undo ends
 
     canvas2D->on_select_object = std::function<void (ObjIdx obj_idx)>(on_select_object);
     canvas2D->on_double_click = std::function<void ()>(on_double_click);
@@ -262,40 +264,33 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     sizer->SetSizeHints(this);
     this->SetSizer(sizer);
 
-    // Initialize the toolbar
     this->selection_changed();
+
+    // files dropped on the plater are loaded
+    struct DropTarget : wxFileDropTarget {
+        Plater* plater;
+        explicit DropTarget(Plater* p) : plater(p) {}
+        bool OnDropFiles(wxCoord, wxCoord, const wxArrayString& names) override {
+            std::vector<std::string> files;
+            for (const auto& name : names) {
+                const wxString extension {wxFileName(name).GetExt().Lower()};
+                if (extension == "stl" || extension == "obj" || extension == "amf" || extension == "3mf" || extension == "xml")
+                    files.push_back(name.ToUTF8().data());
+            }
+            if (files.empty()) return false;
+            // after the drag has ended: loading shows dialogs
+            Plater* target {plater};
+            target->CallAfter([target, files]() { target->load_files(files); });
+            return true;
+        }
+    };
+    this->SetDropTarget(new DropTarget(this));
 
 }
 void Plater::add() {
-    Log::info(LogChannel, L"Called Add function");
-
-    auto& start_object_id = this->object_identifier;
-    const auto& input_files{open_model(this, wxTheApp->GetTopWindow())};
-    for (const auto& f : input_files) {
-        Log::info(LogChannel, (wxString(L"Calling Load File for ") + f).ToStdWstring());
-        this->load_file(f.ToStdString());
-    }
-
-    // abort if no objects actually added.
-    if (start_object_id == this->object_identifier) return;
-
-    // save the added objects
-    auto new_model {this->model};
-
-    // get newly added objects count
-    auto new_objects_count = this->object_identifier - start_object_id;
-    
-    Slic3r::Log::info(LogChannel, (wxString("Obj id:") << object_identifier).ToStdWstring());
-    for (auto i = start_object_id; i < new_objects_count + start_object_id; i++) {
-        const auto& obj_idx {this->get_object_index(i)};
-        new_model->add_object(*(this->model->objects.at(obj_idx)));
-    }
-    Slic3r::Log::info(LogChannel, (wxString("Obj id:") << object_identifier).ToStdWstring());
-
-    // Prepare for undo
-    //this->add_undo_operation("ADD", nullptr, new_model, start_object_id);
-   
-
+    std::vector<std::string> files;
+    for (const auto& file : open_model(this, wxTheApp->GetTopWindow())) files.push_back(file.ToUTF8().data());
+    if (!files.empty()) this->load_files(files);
 }
 
 void Plater::refresh_config() {
@@ -316,10 +311,10 @@ void Plater::load_files(const std::vector<std::string>& files) {
     this->on_model_change();
 }
 
-std::shared_ptr<SliceJob> Plater::make_job() {
+std::shared_ptr<SliceJob> Plater::make_job(const Slic3r::Model& what) {
     this->refresh_config();
     const Slic3r::Config config {this->_presets->full_config()};
-    auto job {std::make_shared<SliceJob>(*this->model)};
+    auto job {std::make_shared<SliceJob>(what)};
     job->revision = this->revision;
     job->print.apply_config(config.config());
     for (auto* object : job->model.objects) {
@@ -340,7 +335,7 @@ void Plater::export_gcode() {
 
     std::shared_ptr<SliceJob> job;
     try {
-        job = this->make_job();
+        job = this->make_job(*this->model);
     } catch (std::exception& e) {
         show_error(this, e.what());
         return;
@@ -384,10 +379,16 @@ void Plater::run_job(std::shared_ptr<SliceJob> job) {
         std::string error;
         bool cancelled {false};
         try {
-            if (job->output_file.empty())
+            if (job->output_file.empty()) {
                 job->print.process();
-            else
+            } else if (job->svg) {
+                std::ofstream svg(job->output_file);
+                job->print.export_svg(svg);
+                svg.close();
+                if (!svg) throw std::runtime_error("Failed to write " + job->output_file);
+            } else {
                 job->print.export_gcode(job->output_file);
+            }
         } catch (Cancelled&) {
             cancelled = true;
         } catch (std::exception& e) {
@@ -407,7 +408,7 @@ void Plater::on_job_done(std::shared_ptr<SliceJob> job, const std::string& error
     statusbar->StopBusy();  // hides and resets the progress gauge
 
     const bool exporting {!job->output_file.empty()};
-    const bool current {job->revision == this->revision};
+    const bool current {job->for_plate && job->revision == this->revision};
     // a cancel by the user or an error: do not start over by itself
     if ((cancelled || !error.empty()) && current) this->failed_revision = job->revision;
 
@@ -425,9 +426,10 @@ void Plater::on_job_done(std::shared_ptr<SliceJob> job, const std::string& error
             this->print->total_used_filament = job->print.total_used_filament;
             this->print->estimated_print_time = job->print.estimated_print_time;
             message.clear();
-            message << _("G-code file exported to ") << wxString::FromUTF8(job->output_file)
-                    << wxString::Format(_(" (%.2f m filament, %s)"), job->print.total_used_filament / 1000.,
-                           wxString(GCodeTimeEstimator::format_time(job->print.estimated_print_time)));
+            message << (job->svg ? _("SVG file exported to ") : _("G-code file exported to ")) << wxString::FromUTF8(job->output_file.c_str());
+            if (!job->svg)
+                message << wxString::Format(_(" (%.2f m filament, %s)"), job->print.total_used_filament / 1000.,
+                    wxString(GCodeTimeEstimator::format_time(job->print.estimated_print_time)));
         }
         statusbar->SetStatusText(message);
         if (current) {
@@ -457,7 +459,7 @@ void Plater::update_preview() {
     if (this->running != nullptr || this->sliced != nullptr || this->objects.empty()
         || this->revision == this->failed_revision) return;
     try {
-        this->run_job(this->make_job());
+        this->run_job(this->make_job(*this->model));
     } catch (std::exception& e) {
         this->failed_revision = this->revision;
         GetFrame()->statusbar->SetStatusText(wxString::FromUTF8(e.what()));
@@ -471,7 +473,7 @@ Plater::~Plater() {
     }
 }
 
-std::vector<int> Plater::load_file(const std::string file, const int obj_idx_to_load) {
+std::vector<int> Plater::load_file(const std::string file) {
     
     auto input_file {wxFileName(file)};
     ui_settings->skein_directory = input_file.GetPath();
@@ -512,23 +514,9 @@ std::vector<int> Plater::load_file(const std::string file, const int obj_idx_to_
                 volume->input_file_vol_idx = j;
             }
         }
-        auto i {0U};
-        if (obj_idx_to_load > 0) {
-            Slic3r::Log::info(LogChannel, L"Loading model objects, obj_idx_to_load > 0");
-            const size_t idx_load = obj_idx_to_load;
-            if (idx_load >= model.objects.size()) return std::vector<int>();
-            obj_idx = this->load_model_objects(model.objects.at(idx_load));
-            i = idx_load;
-        } else {
-            Slic3r::Log::info(LogChannel, L"Loading model objects, obj_idx_to_load = 0");
-            obj_idx = this->load_model_objects(model.objects);
-            Slic3r::Log::info(LogChannel, LOG_WSTRING("obj_idx size: " << obj_idx.size()));
-        }
-
-        for (const auto &j : obj_idx) {
-            this->objects.at(j).input_file = file;
-            this->objects.at(j).input_file_obj_idx = i++;
-        }
+        obj_idx = this->load_model_objects(model.objects);
+        for (size_t i = 0; i < obj_idx.size(); ++i)
+            this->objects.at(obj_idx[i]).input_file = file;
         GetFrame()->statusbar->SetStatusText(_("Loaded ") + input_file.GetName());
 
         if (this->scaled_down) {
@@ -540,92 +528,12 @@ std::vector<int> Plater::load_file(const std::string file, const int obj_idx_to_
     }
 
     progress_dialog->Destroy();
-    this->_redo = std::stack<UndoOperation>();
     return obj_idx;
 }
 
 
-
-std::vector<int> Plater::load_model_objects(ModelObject* model_object) { 
-    ModelObjectPtrs tmp {model_object}; //  wrap in a std::vector
-    return load_model_objects(tmp);
-}
-std::vector<int> Plater::load_model_objects(ModelObjectPtrs model_objects) {
-    auto bed_center {this->bed_centerf()};
-
-    auto bed_shape {Slic3r::Polygon::new_scale(this->config->get<ConfigOptionPoints>("bed_shape").values)};
-    auto bed_size {bed_shape.bounding_box().size()};
-
-    bool need_arrange {false};
-
-    auto obj_idx {std::vector<int>()};
-    Slic3r::Log::info(LogChannel, LOG_WSTRING("Objects: " << model_objects.size()));
-
-    for (auto& obj : model_objects) {
-        auto o {this->model->add_object(*obj)};
-        o->repair();
-        
-        auto tmpobj {PlaterObject()};
-        const auto objfile {wxFileName::FileName( obj->input_file )};
-        tmpobj.name = obj->name.empty() ? objfile.GetName() : wxString(obj->name);
-        tmpobj.identifier = (this->object_identifier)++;
-
-        this->objects.push_back(tmpobj);
-        obj_idx.push_back(this->objects.size() - 1);
-        Slic3r::Log::info(LogChannel, LOG_WSTRING("Object array new size: " << this->objects.size()));
-        Slic3r::Log::info(LogChannel, LOG_WSTRING("Instances: " << obj->instances.size()));
-
-        if (obj->instances.size() == 0) {
-            if (ui_settings->autocenter) {
-                need_arrange = true;
-                o->center_around_origin();
-
-                o->add_instance();
-                o->instances.back()->offset = this->bed_centerf();
-            } else {
-                need_arrange = false;
-                if (ui_settings->autoalignz) {
-                    o->align_to_ground();
-                }
-                o->add_instance();
-            }
-        } else {
-            if (ui_settings->autoalignz) {
-                o->align_to_ground();
-            }
-        }
-        {
-            // If the object is too large (more than 5x the bed) scale it down.
-            auto size {o->bounding_box().size()};
-            double ratio {0.0f};
-            if (ratio > 5) {
-                for (auto& instance : o->instances) {
-                    instance->scaling_factor = (1.0f/ratio);
-                    this->scaled_down = true;
-                }
-            }
-        }
-
-        { 
-            // Provide a warning if downscaling by 5x still puts it over the bed size.
-
-        }
-        this->print->auto_assign_extruders(o);
-        this->print->add_model_object(o);
-    }
-    for (const auto& i : obj_idx) { this->make_thumbnail(i); } 
-    if (need_arrange) this->arrange();
-    return obj_idx;
-}
 
 MainFrame* Plater::GetFrame() { return dynamic_cast<MainFrame*>(wxGetTopLevelParent(this)); }
-
-int Plater::get_object_index(ObjIdx object_id) {
-    for (size_t i = 0U; i < this->objects.size(); i++) {
-        if (this->objects.at(i).identifier == object_id) return static_cast<int>(i);
-    }
-    return -1;
-}
 
 void Plater::make_thumbnail(size_t idx) {
     auto& plater_object {this->objects.at(idx)};
@@ -673,56 +581,6 @@ void Plater::refresh_canvases() {
 
 }
 
-void Plater::arrange() {
-    // TODO pause background process
-    const Slic3r::BoundingBoxf bb {Slic3r::BoundingBoxf(this->config->get<ConfigOptionPoints>("bed_shape").values)};
-    if (this->objects.size() == 0U) { // abort
-        GetFrame()->statusbar->SetStatusText(_("Nothing to arrange."));
-        return; 
-    }
-    bool success {this->model->arrange_objects(this->config->config().min_object_distance(), &bb)};
-
-    if (success) {
-        GetFrame()->statusbar->SetStatusText(_("Objects were arranged."));
-    } else {
-        GetFrame()->statusbar->SetStatusText(_("Arrange failed."));
-    }
-    this->on_model_change(true);
-}
-
-void Plater::on_model_change(bool force_autocenter) {
-    Log::info(LogChannel, L"Called on_modal_change");
-
-    // reload the select submenu (if already initialized)
-    {
-        auto* menu = this->GetFrame()->plater_select_menu;
-
-        if (menu != nullptr) {
-            auto list = menu->GetMenuItems();
-            for (auto it = list.begin();it!=list.end(); it++) { menu->Delete(*it); }
-            for (const auto& obj : this->objects) {
-                const ObjIdx idx = &obj - this->objects.data();  // objects[i] belongs to model->objects[i]
-                auto name {wxString(obj.name)};
-                auto inst_count = this->model->objects.at(idx)->instances.size();
-                if (inst_count > 1) {
-                    name << " (" << inst_count << "x)";
-                }
-                wxMenuItem* item {append_menu_item(menu, name, _("Select object."), 
-                        [this,idx](wxCommandEvent& e) { this->select_object(idx); this->refresh_canvases(); }, 
-                        wxID_ANY, "", "", wxITEM_CHECK)};
-                if (obj.selected) item->Check(true);
-            }
-        }
-    }
-
-    if (force_autocenter || ui_settings->autocenter) {
-        this->model->center_instances_around_point(this->bed_centerf());
-    }
-    this->object_list_changed();
-    this->refresh_canvases();
-    this->invalidate_slices();
-}
-
 ObjRef Plater::selected_object() {
     Slic3r::Log::info(LogChannel, L"Calling selected_object()");
     auto it {this->objects.begin()};
@@ -752,7 +610,8 @@ void Plater::select_object(ObjRef obj) {
 }
 
 void Plater::select_object(ObjIdx obj_idx) {
-    this->select_object(this->objects.begin() + obj_idx);
+    // callers pass -1 for "none"
+    this->select_object(obj_idx < this->objects.size() ? this->objects.begin() + obj_idx : this->objects.end());
 }
 
 void Plater::select_object() {
@@ -771,8 +630,9 @@ void Plater::selection_changed() {
         for (auto item = menu->GetMenuItems().begin(); item != menu->GetMenuItems().end(); item++) {
             (*item)->Check(false);
         }
-        if (have_sel) 
-            menu->FindItemByPosition(obj->identifier)->Check(true);
+        const size_t position = obj - this->objects.begin();
+        if (have_sel && position < menu->GetMenuItemCount())  // the menu may not be rebuilt yet
+            menu->FindItemByPosition(position)->Check(true);
     }
 
     if (this->htoolbar != nullptr) {
@@ -855,8 +715,8 @@ void Plater::build_toolbar() {
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->arrange(); }, TB_ARRANGE);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->increase(); }, TB_MORE);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->decrease(); }, TB_FEWER);
-    toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->rotate(-45); }, TB_45CW);
-    toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->rotate(45); }, TB_45CCW);
+    toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->rotate(-45.); }, TB_45CW);
+    toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->rotate(45.); }, TB_45CCW);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->changescale(); }, TB_SCALE);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->split_object(); }, TB_SPLIT);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->object_cut_dialog(); }, TB_CUT);
@@ -864,222 +724,21 @@ void Plater::build_toolbar() {
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->object_settings_dialog(); }, TB_SETTINGS);
 }
 
-void Plater::remove() {
-    this->remove(-1, false);
+void Plater::zoom(Zoom dir) {
+    const double factor {dir == Zoom::In ? 1.25 : 0.8};
+    const wxWindow* page {this->preview_notebook->GetCurrentPage()};
+    if (page == this->canvas3D) this->canvas3D->zoom_by(factor);
+    else if (page == this->preview3D) this->preview3D->scene().zoom_by(factor);
+    else if (page == this->preview2D) this->preview2D->zoom_by(factor);
 }
 
-void Plater::remove(int obj_idx, bool dont_push) {
-    
-    // TODO: $self->stop_background_process;
-    
-    ObjRef obj_ref;
-    // if no object index is supplied or an invalid one is supplied, remove the selected one
-    if (obj_idx < 0 || obj_idx >= this->objects.size()) {
-        obj_ref = this->selected_object();
-    } else { // otherwise 
-        obj_ref = this->objects.begin() + obj_idx;
-    }
-    std::vector<PlaterObject>::const_iterator const_ref = obj_ref;
-
-    if (obj_ref >= this->objects.end()) return; // do nothing, nothing was selected.
-
-    Slic3r::Log::info(LogChannel, "Assigned obj_ref");
-    // Save the object identifier and copy the object for undo/redo operations.
-    auto object_id { obj_ref->identifier };
-    auto new_model { Slic3r::Model() };
-    new_model.add_object(*(this->model->objects.at(obj_ref->identifier)));
-   
-    Slic3r::Log::info(LogChannel, "Assigned obj_ref");
-    try {
-        this->model->delete_object(obj_ref->identifier);
-    } catch (out_of_range &ex) {
-        Slic3r::Log::error(LogChannel, LOG_WSTRING("Failed to delete object " << obj_ref->identifier << " from Model."));
-    }
-    try {
-        this->print->delete_object(obj_ref->identifier);
-    } catch (out_of_range &ex) {
-        Slic3r::Log::error(LogChannel, LOG_WSTRING("Failed to delete object " << obj_ref->identifier << " from Print."));
-    }
-
-    this->objects.erase(const_ref);
-    int i = 0;
-    for (auto o : this->objects) { o.identifier = i++; } // fix identifiers
-    this->object_identifier = this->objects.size();
-
-    this->object_list_changed();
-    
-    this->select_object();
-
-    this->on_model_change();
-
-    if (!dont_push) {
-        Slic3r::Log::info(LogChannel, "Push to undo stack.");
-        this->add_undo_operation(UndoCmd::Remove, object_id, new_model);
-        Slic3r::Log::info(LogChannel, "Pushed to undo stack.");
-    }
-}
-
-void Plater::reset(bool dont_push) {
-    // TODO: $self->stop_background_process;
-    
-    if (!dont_push) {
-        Slic3r::Model current_model {*(this->model)};
-        std::vector<int> tmp_ids;
-        for (const auto& obj : this->objects) {
-            tmp_ids.push_back(obj.identifier);
-        }
-        this->add_undo_operation(UndoCmd::Reset, tmp_ids, current_model);
-    }
-   
-    this->objects.clear();
-    this->object_identifier = this->objects.size();
-
-    this->model->clear_objects();
-    this->print->clear_objects();
-
-    this->object_list_changed();
-    this->select_object();
-
-    this->on_model_change();
-}
-
-void Plater::increase(size_t copies, bool dont_push) {
-    auto obj {this->selected_object()};
-    if (obj == this->objects.end()) return; // do nothing; nothing is selected.
-    
-    this->stop_background_process();
-
-    auto* model_object {this->model->objects.at(obj->identifier)};
-    ModelInstance* instance {model_object->instances.back()};
-
-    for (size_t i = 1; i <= copies; i++) {
-        instance = model_object->add_instance(*instance);
-        instance->offset.x += 10;
-        instance->offset.y += 10;
-        this->print->objects.at(obj->identifier)->add_copy(instance->offset);
-    }
-
-    if (!dont_push) {
-        this->add_undo_operation(UndoCmd::Increase, obj->identifier, copies);
-    }
-
-    if(ui_settings->autocenter) {
-        this->arrange();
-    } else {
-        this->on_model_change();
-    }
-} 
-
-void Plater::decrease(size_t copies, bool dont_push) {
-    auto obj {this->selected_object()};
-    if (obj == this->objects.end()) return; // do nothing; nothing is selected.
-    
-    this->stop_background_process();
-    auto* model_object {this->model->objects.at(obj->identifier)};
-    if (model_object->instances.size() > copies) {
-        for (size_t i = 1; i <= copies; i++) {
-            model_object->delete_last_instance();
-            this->print->objects.at(obj->identifier)->delete_last_copy();
-        }
-        if (!dont_push) {
-            this->add_undo_operation(UndoCmd::Decrease, obj->identifier, copies);
-        }
-    } else {
-        this->remove();
-    }
-    this->on_model_change();
-} 
-
-void Plater::rotate(Axis axis, bool dont_push) {
-    ObjRef obj {this->selected_object()};
-    if (obj == this->objects.end()) return;
-    double angle {0.0};
-
-    auto* model_object {this->model->objects.at(obj->identifier)};
-    auto model_instance {model_object->instances.begin()};
-
-    // pop a menu to get the angle
-    auto* pick = new AnglePicker<1000>(this, "Set Angle", angle);
-    if (pick->ShowModal() == wxID_OK) {
-        angle = pick->angle();
-        pick->Destroy(); // cleanup afterwards.
-        this->rotate(angle, axis, dont_push);
-    } else {
-        pick->Destroy(); // cleanup afterwards.
-    }
-}
-
-void Plater::rotate(double angle, Axis axis, bool dont_push) {
-    ObjRef obj {this->selected_object()};
-    if (obj == this->objects.end()) return;
-
-    auto* model_object {this->model->objects.at(obj->identifier)};
-    auto* model_instance {model_object->instances.front()};
-
-    if(obj->thumbnail.expolygons.size() == 0) { return; }
-
-    if (axis == Z) {
-        for (auto* instance : model_object->instances)
-            instance->rotation += Geometry::deg2rad(angle);
-        obj->transform_thumbnail(this->model, obj->identifier);
-    } else {
-        model_object->transform_by_instance(*model_instance, true);
-        model_object->rotate(Geometry::deg2rad(angle), axis);
-
-        // realign object to Z=0
-        model_object->center_around_origin();
-        this->make_thumbnail(obj->identifier);
-    }
-
-    model_object->update_bounding_box();
-
-    this->print->add_model_object(model_object, obj->identifier);
-
-    if (!dont_push) {
-        add_undo_operation(UndoCmd::Rotate, obj->identifier, angle, axis);
-    }
-
-    this->selection_changed();
-    this->on_model_change();
-
-} 
-
-void Plater::split_object() {
-    //TODO
-} 
-
-void Plater::changescale() {
-    //TODO
-}
-
-void Plater::object_cut_dialog() {
-    //TODO
-    ObjRef obj {this->selected_object()};
-    if (obj == this->objects.end()) return;
-
-    auto* model_object {this->model->objects.at(obj->identifier)};
-    auto cut_dialog = new ObjectCutDialog(nullptr, model_object);
-    cut_dialog->ShowModal();
-    cut_dialog->Destroy();
+void Plater::select_view(float phi, float theta) {
+    this->canvas3D->select_view(phi, theta);
+    this->preview3D->scene().select_view(phi, theta);
 }
 
 void Plater::object_layers_dialog() {
     //TODO
-}
-
-void Plater::add_undo_operation(UndoCmd cmd, std::vector<int>& obj_ids, Slic3r::Model& model) {
-    //TODO
-}
-
-void Plater::add_undo_operation(UndoCmd cmd, int obj_id, Slic3r::Model& model) {
-    std::vector<int> tmp {obj_id};
-    add_undo_operation(cmd, tmp, model);
-}
-
-void Plater::add_undo_operation(UndoCmd cmd, int obj_id, size_t copies) {
-}
-
-void Plater::add_undo_operation(UndoCmd cmd, int obj_id, double angle, Axis axis) {
 }
 
 void Plater::object_list_changed() {
@@ -1090,165 +749,50 @@ void Plater::object_list_changed() {
     this->selection_changed();
 }
 
-void Plater::stop_background_process() {
-    //TODO
-}
-
-void Plater::start_background_process() {
-    //TODO
-}
-
-void Plater::pause_background_process() {
-    //TODO
-}
-void Plater::resume_background_process() {
-    //TODO
-}
-
 wxMenu* Plater::object_menu() {
-    auto* frame {this->GetFrame()};
     auto* menu {new wxMenu()};
-
-    append_menu_item(menu, _("Delete"), _("Remove the selected object."), [=](wxCommandEvent& e) { this->remove();}, wxID_ANY, "brick_delete.png", "Ctrl+Del");
-    append_menu_item(menu, _("Increase copies"), _("Place one more copy of the selected object."), [=](wxCommandEvent& e) { this->increase();}, wxID_ANY, "add.png", "Ctrl++");
-    append_menu_item(menu, _("Decrease copies"), _("Remove one copy of the selected object."), [=](wxCommandEvent& e) { this->decrease();}, wxID_ANY, "delete.png", "Ctrl+-");
-    append_menu_item(menu, _(L"Set number of copies…"), _("Change the number of copies of the selected object."), [=](wxCommandEvent& e) { this->set_number_of_copies();}, wxID_ANY, "textfield.png");
+    auto item = [menu](const wxString& name, const wxString& help, std::function<void()> action,
+            const wxString& icon = "", const wxString& accelerator = "") {
+        append_menu_item(menu, name, help, [action](wxCommandEvent&) { action(); }, wxID_ANY, icon, accelerator);
+    };
+    item(_("Delete"), _("Remove the selected object."), [this]() { this->remove(); }, "brick_delete.png", "Ctrl+Del");
+    item(_("Increase copies"), _("Place one more copy of the selected object."), [this]() { this->increase(); }, "add.png", "Ctrl++");
+    item(_("Decrease copies"), _("Remove one copy of the selected object."), [this]() { this->decrease(); }, "delete.png", "Ctrl+-");
+    item(_(L"Set number of copies…"), _("Change the number of copies of the selected object."), [this]() { this->set_number_of_copies(); }, "textfield.png");
     menu->AppendSeparator();
-    append_menu_item(menu, _(L"Move to bed center"), _(L"Center object around bed center."), [=](wxCommandEvent& e) { this->center_selected_object_on_bed();}, wxID_ANY, "arrow_in.png");
-    append_menu_item(menu, _(L"Rotate 45° clockwise"), _(L"Rotate the selected object by 45° clockwise."), [=](wxCommandEvent& e) { this->rotate(45);}, wxID_ANY, "arrow_rotate_clockwise.png");
-    append_menu_item(menu, _(L"Rotate 45° counter-clockwise"), _(L"Rotate the selected object by 45° counter-clockwise."), [=](wxCommandEvent& e) { this->rotate(-45);}, wxID_ANY, "arrow_rotate_anticlockwise.png");
-    
-    {
-        auto* rotateMenu {new wxMenu};
+    item(_("Move to bed center"), _("Center object around bed center."), [this]() { this->center_selected_object_on_bed(); }, "arrow_in.png");
+    item(_(L"Rotate 45° clockwise"), _(L"Rotate the selected object by 45° clockwise."), [this]() { this->rotate(-45.); }, "arrow_rotate_clockwise.png");
+    item(_(L"Rotate 45° counter-clockwise"), _(L"Rotate the selected object by 45° counter-clockwise."), [this]() { this->rotate(45.); }, "arrow_rotate_anticlockwise.png");
 
-        append_menu_item(rotateMenu, _(L"Around X axis…"), _("Rotate the selected object by an arbitrary angle around X axis."), [this](wxCommandEvent& e) { this->rotate(X); }, wxID_ANY, "bullet_red.png");
-        append_menu_item(rotateMenu, _(L"Around Y axis…"), _("Rotate the selected object by an arbitrary angle around Y axis."), [this](wxCommandEvent& e) { this->rotate(Y); }, wxID_ANY, "bullet_green.png");
-        append_menu_item(rotateMenu, _(L"Around Z axis…"), _("Rotate the selected object by an arbitrary angle around Z axis."), [this](wxCommandEvent& e) { this->rotate(Z); }, wxID_ANY, "bullet_blue.png");
+    const wxString bullets[] {"bullet_red.png", "bullet_green.png", "bullet_blue.png"};
+    const wxString axes[] {"X", "Y", "Z"};
+    auto submenu = [&](const wxString& title, const wxString& help, const wxString& icon, bool uniform,
+            const wxString& entry, std::function<void(int)> action) {
+        auto* sub {new wxMenu()};
+        if (uniform)
+            append_menu_item(sub, _(L"Uniformly…"), help, [action](wxCommandEvent&) { action(-1); });
+        for (int axis = 0; axis < 3; ++axis)
+            append_menu_item(sub, wxString::Format(entry, axes[axis]), help,
+                [action, axis](wxCommandEvent&) { action(axis); }, wxID_ANY, bullets[axis]);
+        append_submenu(menu, title, help, sub, wxID_ANY, icon);
+    };
+    submenu(_("Rotate"), _("Rotate the selected object by an arbitrary angle"), "textfield.png", false, _(L"Around %s axis…"),
+        [this](int axis) { this->rotate(static_cast<Axis>(axis)); });
+    submenu(_("Mirror"), _("Mirror the selected object"), "shape_flip_horizontal.png", false, _("Along %s axis"),
+        [this](int axis) { this->mirror(static_cast<Axis>(axis)); });
+    submenu(_("Scale"), _("Scale the selected object by a given factor"), "arrow_out.png", true, _(L"Along %s axis…"),
+        [this](int axis) { this->changescale(axis, false); });
+    submenu(_("Scale to size"), _("Scale the selected object to match a given size"), "arrow_out.png", true, _(L"Along %s axis…"),
+        [this](int axis) { this->changescale(axis, true); });
 
-        append_submenu(menu, _("Rotate"), _("Rotate the selected object by an arbitrary angle"), rotateMenu, wxID_ANY, "textfield.png");
-    }
-    /*
-    
-    {
-        my $mirrorMenu = Wx::Menu->new;
-        wxTheApp->append_menu_item($mirrorMenu, "Along X axis…", 'Mirror the selected object along the X axis', sub {
-            $self->mirror(X);
-        }, undef, 'bullet_red.png');
-        wxTheApp->append_menu_item($mirrorMenu, "Along Y axis…", 'Mirror the selected object along the Y axis', sub {
-            $self->mirror(Y);
-        }, undef, 'bullet_green.png');
-        wxTheApp->append_menu_item($mirrorMenu, "Along Z axis…", 'Mirror the selected object along the Z axis', sub {
-            $self->mirror(Z);
-        }, undef, 'bullet_blue.png');
-        wxTheApp->append_submenu($menu, "Mirror", 'Mirror the selected object', $mirrorMenu, undef, 'shape_flip_horizontal.png');
-    }
-    
-    {
-        my $scaleMenu = Wx::Menu->new;
-        wxTheApp->append_menu_item($scaleMenu, "Uniformly…", 'Scale the selected object along the XYZ axes', sub {
-            $self->changescale(undef);
-        });
-        wxTheApp->append_menu_item($scaleMenu, "Along X axis…", 'Scale the selected object along the X axis', sub {
-            $self->changescale(X);
-        }, undef, 'bullet_red.png');
-        wxTheApp->append_menu_item($scaleMenu, "Along Y axis…", 'Scale the selected object along the Y axis', sub {
-            $self->changescale(Y);
-        }, undef, 'bullet_green.png');
-        wxTheApp->append_menu_item($scaleMenu, "Along Z axis…", 'Scale the selected object along the Z axis', sub {
-            $self->changescale(Z);
-        }, undef, 'bullet_blue.png');
-        wxTheApp->append_submenu($menu, "Scale", 'Scale the selected object by a given factor', $scaleMenu, undef, 'arrow_out.png');
-    }
-    
-    {
-        my $scaleToSizeMenu = Wx::Menu->new;
-        wxTheApp->append_menu_item($scaleToSizeMenu, "Uniformly…", 'Scale the selected object along the XYZ axes', sub {
-            $self->changescale(undef, 1);
-        });
-        wxTheApp->append_menu_item($scaleToSizeMenu, "Along X axis…", 'Scale the selected object along the X axis', sub {
-            $self->changescale(X, 1);
-        }, undef, 'bullet_red.png');
-        wxTheApp->append_menu_item($scaleToSizeMenu, "Along Y axis…", 'Scale the selected object along the Y axis', sub {
-            $self->changescale(Y, 1);
-        }, undef, 'bullet_green.png');
-        wxTheApp->append_menu_item($scaleToSizeMenu, "Along Z axis…", 'Scale the selected object along the Z axis', sub {
-            $self->changescale(Z, 1);
-        }, undef, 'bullet_blue.png');
-        wxTheApp->append_submenu($menu, "Scale to size", 'Scale the selected object to match a given size', $scaleToSizeMenu, undef, 'arrow_out.png');
-    }
-    
-    wxTheApp->append_menu_item($menu, "Split", 'Split the selected object into individual parts', sub {
-        $self->split_object;
-    }, undef, 'shape_ungroup.png');
-    wxTheApp->append_menu_item($menu, "Cut…", 'Open the 3D cutting tool', sub {
-        $self->object_cut_dialog;
-    }, undef, 'package.png');
-    wxTheApp->append_menu_item($menu, "Layer heights…", 'Open the dynamic layer height control', sub {
-        $self->object_layers_dialog;
-    }, undef, 'variable_layer_height.png');
-    $menu->AppendSeparator();
-    wxTheApp->append_menu_item($menu, "Settings…", 'Open the object editor dialog', sub {
-        $self->object_settings_dialog;
-    }, undef, 'cog.png');
-    $menu->AppendSeparator();
-    wxTheApp->append_menu_item($menu, "Reload from Disk", 'Reload the selected file from Disk', sub {
-        $self->reload_from_disk;
-    }, undef, 'arrow_refresh.png');
-    wxTheApp->append_menu_item($menu, "Export object as STL…", 'Export this single object as STL file', sub {
-        $self->export_object_stl;
-    }, undef, 'brick_go.png');
-    wxTheApp->append_menu_item($menu, "Export object and modifiers as AMF…", 'Export this single object and all associated modifiers as AMF file', sub {
-        $self->export_object_amf;
-    }, undef, 'brick_go.png');
-    wxTheApp->append_menu_item($menu, "Export object and modifiers as 3MF…", 'Export this single object and all associated modifiers as 3MF file', sub {
-            $self->export_object_tmf;
-    }, undef, 'brick_go.png');
-    
-    return $menu;
-}
-*/
+    item(_("Split"), _("Split the selected object into individual parts"), [this]() { this->split_object(); }, "shape_ungroup.png");
+    item(_(L"Cut…"), _("Open the 3D cutting tool"), [this]() { this->object_cut_dialog(); }, "package.png");
+    menu->AppendSeparator();
+    item(_("Reload from Disk"), _("Reload the selected file from Disk"), [this]() { this->reload_from_disk(); }, "arrow_refresh.png");
+    item(_(L"Export object as STL…"), _("Export this single object as STL file"), [this]() { this->export_object(IO::STL); }, "brick_go.png");
+    item(_(L"Export object and modifiers as AMF…"), _("Export this single object and all associated modifiers as AMF file"), [this]() { this->export_object(IO::AMF); }, "brick_go.png");
+    item(_(L"Export object and modifiers as 3MF…"), _("Export this single object and all associated modifiers as 3MF file"), [this]() { this->export_object(IO::TMF); }, "brick_go.png");
     return menu;
-}
-
-void Plater::set_number_of_copies() {
-    this->pause_background_process();
-
-    ObjRef obj {this->selected_object()};
-    if (obj == this->objects.end()) return;
-    auto* model_object { this->model->objects.at(obj->identifier) };
-
-    long copies = -1;
-    copies = wxGetNumberFromUser("", _("Enter the number of copies of the selected object:"), _("Copies"), model_object->instances.size(), 0, 1000, this);
-    if (copies < 0) return;
-    long instance_count = 0;
-    if (model_object->instances.size() <= LONG_MAX) {
-        instance_count = static_cast<long>(model_object->instances.size());
-    } else {
-        instance_count = LONG_MAX;
-    }
-    long diff {copies - instance_count };
-
-    if      (diff == 0) { this->resume_background_process(); }
-    else if (diff > 0)  { this->increase(diff); }
-    else if (diff < 0)  { this->decrease(-diff); }
-}
-void Plater::center_selected_object_on_bed() {
-    ObjRef obj {this->selected_object()};
-    
-    if (obj == this->objects.end()) return;
-    auto* model_object { this->model->objects.at(obj->identifier) };
-    auto bb {model_object->bounding_box()};
-    auto size {bb.size()};
-
-    auto vector { Slic3r::Pointf(
-            this->bed_centerf().x - bb.min.x - size.x/2.0,
-            this->bed_centerf().y - bb.min.y - size.y/2.0)};
-    for (auto* inst : model_object->instances) {
-        inst->offset.translate(vector);
-    }
-
-    this->refresh_canvases();
-
 }
 
 void Plater::show_preset_editor(preset_t group, unsigned int idx) {

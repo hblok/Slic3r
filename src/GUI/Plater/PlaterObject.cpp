@@ -62,9 +62,7 @@ bool PlaterObject::instance_contains(Slic3r::Point point) const {
 PlaterObject& PlaterObject::operator=(const PlaterObject& other) {
     if (&other == this) return *this;
     this->name = std::string(other.name);
-    this->identifier = other.identifier;
     this->input_file = std::string(other.input_file);
-    this->input_file_obj_idx = other.input_file_obj_idx;
 
     this->selected = false;
     this->selected_instance = -1;
@@ -78,9 +76,7 @@ PlaterObject& PlaterObject::operator=(const PlaterObject& other) {
 
 PlaterObject& PlaterObject::operator=(PlaterObject&& other) {
     this->name = std::string(other.name);
-    this->identifier = other.identifier;
     this->input_file = std::string(other.input_file);
-    this->input_file_obj_idx = other.input_file_obj_idx;
 
     this->selected = std::move(other.selected);
     this->selected_instance = std::move(other.selected);

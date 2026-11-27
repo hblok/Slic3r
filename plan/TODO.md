@@ -9,9 +9,10 @@ Feature candidates (not scheduled): [features.md](features.md).
       with the 3D plater
 - [ ] Preset editors: the Perl GUI's page layouts, rules that enable/disable dependent
       options, several extruders, wizard, preset compatibility
-- [ ] Plater: background slicing on changes (`background_processing`), export
-      STL/AMF/3MF, undo; test the "Add…" dialog under Xvfb
-- [ ] Object settings and modifiers, cut, rotate to face, preferences
+- [ ] Plater: background slicing on changes (`background_processing`), cut by grid,
+      rotate to face, layer heights, reload with the Perl GUI's options; remember loaded
+      config files; test drag and drop and the "Add…" dialog
+- [ ] Object settings and modifiers, preferences
 - [ ] Decide before porting: printer controller (USB), SLA/projector
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/`, `t/`; packaging dependencies
 

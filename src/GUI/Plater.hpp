@@ -11,12 +11,12 @@
 #include <wx/bmpcbox.h>
 
 #include <atomic>
-#include <stack>
 #include <thread>
 
 #include "libslic3r.h"
 #include "Model.hpp"
 #include "Print.hpp"
+#include "IO.hpp"
 #include "Config.hpp"
 #include "misc_ui.hpp"
 
@@ -37,13 +37,6 @@
 namespace Slic3r { namespace GUI {
 
 class PresetChooser; // forward dec
-using UndoOperation = int;
-
-enum class UndoCmd {
-    Remove, Add, Reset, Increase, Decrease, Rotate
-};
-
-
 enum class Zoom {
     In, Out
 };
@@ -58,7 +51,9 @@ struct SliceJob {
     Slic3r::Model model;
     Slic3r::Print print;        ///< points into model (declared after it, destroyed first)
     unsigned long revision {0}; ///< the plater's, when the job was made
-    std::string output_file;    ///< G-code to write; empty: slice only, for the preview
+    std::string output_file;    ///< file to write; empty: slice only, for the preview
+    bool svg {false};           ///< write the slices as SVG, not G-code
+    bool for_plate {true};      ///< false: a quick slice of a file, not what the preview shows
 };
 
 class PlaterObject;
@@ -89,38 +84,43 @@ public:
     /// Pops file dialog.
     void add();
 
-    /// Remove a selected model from the plater.
-    void remove(int obj_idx, bool dont_push = false);
+    // What the menus and the toolbar do (Plater/ObjectOperations.cpp). Most act on the
+    // selected object.
     void remove();
-    
+    void remove(int obj_idx);
+    /// Clear plate.
+    void reset();
     /// Arrange models via a simple packing mechanism based on bounding boxes.
     void arrange();
+    void increase(size_t copies = 1);
+    void decrease(size_t copies = 1);
+    void set_number_of_copies();
+    void center_selected_object_on_bed();
+    /// Rotate by an angle in degrees.
+    void rotate(double angle, Axis axis = Z);
+    /// Rotate by an angle the user picks.
+    void rotate(Axis axis);
+    void mirror(Axis axis);
+    /// Scale along an axis (-1: uniformly), by a percentage or to a size the user enters.
+    void changescale(int axis = -1, bool to_size = false);
+    void split_object();
+    void object_cut_dialog();
+    void reload_from_disk();
+    void export_plate(IO::ExportFormat format);
+    void export_object(IO::ExportFormat format);
+    void undo();
+    void redo();
+    void select_next();
+    void select_prev();
+    void zoom(Zoom dir);
+    /// One of the standard views of the 3D plater and preview: yaw and pitch in degrees.
+    void select_view(float phi, float theta);
 
     /// Ask if there are any unsaved changes.
     bool prompt_unsaved_changes() { return true; }
 
-    void add_undo_operation(UndoCmd cmd, int obj_id, Slic3r::Model& model);
-
-    /// Push an undo op onto the stack.
-    void add_undo_operation(UndoCmd cmd, std::vector<int>& obj_ids, Slic3r::Model& model);
-    
-    /// Undo for increase/decrease 
-    void add_undo_operation(UndoCmd cmd, int obj_id, size_t copies);
-
-    /// Undo for increase/decrease 
-    void add_undo_operation(UndoCmd cmd, int obj_id, double angle, Axis axis);
-
     /// Create menu for object.
     wxMenu* object_menu();
-
-
-    /// Retrieve the identifier for the currently selected preset.
-    void undo() {};
-    void redo() {};
-
-    void select_next() {};
-    void select_prev() {};
-    void zoom(Zoom dir) {};
 
     /// Slice with the selected presets and write G-code: to the --output file when one
     /// was given on the command line, else where a file dialog says.
@@ -128,12 +128,19 @@ public:
     
     /// Load model files (from the command line or a drop) into the plater.
     void load_files(const std::vector<std::string>& files);
-    void export_amf() {};
-    void export_tmf() {};
-    void export_stl() {};
-
 
     void show_preset_editor(preset_t preset, unsigned int idx);
+
+    // The File menu (Plater/FileMenu.cpp)
+    void load_config_file();
+    void export_config();
+    void import_config_from_gcode();
+    void load_config_bundle();
+    void export_config_bundle();
+    /// Slice a file without putting it on the plate. save_as: ask where to write;
+    /// again: the file of the last quick slice.
+    void quick_slice(bool save_as, bool again = false, bool svg = false);
+    void repair_stl();
 private:
     std::shared_ptr<Slic3r::Print> print {std::make_shared<Print>(Slic3r::Print())};
     std::shared_ptr<Slic3r::Model> model {std::make_shared<Model>(Slic3r::Model())};
@@ -147,10 +154,22 @@ private:
 
     std::vector<PlaterObject> objects {}; //< Main object vector.
 
-    size_t object_identifier {0U}; //< Counter for adding objects to Slic3r. Increment after adding each object.
-
-    std::stack<UndoOperation> _undo {}; 
-    std::stack<UndoOperation> _redo {}; 
+    /// The plate after each change, for undo and redo.
+    struct PlaterState {
+        std::shared_ptr<Slic3r::Model> model;
+        std::vector<PlaterObject> objects;
+    };
+    std::vector<PlaterState> history;
+    size_t history_pos {0};     ///< the state the plate is in
+    void commit();
+    void restore(size_t position);
+    /// -1: nothing selected
+    int selected_index() const;
+    ModelObject* selected_model_object();
+    wxString ask_export_file(const wxString& format, const wxString& extension, const wxString& wildcard);
+    void export_model(const Slic3r::Model& what, IO::ExportFormat format);
+    /// Show the model as it is now: menus, info box, canvases; drops the sliced result.
+    void refresh_model();
 
     wxNotebook* preview_notebook {new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxSize(335,335), wxNB_BOTTOM)};
     wxBoxSizer* right_sizer {new wxBoxSizer(wxVERTICAL)};
@@ -176,8 +195,11 @@ private:
     std::shared_ptr<SliceJob> sliced;   ///< the last job that still matches the plater
     unsigned long revision {0};         ///< counts changes of the model or the settings
     unsigned long failed_revision {static_cast<unsigned long>(-1)}; ///< do not slice this one again by itself
-    /// Throws if the print is not valid.
-    std::shared_ptr<SliceJob> make_job();
+    /// A job for this model with the selected presets. Throws if the print is not valid.
+    std::shared_ptr<SliceJob> make_job(const Slic3r::Model& what);
+    wxString quick_slice_input, quick_slice_output;
+    /// Select a configuration file as the print, material and printer preset.
+    void select_external_config(const wxString& file);
     void run_job(std::shared_ptr<SliceJob> job);
     /// Back on the GUI thread when the background job has ended.
     void on_job_done(std::shared_ptr<SliceJob> job, const std::string& error, bool cancelled);
@@ -190,7 +212,7 @@ private:
     void refresh_config();
 
     /// Handles the actual load of the file from the dialog handoff.
-    std::vector<int> load_file(const std::string file, const int obj_idx_to_load = -1);
+    std::vector<int> load_file(const std::string file);
 
     const std::string LogChannel {"GUI_Plater"}; //< Which log these messages should go to.
 
@@ -210,8 +232,6 @@ private:
     /// Overload to unselect objects
     void select_object();
     
-    int get_object_index(ObjIdx object_id);
-
     /// Get the center of the configured bed's bounding box.
     Slic3r::Pointf bed_centerf() {
         const auto& bed_shape { Slic3r::Polygon::new_scale(this->config->get<ConfigOptionPoints>("bed_shape").values) };
@@ -232,7 +252,6 @@ private:
     void selection_changed();
 
     /// Run everything that needs to happen when models change.
-    /// Includes updating canvases, reloading menus, etc.
     void on_model_change(bool force_autocenter = false);
 
     /// Searches the object vector for the first selected object and returns an iterator to it.
@@ -246,47 +265,11 @@ private:
     /// Instantiate the toolbar 
     void build_toolbar();
 
-    /// Clear plate.
-    void reset(bool dont_push = false);
-
-    /// Make instances of the currently selected model.
-    void increase(size_t copies = 1, bool dont_push = false); 
-
-    /// Remove instances of the currently selected model.
-    void decrease(size_t copies = 1, bool dont_push = false); 
-
-    /// Rotate the currently selected model, triggering a user prompt.
-    void rotate(Axis axis = Z, bool dont_push = false); 
-    /// Rotate the currently selected model.
-    void rotate(double angle, Axis axis = Z, bool dont_push = false); 
-
-    /// Separate a multipart model to its component interfaces.
-    void split_object(); 
-
-    /// Prompt a change of scaling.
-    void changescale();
-
-    /// Open the dialog to perform a cut on the current model.
-    void object_cut_dialog();
-
     /// Open a menu to configure the layer heights.
     void object_layers_dialog();
 
     /// Process a change in the object list.
     void object_list_changed();
-
-    /// Halt ongoing background processes.
-    void stop_background_process();
-
-    void start_background_process();
-
-    void pause_background_process();
-    void resume_background_process();
-
-    /// Move the selected object to the center of bed.
-    void center_selected_object_on_bed();
-
-    void set_number_of_copies();
 
     /// Struct containing various object info fields.
     info_fields object_info;

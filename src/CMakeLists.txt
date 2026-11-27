@@ -434,6 +434,8 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
     ${GUI_LIBDIR}/Plater/Plate2D.cpp
     ${GUI_LIBDIR}/Plater/Plate3D.cpp
     ${GUI_LIBDIR}/Plater/PreviewPanel.cpp
+    ${GUI_LIBDIR}/Plater/ObjectOperations.cpp
+    ${GUI_LIBDIR}/Plater/FileMenu.cpp
     ${GUI_LIBDIR}/Plater/Preview2D.cpp
     ${GUI_LIBDIR}/Plater/Preview3D.cpp
     ${GUI_LIBDIR}/Plater/PlaterObject.cpp

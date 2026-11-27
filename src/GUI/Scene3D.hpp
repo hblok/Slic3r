@@ -24,6 +24,9 @@ struct Volume {
 class Scene3D : public wxGLCanvas {
 public:
     Scene3D(wxWindow* parent, const wxSize& size);
+    void zoom_by(double factor);
+    /// Look from this yaw and pitch (degrees) and fit the contents.
+    void select_view(float new_phi, float new_theta);
 private:
     wxGLContext* glContext;
     
@@ -65,7 +68,6 @@ protected:
     
     std::vector<Volume> volumes;
     BoundingBoxf3 content_bb;    ///< drawn by a subclass; the view fits it and the volumes
-    Volume load_object(ModelVolume &mv, ModelInstance &mi);
     
     // Virtual methods to override
     virtual void mouse_up(wxMouseEvent &e);

@@ -10,6 +10,7 @@ namespace Slic3r { namespace GUI {
 class Preview2D : public PreviewPanel {
 public:
     explicit Preview2D(wxWindow* parent);
+    void zoom_by(double factor) { zoom *= factor; pan = {pan.m_x * factor, pan.m_y * factor}; canvas->Refresh(); }
 protected:
     void load() override { canvas->Refresh(); }
     void show_level(size_t level) override;

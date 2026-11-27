@@ -1,351 +1,131 @@
+// Cut an object across an axis and keep the upper part, the lower part or both.
 #include "ObjectCutDialog.hpp"
 
-
-// Cut an object at a Z position, keep either the top or the bottom of the object.
-// This dialog gets opened with the "Cut..." button above the platter.
+#include "misc_ui.hpp"
 
 namespace Slic3r { namespace GUI {
 
-ObjectCutDialog::ObjectCutDialog(wxWindow* parent, ModelObject* _model_object/*, ...*/): wxDialog(parent, -1, _(_model_object->name), wxDefaultPosition, wxSize(500, 500), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER), model_object(_model_object) {
+ObjectCutCanvas::ObjectCutCanvas(wxWindow* parent, ModelObject* object) :
+    Scene3D(parent, wxSize(420, 420)), bb(object->instance_bounding_box(0))
+{
+    // the object around the origin of an empty bed, as large as the object needs
+    const Pointf3 center {bb.center()};
+    for (auto* volume : object->volumes) {
+        TriangleMesh mesh {volume->mesh};
+        object->instances.front()->transform_mesh(&mesh, true);  // as bb: without the offset
+        GLVertexArray vertices;
+        vertices.load_mesh(mesh);
+        volumes.push_back(Volume {ui_settings->color->COLOR_PARTS(), Pointf3(-center.x, -center.y, -bb.min.z),
+            vertices, mesh.bounding_box()});
+    }
+    bb.translate(-center.x, -center.y, -bb.min.z);
+    const coord_t half {scale_(std::max(bb.size().x, bb.size().y))};
+    set_bed_shape({Point(-half, -half), Point(half, -half), Point(half, half), Point(-half, half)});
+}
 
-/*
-    $self->{model_object}->transform_by_instance($self->{model_object}->get_instance(0), 1);
-    
-    // cut options
-    my $size_z = $self->{model_object}->instance_bounding_box(0)->size->z;
-    $self->{cut_options} = {
-        axis            => Z,
-        z               => $size_z/2,
-        keep_upper      => 0,
-        keep_lower      => 1,
-        rotate_lower    => 0,
-        preview         => 1,
+void ObjectCutCanvas::set_plane(Axis new_axis, double new_height) {
+    axis = new_axis;
+    height = new_height;
+    Refresh();
+}
+
+void ObjectCutCanvas::after_render() {
+    // a see-through quad, a little larger than the object
+    const double margin {5};
+    const double lo[] {bb.min.x - margin, bb.min.y - margin, bb.min.z - margin};
+    const double hi[] {bb.max.x + margin, bb.max.y + margin, bb.max.z + margin};
+    const double min[] {bb.min.x, bb.min.y, bb.min.z};
+    const int u {axis == X ? 1 : 0}, v {axis == Z ? 1 : 2};
+    double corner[3];
+    corner[axis] = min[axis] + height;
+    glDisable(GL_LIGHTING);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    const wxColour colour {ui_settings->color->COLOR_CUTPLANE()};
+    glColor4ub(colour.Red(), colour.Green(), colour.Blue(), 128);
+    glBegin(GL_QUADS);
+    for (const auto& edge : {std::make_pair(false, false), std::make_pair(true, false), std::make_pair(true, true), std::make_pair(false, true)}) {
+        corner[u] = edge.first ? hi[u] : lo[u];
+        corner[v] = edge.second ? hi[v] : lo[v];
+        glVertex3d(corner[0], corner[1], corner[2]);
+    }
+    glEnd();
+    glDisable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_LIGHTING);
+}
+
+ObjectCutDialog::ObjectCutDialog(wxWindow* parent, ModelObject* object) :
+    wxDialog(parent, wxID_ANY, _("Cut"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+    size(object->instance_bounding_box(0).size())
+{
+    canvas = new ObjectCutCanvas(this, object);
+    auto* grid {new wxFlexGridSizer(2, 5, 5)};
+    auto add = [this, grid](const wxString& label, wxWindow* field) {
+        grid->Add(new wxStaticText(this, wxID_ANY, label), 0, wxALIGN_CENTER_VERTICAL);
+        grid->Add(field, 0, wxEXPAND);
     };
-    
-    my $optgroup;
-    $optgroup = $self->{optgroup} = Slic3r::GUI::OptionsGroup->new(
-        parent      => $self,
-        title       => 'Cut',
-        on_change   => sub {
-            my ($opt_id) = @_;
-            # There seems to be an issue with wxWidgets 3.0.2/3.0.3, where the slider
-            # genates tens of events for a single value change.
-            # Only trigger the recalculation if the value changes
-            # or a live preview was activated and the mesh cut is not valid yet.
-            if ($self->{cut_options}{$opt_id} != $optgroup->get_value($opt_id) ||
-                ! $self->{mesh_cut_valid} && $self->_life_preview_active()) {
-                $self->{cut_options}{$opt_id} = $optgroup->get_value($opt_id);
-                $self->{mesh_cut_valid} = 0;
-                wxTheApp->CallAfter(sub {
-                    $self->_update;
-                });
-            }
-        },
-        label_width  => 120,
-    );
-    $optgroup->append_single_option_line(Slic3r::GUI::OptionsGroup::Option->new(
-        opt_id      => 'axis',
-        type        => 'select',
-        label       => 'Axis',
-        labels      => ['X','Y','Z'],
-        values      => [X,Y,Z],
-        default     => $self->{cut_options}{axis},
-    ));
-    $optgroup->append_single_option_line(Slic3r::GUI::OptionsGroup::Option->new(
-        opt_id      => 'z',
-        type        => 'slider',
-        label       => 'Z',
-        default     => $self->{cut_options}{z},
-        min         => 0,
-        max         => $size_z,
-        full_width  => 1,
-    ));
-    {
-        my $line = Slic3r::GUI::OptionsGroup::Line->new(
-            label => 'Keep',
-        );
-        $line->append_option(Slic3r::GUI::OptionsGroup::Option->new(
-            opt_id  => 'keep_upper',
-            type    => 'bool',
-            label   => 'Upper part',
-            default => $self->{cut_options}{keep_upper},
-        ));
-        $line->append_option(Slic3r::GUI::OptionsGroup::Option->new(
-            opt_id  => 'keep_lower',
-            type    => 'bool',
-            label   => 'Lower part',
-            default => $self->{cut_options}{keep_lower},
-        ));
-        $optgroup->append_line($line);
-    }
-    $optgroup->append_single_option_line(Slic3r::GUI::OptionsGroup::Option->new(
-        opt_id      => 'rotate_lower',
-        label       => 'Rotate lower part upwards',
-        type        => 'bool',
-        tooltip     => 'If enabled, the lower part will be rotated by 180° so that the flat cut surface lies on the print bed.',
-        default     => $self->{cut_options}{rotate_lower},
-    ));
-    $optgroup->append_single_option_line(Slic3r::GUI::OptionsGroup::Option->new(
-        opt_id      => 'preview',
-        label       => 'Show preview',
-        type        => 'bool',
-        tooltip     => 'If enabled, object will be cut in real time.',
-        default     => $self->{cut_options}{preview},
-    ));
-    {
-        my $cut_button_sizer = Wx::BoxSizer->new(wxVERTICAL);
-        
-        $self->{btn_cut} = Wx::Button->new($self, -1, "Perform cut", wxDefaultPosition, wxDefaultSize);
-        $self->{btn_cut}->SetDefault;
-        $cut_button_sizer->Add($self->{btn_cut}, 0, wxALIGN_RIGHT | wxALL, 10);
-        
-        $self->{btn_cut_grid} = Wx::Button->new($self, -1, "Cut by grid…", wxDefaultPosition, wxDefaultSize);
-        $cut_button_sizer->Add($self->{btn_cut_grid}, 0, wxALIGN_RIGHT | wxALL, 10);
-        
-        $optgroup->append_line(Slic3r::GUI::OptionsGroup::Line->new(
-            sizer => $cut_button_sizer,
-        ));
-    }
-    
-    # left pane with tree
-    my $left_sizer = Wx::BoxSizer->new(wxVERTICAL);
-    $left_sizer->Add($optgroup->sizer, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, 10);
-    
-    # right pane with preview canvas
-    my $canvas;
-    if ($Slic3r::GUI::have_OpenGL) {
-        $canvas = $self->{canvas} = Slic3r::GUI::3DScene->new($self);
-        $canvas->load_object($self->{model_object}, undef, [0]);
-        $canvas->set_auto_bed_shape;
-        $canvas->SetSize([500,500]);
-        $canvas->SetMinSize($canvas->GetSize);
-        $canvas->zoom_to_volumes;
-    }
-    
-    $self->{sizer} = Wx::BoxSizer->new(wxHORIZONTAL);
-    $self->{sizer}->Add($left_sizer, 0, wxEXPAND | wxTOP | wxBOTTOM, 10);
-    $self->{sizer}->Add($canvas, 1, wxEXPAND | wxALL, 0) if $canvas;
-    
-    $self->SetSizer($self->{sizer});
-    $self->SetMinSize($self->GetSize);
-    $self->{sizer}->SetSizeHints($self);
-    
-    EVT_BUTTON($self, $self->{btn_cut}, sub {
-        // Recalculate the cut if the preview was not active.
-        $self->_perform_cut() unless $self->{mesh_cut_valid};
+    const wxString axes[] {"X", "Y", "Z"};
+    axis = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 3, axes);
+    axis->SetSelection(Z);
+    height = new wxSpinCtrlDouble(this, wxID_ANY);
+    height->SetDigits(2);
+    height->SetIncrement(0.5);
+    keep_upper = new wxCheckBox(this, wxID_ANY, _("Upper part"));
+    keep_lower = new wxCheckBox(this, wxID_ANY, _("Lower part"));
+    rotate_lower = new wxCheckBox(this, wxID_ANY, _("Rotate lower part upwards"));
+    keep_upper->SetValue(true);
+    keep_lower->SetValue(true);
+    add(_("Axis"), axis);
+    add(_("Height"), height);
+    add(_("Keep"), keep_upper);
+    add("", keep_lower);
+    add("", rotate_lower);
 
-        // Adjust position / orientation of the split object halves.
-        if (my $lower = $self->{new_model_objects}[0]) {
-            if ($self->{cut_options}{rotate_lower} && $self->{cut_options}{axis} == Z) {
-                $lower->rotate(PI, X);
-            }
-            $lower->center_around_origin;  # align to Z = 0
-        }
-        if (my $upper = $self->{new_model_objects}[1]) {
-            $upper->center_around_origin;  # align to Z = 0
-        }
-        
-        // Note that the window was already closed, so a pending update will not be executed.
-        already_closed = true;
-        EndModal(wxID_OK);
-        Destroy();
+    auto* left {new wxBoxSizer(wxVERTICAL)};
+    left->Add(grid, 0, wxALL, 10);
+    left->AddStretchSpacer(1);
+    auto* buttons {new wxBoxSizer(wxHORIZONTAL)};
+    auto* cut {new wxButton(this, wxID_OK, _("Perform cut"))};
+    cut->SetDefault();
+    buttons->Add(new wxButton(this, wxID_CANCEL, _("Cancel")), 0, wxRIGHT, 5);
+    buttons->Add(cut, 0);
+    left->Add(buttons, 0, wxALL | wxALIGN_RIGHT, 10);
+    auto* sizer {new wxBoxSizer(wxHORIZONTAL)};
+    sizer->Add(left, 0, wxEXPAND);
+    sizer->Add(canvas, 1, wxEXPAND);
+    this->SetSizerAndFit(sizer);
+
+    axis->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) {
+        const double lengths[] {size.x, size.y, size.z};
+        height->SetRange(0, lengths[axis->GetSelection()]);
+        height->SetValue(lengths[axis->GetSelection()] / 2);
+        this->update();
     });
-    
-    EVT_BUTTON($self, $self->{btn_cut_grid}, sub {
-        my $grid_x = Wx::GetTextFromUser("Enter the width of the desired tiles along the X axis:",
-            "Cut by Grid", 100, $self);
-        return if !looks_like_number($grid_x) || $grid_x <= 0;
-        
-        my $grid_y = Wx::GetTextFromUser("Enter the width of the desired tiles along the Y axis:",
-            "Cut by Grid", 100, $self);
-        return if !looks_like_number($grid_y) || $grid_y <= 0;
-        
-        my $process_dialog = Wx::ProgressDialog->new('Cutting…', "Cutting model by grid…", 100, $self, 0);
-        $process_dialog->Pulse;
-        
-        my $meshes = $self->{model_object}->mesh->cut_by_grid(Slic3r::Pointf->new($grid_x, $grid_y));
-        $self->{new_model_objects} = [];
-        
-        my $bb = $self->{model_object}->bounding_box;
-        $self->{new_model} = my $model = Slic3r::Model->new;
-        for my $i (0..$#$meshes) {
-            push @{$self->{new_model_objects}}, my $o = $model->add_object(
-                name => sprintf('%s (%d)', $self->{model_object}->name, $i+1),
-            );
-            my $v = $o->add_volume(
-                mesh    => $meshes->[$i],
-                name    => $o->name,
-            );
-            $o->center_around_origin;
-            my $i = $o->add_instance(
-                offset => Slic3r::Pointf->new(@{$o->origin_translation->negative}[X,Y]),
-            );
-            $i->offset->translate(
-                5 * ceil(($i->offset->x - $bb->center->x) / $grid_x),
-                5 * ceil(($i->offset->y - $bb->center->y) / $grid_y),
-            );
-        }
-        
-        $process_dialog->Destroy;
-        
-        # Note that the window was already closed, so a pending update will not be executed.
-        $self->{already_closed} = 1;
-        $self->EndModal(wxID_OK);
-        $self->Destroy();
-    });
-
-    EVT_CLOSE($self, sub {
-        # Note that the window was already closed, so a pending update will not be executed.
-        already_closed = true;
-        EndModal(wxID_CANCEL);
-        Destroy();
-    });
-*/
-    _update();
-    
+    height->Bind(wxEVT_SPINCTRLDOUBLE, [this](wxSpinDoubleEvent&) { this->update(); });
+    height->Bind(wxEVT_TEXT, [this](wxCommandEvent& e) { this->update(); e.Skip(); });
+    keep_upper->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { this->update(); });
+    keep_lower->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { this->update(); });
+    height->SetRange(0, size.z);
+    height->SetValue(size.z / 2);
+    this->update();
 }
 
-// scale Z down to original size since we're using the transformed mesh for 3D preview
-// and cut dialog but ModelObject::cut() needs Z without any instance transformation
-void ObjectCutDialog::_mesh_slice_z_pos(){
-/*
-    my $bb = $self->{model_object}->instance_bounding_box(0);
-    my $z = $self->{cut_options}{axis} == X ? $bb->x_min
-          : $self->{cut_options}{axis} == Y ? $bb->y_min
-          : $bb->z_min;
-    
-    $z += $self->{cut_options}{z} / $self->{model_object}->instances->[0]->scaling_factor;
-    
-    return $z;
-*/
+void ObjectCutDialog::update() {
+    canvas->set_plane(static_cast<Axis>(axis->GetSelection()), height->GetValue());
+    rotate_lower->Enable(axis->GetSelection() == Z && keep_lower->GetValue());
+    if (auto* cut {this->FindWindow(wxID_OK)}) cut->Enable(keep_upper->GetValue() || keep_lower->GetValue());
 }
 
-// Only perform live preview if just a single part of the object shall survive.
-void ObjectCutDialog::_life_preview_active() {
-    /*
-    return $self->{cut_options}{preview} && ($self->{cut_options}{keep_upper} != $self->{cut_options}{keep_lower});
-    */
-}
-
-// Slice the mesh, keep the top / bottom part.
-void ObjectCutDialog::_perform_cut(){
-
-
-    // Early exit. If the cut is valid, don't recalculate it.
-    if (mesh_cut_valid) return;
-
-/*
-    my $z = $self->_mesh_slice_z_pos();
-    
-    my ($new_model) = $self->{model_object}->cut($self->{cut_options}{axis}, $z);
-    my ($upper_object, $lower_object) = @{$new_model->objects};
-    $self->{new_model} = $new_model;
-    $self->{new_model_objects} = [];
-    if ($self->{cut_options}{keep_upper} && $upper_object->volumes_count > 0) {
-        $self->{new_model_objects}[1] = $upper_object;
-    }
-    if ($self->{cut_options}{keep_lower} && $lower_object->volumes_count > 0) {
-        $self->{new_model_objects}[0] = $lower_object;
-    }
-*/
-    mesh_cut_valid = true;
-}
-
-void ObjectCutDialog::_update() {
-
-    // Don't update if the window was already closed.
-    // We are not sure whether the action planned by wxTheApp->CallAfter() may be triggered after the window is closed.
-    // Probably not, but better be safe than sorry, which is espetially true on multiple platforms.
-    if (already_closed) return;
-/*
-    # Only recalculate the cut, if the live cut preview is active.
-    my $life_preview_active = $self->_life_preview_active();
-    $self->_perform_cut() if $life_preview_active;
-    
-    {
-        # scale Z down to original size since we're using the transformed mesh for 3D preview
-        # and cut dialog but ModelObject::cut() needs Z without any instance transformation
-        my $z = $self->_mesh_slice_z_pos();
-        
-        # update canvas
-        if ($self->{canvas}) {
-            # get volumes to render
-            my @objects = ();
-            if ($life_preview_active) {
-                push @objects, grep defined, @{$self->{new_model_objects}};
-            } else {
-                push @objects, $self->{model_object};
-            }
-            
-            # get section contour
-            my @expolygons = ();
-            foreach my $volume (@{$self->{model_object}->volumes}) {
-                next if !$volume->mesh;
-                next if $volume->modifier;
-                my $expp = $volume->mesh->slice_at($self->{cut_options}{axis}, $z);
-                push @expolygons, @$expp;
-            }
-            
-            my $offset = $self->{model_object}->instances->[0]->offset;
-            foreach my $expolygon (@expolygons) {
-                $self->{model_object}->instances->[0]->transform_polygon($_)
-                    for @$expolygon;
-                
-                if ($self->{cut_options}{axis} != X) {
-                    $expolygon->translate(0, Slic3r::Geometry::scale($offset->y));  #)
-                }
-                if ($self->{cut_options}{axis} != Y) {
-                    $expolygon->translate(Slic3r::Geometry::scale($offset->x), 0);
-                }
-            }
-            
-            $self->{canvas}->reset_objects;
-            $self->{canvas}->load_object($_, undef, [0]) for @objects;
-            
-            my $plane_z = $self->{cut_options}{z};
-            $plane_z += 0.02 if !$self->{cut_options}{keep_upper};
-            $plane_z -= 0.02 if !$self->{cut_options}{keep_lower};
-            $self->{canvas}->SetCuttingPlane(
-                $self->{cut_options}{axis},
-                $plane_z,
-                [@expolygons],
-            );
-            $self->{canvas}->Render;
-        }
-    }
-    
-    # update controls
-    {
-        my $z = $self->{cut_options}{z};
-        my $optgroup = $self->{optgroup};
-        {
-            my $bb = $self->{model_object}->instance_bounding_box(0);
-            my $max = $self->{cut_options}{axis} == X ? $bb->size->x
-                    : $self->{cut_options}{axis} == Y ? $bb->size->y ###
-                    : $bb->size->z;
-            $optgroup->get_field('z')->set_range(0, $max);
-        }
-        $optgroup->get_field('keep_upper')->toggle(my $have_upper = abs($z - $optgroup->get_option('z')->max) > 0.1);
-        $optgroup->get_field('keep_lower')->toggle(my $have_lower = $z > 0.1);
-        $optgroup->get_field('rotate_lower')->toggle($z > 0 && $self->{cut_options}{keep_lower} && $self->{cut_options}{axis} == Z);
-        $optgroup->get_field('preview')->toggle($self->{cut_options}{keep_upper} != $self->{cut_options}{keep_lower});
-    
-        # update cut button
-        if (($self->{cut_options}{keep_upper} && $have_upper)
-            || ($self->{cut_options}{keep_lower} && $have_lower)) {
-            $self->{btn_cut}->Enable;
-        } else {
-            $self->{btn_cut}->Disable;
-        }
-    }
-*/
-}
-
-void ObjectCutDialog::NewModelObjects() {
-/*  
-    my ($self) = @_;
-    return grep defined, @{ $self->{new_model_objects} };
-*/
+CutOptions ObjectCutDialog::options() const {
+    CutOptions o;
+    o.axis = static_cast<Axis>(axis->GetSelection());
+    o.height = height->GetValue();
+    o.keep_upper = keep_upper->GetValue();
+    o.keep_lower = keep_lower->GetValue();
+    o.rotate_lower = rotate_lower->IsEnabled() && rotate_lower->GetValue();
+    return o;
 }
 
 }} // namespace Slic3r::GUI
