@@ -120,14 +120,12 @@ sub export_gcode {
             Slic3r::open(\$fh, ">", $tempfile)
                 or die "Failed to open $tempfile for writing\n";
     
-            # enable UTF-8 output since user might have entered Unicode characters in fields like notes
-            binmode $fh, ':utf8';
+            # the C++ export returns UTF-8 bytes (user text in fields like notes)
+            binmode $fh;
         }
 
-        Slic3r::Print::GCode->new(
-            print   => $self,
-            fh      => $fh,
-        )->export;
+        # the C++ G-code export (PrintGCode); the Perl port was removed
+        print $fh $self->_export_gcode;
 
         # close our gcode file
         close $fh;

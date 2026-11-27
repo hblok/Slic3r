@@ -292,7 +292,7 @@ SCENARIO( "PrintGCode basic functionality") {
             }
         }
 
-        WHEN("layer_num represents the layer's index from z=0") {
+        WHEN("layer_num counts the layer changes (as t/custom_gcode.t)") {
             config->set("layer_gcode", ";Layer:[layer_num] ([layer_z] mm)");
             config->set("layer_height", 1.0);
             config->set("first_layer_height", 1.0);
@@ -301,13 +301,18 @@ SCENARIO( "PrintGCode basic functionality") {
             auto print {Slic3r::Test::init_print({TestMesh::cube_20x20x20,TestMesh::cube_20x20x20}, model, config)};
             Slic3r::Test::gcode(gcode, print);
 
-            auto exported {gcode.str()};
-            int count = 2;            
-            for(int pos = 0; pos != std::string::npos; count--) 
-                pos = exported.find(";Layer:38 (20 mm)", pos+1);
+            std::vector<int> layer_nums;
+            std::string line;
+            std::istringstream lines(gcode.str());
+            while (std::getline(lines, line))
+                if (line.rfind(";Layer:", 0) == 0) layer_nums.push_back(std::stoi(line.substr(7)));
 
-            THEN("layer_num and layer_z are processed in the end gcode") {\
-                REQUIRE(count == -1);
+            THEN("it grows by one per layer change, two objects per height") {
+                // layer height is capped at the 0.5 mm nozzle: 39 layers per cube
+                REQUIRE(layer_nums.size() == 2 * 39);
+                for (size_t i = 0; i < layer_nums.size(); ++i)
+                    REQUIRE(layer_nums[i] == int(i));
+                REQUIRE(gcode.str().find(";Layer:77 (20 mm)") != std::string::npos);
             }
         }
 

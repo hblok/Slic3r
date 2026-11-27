@@ -270,6 +270,8 @@ PrintGCode::output()
                         if (!std::regex_search(config.between_objects_gcode.getString(), ex_temp_regex)) {
                             _print_first_layer_temperature(false);
                         }
+                        // as Perl (it was never written here)
+                        fh << apply_math(_gcodegen.placeholder_parser->process(config.between_objects_gcode.getString())) << "\n";
                     }
                     this->process_layer(obj_idx, layer, Points({copy}));
                 }
@@ -503,17 +505,18 @@ PrintGCode::process_layer(size_t idx, const Layer* layer, const Points& copies)
     // set new layer - this will change Z and force a retraction if retract_layer_change is enabled
     if (_print.config.before_layer_gcode.getString().size() > 0) {
         PlaceholderParser pp { *_gcodegen.placeholder_parser };
-        pp.set("layer_num", layer->id());
+        // as Perl: the running layer count (support layers included), not the layer id
+        pp.set("layer_num", _gcodegen.layer_index + 1);
         pp.set("layer_z", layer->print_z);
         pp.set("current_retraction", _gcodegen.writer.extruder()->retracted);
 
         gcode += apply_math(pp.process(_print.config.before_layer_gcode.getString()));
         gcode += "\n";
     }
-    gcode += _gcodegen.change_layer(*layer);
+    gcode += _gcodegen.change_layer(*layer);  // increases layer_index
     if (_print.config.layer_gcode.getString().size() > 0) {
         PlaceholderParser pp { *_gcodegen.placeholder_parser };
-        pp.set("layer_num", layer->id());
+        pp.set("layer_num", _gcodegen.layer_index);
         pp.set("layer_z", layer->print_z);
         pp.set("current_retraction", _gcodegen.writer.extruder()->retracted);
 

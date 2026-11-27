@@ -4,6 +4,7 @@
 #include <xsinit.h>
 #include "libslic3r/Print.hpp"
 #include "libslic3r/PlaceholderParser.hpp"
+#include <sstream>
 %}
 
 %package{Slic3r::Print::State};
@@ -133,6 +134,9 @@ _constant()
     void discover_horizontal_shells();
     void clip_fill_surfaces();
     void slice();
+    // the C++ support generation (replaces lib/Slic3r/Print/SupportMaterial.pm)
+    void _generate_support_material()
+        %code%{ THIS->generate_support_material(); %};
     void _slice();
     SV* _slice_region(size_t region_id, std::vector<double> z, bool modifier)
         %code%{
@@ -289,6 +293,13 @@ _constant()
     Clone<Flow> skirt_flow();
     void make_skirt();
     void _make_brim();
+    // the C++ G-code export, all of it in one string (replaces lib/Slic3r/Print/GCode.pm)
+    std::string _export_gcode()
+        %code%{
+            std::ostringstream ss;
+            THIS->export_gcode(ss, true);
+            RETVAL = ss.str();
+        %};
 %{
 
 double
