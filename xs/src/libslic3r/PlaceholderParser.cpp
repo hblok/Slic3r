@@ -1,4 +1,5 @@
 #include "PlaceholderParser.hpp"
+#include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <iomanip>
@@ -130,6 +131,14 @@ PlaceholderParser::set(const std::string &key, int value)
     std::ostringstream ss;
     ss << value;
     this->set(key, ss.str());
+}
+
+void
+PlaceholderParser::set(const std::string &key, double value)
+{
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%.15g", value);
+    this->set(key, std::string(buf));
 }
 
 void

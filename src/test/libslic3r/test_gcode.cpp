@@ -3,6 +3,7 @@
 #include "test_data.hpp"
 #include "GCodeReader.hpp"
 #include "GCodeTimeEstimator.hpp"
+#include "PlaceholderParser.hpp"
 #include "GCode.hpp"
 
 using namespace Slic3r::Test;
@@ -91,5 +92,19 @@ SCENARIO("Print time estimate") {
             f.parse(gcode);
             REQUIRE(e.time == Approx(f.time));
         }
+    }
+}
+
+SCENARIO("Placeholders keep fractional numbers") {
+    Slic3r::PlaceholderParser pp;
+    pp.set("layer_z", 0.2);
+    pp.set("count", 3);
+    pp.set("extruder", 1u);
+    THEN("doubles are not cut to integers (layer_z was \"0\" for 0.2 mm)") {
+        REQUIRE(pp.process("[layer_z] [count] [extruder]") == "0.2 3 1");
+    }
+    THEN("they print like Perl numbers") {
+        pp.set("layer_z", 0.30000000000000004);
+        REQUIRE(pp.process("[layer_z]") == "0.3");
     }
 }
