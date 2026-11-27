@@ -52,13 +52,6 @@ Order: the missing features and the USB controller, then:
 
 - [ ] Try the C++ GUI with a window manager and GPU (`utils/make_dist.sh`, so far Xvfb only)
 
-## Bugs
-
-- [ ] `sequential_print_priority` is ignored: the sort in
-      `xs/src/libslic3r/PrintGCode.cpp` compares `a` with itself
-- [ ] With `-DEnable_GUI=ON`, building every target fails: `slic3r_test` does not find
-      `ColorScheme/ColorSchemeBase.hpp` (CI builds only the `slic3r` target there)
-
 ## Repo and release
 
 - [ ] Look at the first CI run after 2026-11-27 afternoon (new preview checks and the

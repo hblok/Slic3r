@@ -67,7 +67,7 @@ Also needs `libwxgtk3.2-dev libgl-dev libglu1-mesa-dev xvfb xdotool imagemagick`
 
 ```sh
 cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
-cmake --build build-gui -j$(nproc) --target slic3r   # building every target fails
+cmake --build build-gui -j$(nproc)
 ctest --test-dir build-gui -L gui -j4 --output-on-failure
 ```
 
