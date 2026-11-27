@@ -8,6 +8,7 @@
     #include <wx/wx.h>
 #endif
 #include <wx/scrolwin.h>
+#include <wx/spinctrl.h>
 
 #include "Model.hpp"
 #include "PrintConfig.hpp"
@@ -30,6 +31,7 @@ private:
     wxButton* delete_button;
     wxChoice* add_choice;
     wxScrolledWindow* settings;
+    wxSpinCtrlDouble* position[3];      ///< the selected volume's lowest corner
     std::vector<std::string> addable;   ///< the keys in add_choice
     /// The selected entry's own settings: the object's or a volume's.
     DynamicPrintConfig& selected_config();
@@ -37,6 +39,9 @@ private:
     void show_settings();
     void load_volumes(bool modifier);
     void delete_volume();
+    void create_modifier();
+    /// Move the selected volume so that its lowest corner is where the fields say.
+    void move_volume();
 };
 
 }} // namespace Slic3r::GUI

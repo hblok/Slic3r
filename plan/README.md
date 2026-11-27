@@ -145,6 +145,8 @@ The Perl GUI is the reference for behaviour and layout.
       Left out: the Perl dialog's 3D preview beside the curve and its quality slider
       (`adaptive_slicing_quality` is an object setting). Ranges and curves are not saved
       in AMF/3MF files
+- [x] Object > Settings: "Create modifier…" (slab, box, cylinder, sphere, centred on the
+      object) and the position of a part in mm (2026-11-27)
 - [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps

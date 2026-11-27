@@ -10,7 +10,6 @@ preferences, editor rules, object settings and modifiers, a one-page wizard.
 
 Missing, compared with the Perl GUI:
 
-- [ ] "Create modifier" (box, cylinder, slab) and moving parts in Object > Settings
 - [ ] Preset editors: hand-made page layouts, several extruders (extruder count),
       compatible printers, bed shape dialog
 - [ ] Wizard on first start; remember loaded config files; reload options (keep

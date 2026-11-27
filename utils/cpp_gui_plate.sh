@@ -189,12 +189,13 @@ ok "mirror and reload from disk"
 
 select_first
 object_menu 16                                          # Settings: a modifier with a setting
-xdotool mousemove 172 351 click 1; sleep 2              # "Load modifier…"
+xdotool mousemove 140 311 click 1; sleep 2              # "Load modifier…"
 answer_open "$root/src/test/inputs/test_cli/20mmbox.stl"
-xdotool mousemove 559 59 click 1; sleep 1               # "Add setting": the second one
-key Down; key Down; key Return; sleep 1
+xdotool mousemove 557 26 click 1; sleep 1               # "Add setting": the third one
+xdotool mousemove 100 500                               # off the list: the keys count from its top
+key Down; key Down; key Down; key Return; sleep 1
 shot object-settings
-xdotool mousemove 680 435 click 1; sleep 1              # "Close"
+xdotool mousemove 706 492 click 1; sleep 1              # "Close"
 object_menu 19; answer "$out/modified.amf"              # Export object and modifiers as AMF
 grep -q 'type="slic3r.modifier">1<' "$out/modified.amf" || fail "no modifier in modified.amf"
 grep -q 'type="slic3r.bridge_flow_ratio"' "$out/modified.amf" || fail "the modifier's setting is not in modified.amf"
@@ -276,6 +277,21 @@ ranged=$(export_layers ranged)
     || fail "height range: $ranged layers ($standard standard, $drawn drawn)"
 undo
 ok "layer heights: curve ($standard to $drawn layers) and range ($ranged)"
+
+select_first
+object_menu 16; sleep 1                                 # Settings
+xdotool mousemove 140 350 click 1; sleep 1              # "Create modifier…": a slab
+xdotool mousemove 392 212 click 1; key ctrl+a; xdotool type 3.25
+xdotool mousemove 450 344 click 1; sleep 1              # "OK"
+xdotool mousemove 226 448 click 1; key ctrl+a; xdotool type 5.5; key Tab    # its position: Z
+shot modifier-created
+xdotool mousemove 706 492 click 1; sleep 1              # "Close"
+object_menu 19; answer "$out/created.amf"               # Export object and modifiers as AMF
+grep -q 'type="slic3r.modifier">1<' "$out/created.amf" || fail "no created modifier in created.amf"
+grep -q '<z>5.5</z>' "$out/created.amf" && grep -q '<z>8.75</z>' "$out/created.amf" \
+    || fail "the created modifier is not 3.25 mm thick at Z 5.5"
+undo
+ok "create a modifier and place it"
 fi
 
 # ---- the File menu ----
