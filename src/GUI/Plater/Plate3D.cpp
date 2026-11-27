@@ -29,7 +29,7 @@ void Plate3D::mouse_up(wxMouseEvent &e){
         moving = false;
         uint i = 0;
         for(const PlaterObject &object: objects){
-            const auto &modelobj = model->objects.at(object.identifier);
+            const auto &modelobj = model->objects.at(&object - objects.data());
             for(ModelInstance *instance: modelobj->instances){
                 uint size = modelobj->volumes.size();
                 if(i <= moving_volume && moving_volume < i+size){
@@ -59,7 +59,7 @@ void Plate3D::mouse_move(wxMouseEvent &e){
         move_start = p;
         uint i = 0;
         for(const PlaterObject &object: objects){
-            const auto &modelobj = model->objects.at(object.identifier);
+            const auto &modelobj = model->objects.at(&object - objects.data());
             for(ModelInstance *instance: modelobj->instances){
                 uint size = modelobj->volumes.size();
                 if(i <= moving_volume && moving_volume < i+size){
@@ -82,7 +82,7 @@ void Plate3D::mouse_move(wxMouseEvent &e){
 void Plate3D::update(){
     volumes.clear();
     for(const PlaterObject &object: objects){
-        const auto &modelobj = model->objects.at(object.identifier);
+        const auto &modelobj = model->objects.at(&object - objects.data());
         for(ModelInstance *instance: modelobj->instances){
             for(ModelVolume* volume: modelobj->volumes){
                 TriangleMesh copy = volume->mesh;
@@ -94,13 +94,14 @@ void Plate3D::update(){
         }
     }
     color_volumes();
+    dirty = true;  // fit the view to the objects again (unless the user moved it)
     Refresh();
 }
 
 void Plate3D::color_volumes(){
     uint i = 0;
     for(const PlaterObject &object: objects){
-        const auto &modelobj = model->objects.at(object.identifier);
+        const auto &modelobj = model->objects.at(&object - objects.data());
         bool hover_object = hover && i <= hover_volume && hover_volume < i+modelobj->instances.size()*modelobj->volumes.size();
         for(ModelInstance *instance: modelobj->instances){
             for(ModelVolume* volume: modelobj->volumes){
@@ -149,7 +150,7 @@ void Plate3D::before_render(){
         hover_volume = index - 1;
         uint k = 0;
         for(const PlaterObject &object: objects){
-            const auto &modelobj = model->objects.at(object.identifier);
+            const auto &modelobj = model->objects.at(&object - objects.data());
             if(k <= hover_volume && hover_volume < k+modelobj->instances.size()*modelobj->volumes.size()){
                 hover_object = k;
                 break;

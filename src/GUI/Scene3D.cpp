@@ -94,6 +94,7 @@ void Scene3D::mouse_move(wxMouseEvent &e){
             Refresh();
         }
         dragging = true;
+        user_view = true;
         drag_start = pos; 
     }else{
         e.Skip();
@@ -114,6 +115,7 @@ void Scene3D::mouse_wheel(wxMouseEvent &e){
         _zoom = clamp(-4, _zoom,4);
         _zoom /= 10;
         zoom /= 1-_zoom;
+        user_view = true;
         /* 
         # In order to zoom around the mouse point we need to translate
         # the camera target
@@ -138,20 +140,41 @@ void Scene3D::mouse_wheel(wxMouseEvent &e){
 }
 
 void Scene3D::mouse_dclick(wxMouseEvent &e){
-    /*
-    if (@{$self->volumes}) {
-        $self->zoom_to_volumes;
-    } else {
-        $self->zoom_to_bed;
-    }*/
-    
+    // fit the objects (or the bed) again, as the Perl GUI
+    user_view = false;
     dirty = true;
     Refresh();
+}
+
+// as Perl's zoom_to_bounding_box: the box (twice its largest side) fills the smaller
+// side of the viewport, around the box center
+void Scene3D::zoom_to_box(const BoundingBoxf3 &bb){
+    const auto s = GetSize();
+    const double max_size = std::max(bb.size().x, std::max(bb.size().y, bb.size().z)) * 2;
+    const int min_viewport = std::min(s.GetWidth(), s.GetHeight());
+    if (max_size <= 0 || min_viewport <= 0) return;
+    zoom = min_viewport / max_size;
+    _camera_target = bb.center();
+}
+
+void Scene3D::zoom_to_contents(){
+    BoundingBoxf3 bb;
+    for (const Volume &volume : volumes) {
+        BoundingBoxf3 vb = volume.bb;
+        vb.translate(volume.origin.x, volume.origin.y, volume.origin.z);
+        bb.merge(vb);
+    }
+    if (!bb.defined) {  // no objects: the bed
+        bb.merge(Pointf3(unscale(bed_bound.min.x), unscale(bed_bound.min.y), 0));
+        bb.merge(Pointf3(unscale(bed_bound.max.x), unscale(bed_bound.max.y), 0));
+    }
+    zoom_to_box(bb);
 }
 
 void Scene3D::resize(){
     if(!dirty)return;
     dirty = false;
+    if (!user_view) zoom_to_contents();
     const auto s = GetSize();
     glViewport(0,0,s.GetWidth(),s.GetHeight());
     const auto x = s.GetWidth()/zoom,

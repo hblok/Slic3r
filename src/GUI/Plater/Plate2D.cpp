@@ -108,7 +108,7 @@ void Plate2D::repaint(wxPaintEvent& e) {
     this->clean_instance_thumbnails();
     for (auto& obj : this->objects) {
         Slic3r::Log::info(LogChannel, LOG_WSTRING("Iterating over object " << obj.identifier));
-        auto model_object {this->model->objects.at(obj.identifier)};
+        auto model_object {this->model->objects.at(&obj - this->objects.data())};
         Slic3r::Log::info(LogChannel, "at() didn't crash");
         if (obj.thumbnail.expolygons.size() == 0) 
             continue; // if there's no thumbnail move on

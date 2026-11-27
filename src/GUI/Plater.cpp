@@ -585,7 +585,7 @@ void Plater::on_model_change(bool force_autocenter) {
             auto list = menu->GetMenuItems();
             for (auto it = list.begin();it!=list.end(); it++) { menu->Delete(*it); }
             for (const auto& obj : this->objects) {
-                const auto idx {obj.identifier};
+                const ObjIdx idx = &obj - this->objects.data();  // objects[i] belongs to model->objects[i]
                 auto name {wxString(obj.name)};
                 auto inst_count = this->model->objects.at(idx)->instances.size();
                 if (inst_count > 1) {
