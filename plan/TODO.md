@@ -64,3 +64,7 @@ Order: the unsaved-changes prompt, the missing features and the USB controller, 
 - [ ] GitHub repo description and homepage (still slic3r.org)
 - [ ] Fetch upstream tags (none in the fork, so `git describe` fails)
 - [ ] `.deb` for Debian 13, built by CI, published as a GitHub release
+
+## Later
+
+- [ ] Build with Bazel
