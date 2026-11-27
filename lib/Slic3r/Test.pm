@@ -243,20 +243,6 @@ sub _eq {
     return abs($a - $b) < epsilon;
 }
 
-sub add_facet {
-    my ($facet, $vertices, $facets) = @_;
-    
-    push @$facets, [];
-    for my $i (0..2) {
-        my $v = first { $vertices->[$_][X] == $facet->[$i][X] && $vertices->[$_][Y] == $facet->[$i][Y] && $vertices->[$_][Z] == $facet->[$i][Z] } 0..$#$vertices;
-        if (!defined $v) {
-            push @$vertices, [ @{$facet->[$i]}[X,Y,Z] ];
-            $v = $#$vertices;
-        }
-        $facets->[-1][$i] = $v;
-    }
-}
-
 package Slic3r::Test::Print;
 use Moo;
 

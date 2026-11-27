@@ -13,12 +13,6 @@ use Slic3r::Print::State ':steps';
 use Slic3r::Surface ':types';
 
 
-# TODO: lazy
-sub fill_maker {
-    my $self = shift;
-    return Slic3r::Fill->new(bounding_box => $self->bounding_box);
-}
-
 sub region_volumes {
     my $self = shift;
     return [ map $self->get_region_volumes($_), 0..($self->region_count - 1) ];
