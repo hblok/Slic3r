@@ -6,6 +6,8 @@
 
 #include <wx/msgdlg.h>
 
+#include "OptionsGroup/OptionControl.hpp"
+
 namespace Slic3r { namespace GUI {
 
 namespace {
@@ -24,9 +26,13 @@ struct Values {
 void PresetEditor::apply_rules() {
     if (this->config == nullptr) return;
     const Values v {this->config->config()};
-    auto enable = [this](std::initializer_list<const char*> keys, bool enabled) {
-        for (const char* key : keys)
-            if (this->_controls.count(key) > 0) this->_controls.at(key)->Enable(enabled);
+    // suffix: "#1" for the second extruder's controls
+    std::string suffix;
+    auto enable = [this, &suffix](std::initializer_list<const char*> keys, bool enabled) {
+        for (const char* key : keys) {
+            const auto it {this->_controls.find(key + suffix)};
+            if (it != this->_controls.end()) it->second.control.window->Enable(enabled);
+        }
     };
 
     if (this->type() == preset_t::Print) {
@@ -85,18 +91,32 @@ void PresetEditor::apply_rules() {
         enable({"max_fan_speed", "fan_below_layer_time", "slowdown_below_layer_time", "min_print_speed"}, cooling);
         enable({"min_fan_speed", "disable_fan_first_layers"}, cooling || v.on("fan_always_on"));
     } else if (this->type() == preset_t::Printer) {
-        const bool firmware {v.on("use_firmware_retraction")};
-        const bool retraction {v.on("retract_length") || firmware};
-        const bool several {v.text("nozzle_diameter").find(',') != std::string::npos};
-        enable({"serial_speed"}, !v.text("serial_port").empty());
+        DynamicPrintConfig& config {this->config->config()};
+        const std::string host {v.text("host_type")};
         enable({"octoprint_apikey"}, !v.text("print_host").empty());
+        enable({"serial_speed"}, !v.text("serial_port").empty());
+        const bool firmware {v.on("use_firmware_retraction")};
+        const bool reprap {v.text("gcode_flavor") == "reprap" || v.text("gcode_flavor") == "repetier"};
+        const size_t extruders {config.has("nozzle_diameter") ? config.opt<ConfigOptionFloats>("nozzle_diameter")->values.size() : 1};
+        const bool several {extruders > 1};
         enable({"toolchange_gcode"}, several);
-        enable({"retract_length"}, !firmware);
-        enable({"retract_before_travel", "retract_layer_change", "retract_speed"}, retraction);
-        enable({"retract_lift", "retract_restart_extra", "wipe"}, retraction && !firmware);
-        enable({"retract_lift_above", "retract_lift_below"}, retraction && v.on("retract_lift"));
-        enable({"retract_length_toolchange"}, several);
-        enable({"retract_restart_extra_toolchange"}, several && v.on("retract_length_toolchange"));
+        for (size_t i = 0; i < extruders; ++i) {
+            auto value = [&config, i](const char* key) {
+                return config.has(key) ? std::atof(option_text(config, key, static_cast<int>(i)).c_str()) : 0.0;
+            };
+            suffix = "#" + std::to_string(i);
+            const bool length {value("retract_length") > 0};
+            // when using firmware retraction, firmware decides retraction length
+            enable({"retract_length"}, !firmware);
+            const bool retraction {length || firmware};
+            enable({"retract_before_travel", "retract_layer_change", "retract_speed"}, retraction);
+            enable({"retract_lift", "retract_restart_extra", "wipe"}, retraction && !firmware);
+            enable({"retract_lift_above", "retract_lift_below"}, retraction && value("retract_lift") > 0);
+            enable({"retract_length_toolchange"}, several && !(firmware && reprap));
+            enable({"retract_restart_extra_toolchange"},
+                several && value("retract_length_toolchange") > 0 && !(firmware && reprap));
+        }
+        suffix.clear();
     }
 }
 
@@ -143,7 +163,8 @@ void PresetEditor::resolve_conflicts(const std::string& changed) {
             }
         }
     } else if (this->type() == preset_t::Printer && v.on("use_firmware_retraction")
-            && among({"use_firmware_retraction", "wipe", "retract_lift"})) {
+            && among({"use_firmware_retraction", "wipe", "retract_lift", "retract_length_toolchange",
+                "retract_restart_extra_toolchange", "gcode_flavor", "extruders_count"})) {
         // lists keep one entry per extruder
         auto zero = [&v](const std::string& key) {
             std::string out {"0"};
@@ -151,13 +172,29 @@ void PresetEditor::resolve_conflicts(const std::string& changed) {
                 if (c == ',') out += ",0";
             return out;
         };
-        if (v.on("wipe")) {
+        // does any extruder have it on
+        auto any = [&v](const std::string& key) {
+            const std::string list {v.text(key)};
+            return list.find_first_of("123456789") != std::string::npos;
+        };
+        const std::string flavor {v.text("gcode_flavor")};
+        if ((flavor == "reprap" || flavor == "repetier") && v.config.has("nozzle_diameter")
+                && v.text("nozzle_diameter").find(',') != std::string::npos
+                && (any("retract_length_toolchange") || any("retract_restart_extra_toolchange"))) {
+            if (ask(_("Retract length for toolchange is not available when using the Firmware Retraction mode.\n\nShall I disable it in order to enable Firmware Retraction?"), _("Firmware Retraction"))) {
+                set("retract_length_toolchange", zero("retract_length_toolchange"));
+                set("retract_restart_extra_toolchange", zero("retract_restart_extra_toolchange"));
+            } else {
+                set("use_firmware_retraction", "0");
+            }
+        }
+        if (v.on("use_firmware_retraction") && any("wipe")) {
             if (ask(_("The Wipe option is not available when using the Firmware Retraction mode.\n\nShall I disable it in order to enable Firmware Retraction?"), _("Firmware Retraction")))
                 set("wipe", zero("wipe"));
             else
                 set("use_firmware_retraction", "0");
         }
-        if (v.on("use_firmware_retraction") && v.on("retract_lift")) {
+        if (v.on("use_firmware_retraction") && any("retract_lift")) {
             if (ask(_("The Z Lift option is not available when using the Firmware Retraction mode.\n\nShall I disable it in order to enable Firmware Retraction?"), _("Firmware Retraction")))
                 set("retract_lift", zero("retract_lift"));
             else

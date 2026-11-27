@@ -61,22 +61,29 @@ public:
     /// Note: If name is not found, nothing happens.
     bool select_preset_by_name(wxString name, wxBitmapComboBox* chooser);
 
-    /// Cycle through active presets and prompt user to save dirty configs, if necessary.
-    bool prompt_unsaved_changes();
-    
-    /// The configuration to slice with: the defaults, then the selected print, material
-    /// (first extruder) and printer presets, including unsaved changes (as Perl's
-    /// Plater::config).
+    /// The configuration to slice with: the defaults, then the selected printer, material
+    /// and print presets, including unsaved changes (as Perl's Plater::config). With
+    /// several extruders each takes its values from its own material preset.
     Slic3r::Config full_config();
+
+    /// As many material choosers as the printer has extruders (load() does this).
+    void set_extruder_count(size_t count);
+
+    /// The name selected in a chooser; empty when there is no such chooser.
+    wxString selected(preset_t group, size_t index = 0) const;
     
     /// The settings (cog) button next to a chooser.
-    std::function<void (preset_t)> on_settings {nullptr};
+    std::function<void (preset_t, size_t)> on_settings {nullptr};
     /// A preset was chosen here (the editor follows).
-    std::function<void (preset_t, wxString)> on_preset_selected {nullptr};
+    std::function<void (preset_t, wxString, size_t)> on_preset_selected {nullptr};
+    /// Asked before the user's choice replaces the preset `name`; false: keep it.
+    std::function<bool (preset_t, const wxString& name)> confirm_leave {nullptr};
 private:
     wxFlexGridSizer* _local_sizer {};
     wxWindow* _parent {};
     void _on_change_combobox(preset_t preset, wxBitmapComboBox* choice);
+    /// One row: label (may be empty), chooser, settings button.
+    wxBitmapComboBox* _add_row(preset_t group, size_t at_row, const wxString& label);
     chooser_name_map __chooser_names;
 
     /// Reference to a Slic3r::Settings object.
@@ -88,7 +95,7 @@ private:
     /// Reference to owning Application's preset database.
     preset_store& _presets;
 
-    void _on_select_preset(preset_t preset);
+    void _on_select_preset(preset_t preset, size_t index);
 
     /// Return the vector of strings representing the selected preset names.
     std::vector<wxString> _get_selected_presets(preset_t group) const;

@@ -93,6 +93,17 @@ public:
 
     void apply_dirty(const Slic3r::Config& other) { this->_dirty_config->apply(other); }
     void apply_dirty(const config_ptr& other) { this->apply_dirty(*other); }
+    /// Change one option of the unsaved state.
+    void set_dirty(const DynamicPrintConfig& from, const std::string& key) {
+        this->_dirty_config->config().apply_only(from, {key}, false, false); }
+    /// The saved value again.
+    void revert(const std::string& key);
+    /// Write this option's unsaved value into the file, leaving other changes unsaved.
+    /// False when there is no file or it can't be written.
+    bool save_option(const std::string& key);
+
+    /// Remove an option from the unsaved state (an override taken back).
+    void erase_dirty(const std::string& key) { this->_dirty_config->config().erase(key); }
     bool operator==(const wxString& _name) const { return this->operator==(_name.ToStdString()); }
     bool operator==(const std::string& _name) const { return _name.compare(this->name) == 0; }
 

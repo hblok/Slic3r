@@ -6,6 +6,7 @@
 #include <wx/textdlg.h>
 #include <wx/msgdlg.h>
 #include <wx/dir.h>
+#include <wx/choicdlg.h>
 #include <algorithm>
 #include <map>
 
@@ -30,7 +31,7 @@ PresetEditor::PresetEditor(wxWindow* parent, t_config_option_keys options) :
         this->_btn_save_preset = new wxBitmapButton(this, wxID_ANY, wxBitmap(var("disk.png"), wxBITMAP_TYPE_PNG), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
         this->_btn_delete_preset = new wxBitmapButton(this, wxID_ANY, wxBitmap(var("delete.png"), wxBITMAP_TYPE_PNG), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
 
-        // the tooltips use title(), a virtual: set in build_pages(), not here in the base
+        // the tooltips use title(), a virtual: set in load_presets(), not here in the base
         // constructor ("pure virtual method called")
         this->_btn_delete_preset->Disable();
 
@@ -52,15 +53,30 @@ PresetEditor::PresetEditor(wxWindow* parent, t_config_option_keys options) :
 
     this->_treectrl->AddRoot("root");
     this->_treectrl->SetIndent(0);
-    this->disable_tree_sel_changed_event = false;
 
     this->_sizer->Add(left_sizer, 0, wxEXPAND | wxALL, 5);
     
     this->_treectrl->Bind(wxEVT_TREE_SEL_CHANGED, [this](wxTreeEvent& e) {
+        if (this->_updating_tree) return;
         for (size_t i = 0; i < this->_page_items.size(); ++i)
-            if (this->_page_items[i] == e.GetItem()) this->_show_page(i);
+            if (this->_page_items[i] == e.GetItem()) this->_show_page(this->_pages[i]);
     });
-    this->_presets_choice->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) { this->_on_select_preset(); });
+    this->_presets_choice->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) {
+        const auto& presets {SLIC3RAPP->presets.at(this->typeId())};
+        const int id {this->_presets_choice->GetSelection()};
+        if (id < 0 || size_t(id) >= presets.size()) return;
+        const wxString chosen {presets[id].name}, leaving {this->_preset_name};
+        if (chosen != leaving && this->confirm_leave != nullptr) {
+            // the question may read the lists again: names, not positions
+            if (!this->confirm_leave(leaving)) {
+                this->select_preset_by_name(leaving, true);
+                return;
+            }
+            this->select_preset_by_name(chosen, true);
+            return;
+        }
+        this->_on_select_preset();
+    });
     this->_btn_save_preset->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { this->save_preset(); });
     this->_btn_delete_preset->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { this->delete_preset(); });
 }
@@ -72,49 +88,173 @@ static t_config_option_keys known_keys(const t_config_option_keys& keys) {
     return out;
 }
 
-void PresetEditor::build_pages() {
-    this->set_tooltips();
-    std::vector<std::string> categories;
-    std::map<std::string, t_config_option_keys> by_category;
-    for (const auto& key : known_keys(this->my_options())) {
-        const auto& def = print_config_def.get(key);
-        const std::string category = def.category.empty() ? "Other" : def.category;
-        if (by_category.count(category) == 0) categories.push_back(category);
-        by_category[category].push_back(key);
-    }
-    const auto root = this->_treectrl->GetRootItem();
-    for (const auto& category : categories) {
-        PresetPage* page {this->add_options_page(wxString::FromUTF8(category))};
-        auto* grid {new wxFlexGridSizer(3, 6, 8)};
-        grid->AddGrowableCol(1, 1);
-        for (const auto& key : by_category[category]) this->_add_row(page, grid, key);
-        page->sizer()->Add(grid, 0, wxEXPAND | wxALL, 10);
-        page->FitInside();
-        this->_page_items.push_back(this->_treectrl->AppendItem(root, wxString::FromUTF8(category)));
-    }
-    if (!this->_page_items.empty()) this->_show_page(0);
+OptionRows PresetEditor::add_group(PresetPage* page, const wxString& title, int label_width) {
+    auto* box {new wxStaticBoxSizer(wxVERTICAL, page, title)};
+    auto* grid {new wxFlexGridSizer(label_width > 0 ? 2 : 1, 4, 8)};
+    grid->AddGrowableCol(label_width > 0 ? 1 : 0, 1);
+    box->Add(grid, 0, wxEXPAND | wxALL, 5);
+    page->sizer()->Add(box, 0, wxEXPAND | wxALL, 8);
+    return {page, box->GetStaticBox(), box, grid, label_width};
 }
 
-void PresetEditor::_show_page(size_t idx) {
-    for (size_t i = 0; i < this->_pages.size(); ++i) this->_pages[i]->Show(i == idx);
-    this->Layout();
-}
-
-void PresetEditor::_add_row(PresetPage* page, wxFlexGridSizer* grid, const std::string& opt_key) {
+static wxString option_tooltip(const std::string& opt_key) {
     const ConfigOptionDef& def {print_config_def.get(opt_key)};
-    const wxString tooltip {wxString::FromUTF8(def.tooltip + (def.cli.empty() ? "" : "\n(--" + def.cli.substr(0, def.cli.find_first_of("|=!")) + ")"))};
-    auto* label {new wxStaticText(page, wxID_ANY, option_name(opt_key) + ":")};
-    label->SetToolTip(tooltip);
-    const OptionControl option {make_option_control(page, opt_key,
+    wxString tip {wxString::FromUTF8(def.tooltip.c_str())};
+    if (def.default_value != nullptr && !def.multiline)
+        tip << _(" (default: ") << wxString::FromUTF8(def.default_value->serialize().c_str()) << ")";
+    if (!def.cli.empty()) tip << "\n(--" << wxString::FromUTF8(def.cli.substr(0, def.cli.find_first_of("|=!")).c_str()) << ")";
+    return tip;
+}
+
+static wxStaticText* row_label(OptionRows& rows, const wxString& text, const wxString& tooltip = "") {
+    if (rows.label_width <= 0) return nullptr;
+    auto* label {new wxStaticText(rows.parent, wxID_ANY, text.IsEmpty() ? text : text + ":",
+        wxDefaultPosition, wxSize(rows.label_width, -1))};
+    label->Wrap(rows.label_width);
+    if (!tooltip.IsEmpty()) label->SetToolTip(tooltip);
+    rows.grid->Add(label, 0, wxALIGN_CENTER_VERTICAL);
+    return label;
+}
+
+static wxString control_id(const std::string& opt_key, int index) {
+    return index < 0 ? wxString(opt_key) : wxString::Format("%s#%d", opt_key, index);
+}
+
+wxWindow* PresetEditor::add_control(OptionRows& rows, const std::string& opt_key, int index, int width, int height) {
+    const OptionControl option {make_option_control(rows.parent, opt_key,
         [this]() -> DynamicPrintConfig& { return this->config->config(); },
-        [this, opt_key]() { this->_changed(opt_key); })};
-    this->_refreshers.push_back(option.refresh);
-    wxWindow* control {option.window};
-    control->SetToolTip(tooltip);
-    this->_controls[opt_key] = control;
-    grid->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
-    grid->Add(control, 0, def.multiline ? wxEXPAND : 0);
-    grid->Add(new wxStaticText(page, wxID_ANY, wxString::FromUTF8(def.sidetext)), 0, wxALIGN_CENTER_VERTICAL);
+        [this, opt_key]() { this->_changed(opt_key); }, index, width, height)};
+    option.window->SetToolTip(option_tooltip(opt_key));
+    this->_controls[control_id(opt_key, index).ToStdString()] = {option, rows.page};
+    return option.window;
+}
+
+void PresetEditor::add_option(OptionRows& rows, const std::string& opt_key, int index, int width, int height) {
+    if (!print_config_def.has(opt_key)) return;
+    const ConfigOptionDef& def {print_config_def.get(opt_key)};
+    row_label(rows, wxString::FromUTF8(def.label.c_str()), option_tooltip(opt_key));
+    wxWindow* control {this->add_control(rows, opt_key, index, width, height)};
+    const bool wide {rows.label_width <= 0 || def.full_width || def.multiline};
+    if (def.sidetext.empty()) {
+        rows.grid->Add(control, 0, (wide ? wxEXPAND : 0) | wxALIGN_CENTER_VERTICAL);
+        return;
+    }
+    auto* line {new wxBoxSizer(wxHORIZONTAL)};
+    line->Add(control, wide ? 1 : 0, wxALIGN_CENTER_VERTICAL);
+    line->Add(new wxStaticText(rows.parent, wxID_ANY, wxString::FromUTF8(def.sidetext.c_str())), 0,
+        wxALIGN_CENTER_VERTICAL | wxLEFT, 4);
+    rows.grid->Add(line, 0, wide ? wxEXPAND : 0);
+}
+
+void PresetEditor::add_line(OptionRows& rows, const wxString& label, std::initializer_list<const char*> opt_keys, int index) {
+    row_label(rows, label);
+    auto* line {new wxBoxSizer(wxHORIZONTAL)};
+    for (const char* key : opt_keys) {
+        const ConfigOptionDef& def {print_config_def.get(key)};
+        if (!def.label.empty())
+            line->Add(new wxStaticText(rows.parent, wxID_ANY, wxString::FromUTF8(def.label.c_str()) + ":"), 0,
+                wxALIGN_CENTER_VERTICAL | wxRIGHT, 3);
+        line->Add(this->add_control(rows, key, index, 80), 0, wxALIGN_CENTER_VERTICAL);
+        if (!def.sidetext.empty())
+            line->Add(new wxStaticText(rows.parent, wxID_ANY, wxString::FromUTF8(def.sidetext.c_str())), 0,
+                wxALIGN_CENTER_VERTICAL | wxLEFT, 3);
+        line->AddSpacer(12);
+    }
+    rows.grid->Add(line, 0, 0);
+}
+
+void PresetEditor::add_widget(OptionRows& rows, const wxString& label, wxSizer* widget) {
+    row_label(rows, label);
+    rows.grid->Add(widget, 0, wxEXPAND);
+}
+
+wxButton* PresetEditor::make_button(wxWindow* parent, const wxString& label, const wxString& icon, std::function<void()> action) {
+    auto* button {new wxButton(parent, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT)};
+    button->SetFont(ui_settings->small_font());
+    button->SetBitmap(wxBitmap(var(icon), wxBITMAP_TYPE_PNG));
+    button->Bind(wxEVT_BUTTON, [action](wxCommandEvent&) { action(); });
+    return button;
+}
+
+void PresetEditor::add_compatible_printers(OptionRows& rows) {
+    this->_compatible_all = new wxCheckBox(rows.parent, wxID_ANY, _("All"));
+    this->_compatible_set = this->make_button(rows.parent, _(L"Set…"), "printer_empty.png", [this]() {
+        wxArrayString names;
+        for (const auto& preset : SLIC3RAPP->presets.at(get_preset(preset_t::Printer)))
+            if (!preset.default_preset && !preset.external) names.Add(preset.name);
+        wxArrayInt selected;
+        for (const auto& name : this->config->config().opt<ConfigOptionStrings>("compatible_printers", true)->values) {
+            const int at {names.Index(wxString::FromUTF8(name.c_str()))};
+            if (at != wxNOT_FOUND) selected.Add(at);
+        }
+        if (wxGetSelectedChoices(selected, _("Select the printers this profile is compatible with."),
+                _("Compatible printers"), names, this) < 0) return;
+        auto& values {this->config->config().opt<ConfigOptionStrings>("compatible_printers", true)->values};
+        values.clear();
+        for (const int at : selected) values.push_back(names[at].ToUTF8().data());
+        this->_compatible_choosing = false;
+        this->_changed("compatible_printers");
+    });
+    this->_compatible_all->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) {
+        this->_compatible_choosing = !this->_compatible_all->GetValue();
+        this->_compatible_set->Enable(this->_compatible_choosing);
+        if (this->_compatible_choosing) return;  // nothing changes until some are chosen
+        this->config->config().opt<ConfigOptionStrings>("compatible_printers", true)->values.clear();
+        this->_changed("compatible_printers");
+    });
+    auto* line {new wxBoxSizer(wxHORIZONTAL)};
+    line->Add(this->_compatible_all, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+    line->Add(this->_compatible_set, 0, wxALIGN_CENTER_VERTICAL);
+    this->add_widget(rows, _("Compatible printers"), line);
+}
+
+void PresetEditor::reload_compatible_printers() {
+    if (this->_compatible_all == nullptr) return;
+    const bool all {this->config->config().opt<ConfigOptionStrings>("compatible_printers", true)->values.empty()};
+    // "All" unticked with nothing chosen yet stays unticked
+    const bool ticked {all && !this->_compatible_choosing};
+    this->_compatible_all->SetValue(ticked);
+    this->_compatible_set->Enable(!ticked);
+}
+
+void PresetEditor::update_tree() {
+    this->_updating_tree = true;
+    const wxTreeItemId selected {this->_treectrl->GetSelection()};
+    const wxString title {selected.IsOk() ? this->_treectrl->GetItemText(selected) : wxString()};
+    this->_treectrl->DeleteChildren(this->_treectrl->GetRootItem());
+    this->_page_items.clear();
+    size_t show {0};
+    for (size_t i = 0; i < this->_pages.size(); ++i) {
+        this->_page_items.push_back(this->_treectrl->AppendItem(this->_treectrl->GetRootItem(),
+            this->_pages[i]->get_title(), this->_pages[i]->icon()));
+        if (this->_pages[i]->get_title() == title) show = i;
+    }
+    if (!this->_pages.empty()) {
+        this->_treectrl->SelectItem(this->_page_items[show]);
+        this->_show_page(this->_pages[show]);
+    }
+    this->_updating_tree = false;
+}
+
+void PresetEditor::_show_page(const PresetPage* page) {
+    for (auto* other : this->_pages) other->Show(other == page);
+    this->Layout();
+    for (auto* other : this->_pages)
+        if (other == page) other->FitInside();
+}
+
+void PresetEditor::remove_page(PresetPage* page) {
+    for (auto it = this->_controls.begin(); it != this->_controls.end(); )
+        it = it->second.page == page ? this->_controls.erase(it) : std::next(it);
+    this->_pages.erase(std::remove(this->_pages.begin(), this->_pages.end(), page), this->_pages.end());
+    page->Destroy();
+}
+
+void PresetEditor::refresh_all() {
+    if (this->config == nullptr) return;
+    for (auto& entry : this->_controls) entry.second.control.refresh();
+    this->apply_rules();
+    this->_update();
 }
 
 void PresetEditor::_changed(const std::string& opt_key) {
@@ -124,9 +264,11 @@ void PresetEditor::_changed(const std::string& opt_key) {
     this->_resolving = true;
     this->resolve_conflicts(opt_key);
     this->_resolving = false;
-    for (auto& refresh : this->_refreshers) refresh();
-    this->apply_rules();
+    this->refresh_all();
     this->_preset->apply_dirty(this->config);
+    // an override that was removed here is removed from the unsaved state too
+    for (const auto& key : this->my_overriding_options())
+        if (!this->config->config().has(key)) this->_preset->erase_dirty(key);
     // mark the preset as modified in the list (as the Perl GUI)
     const int sel {this->_presets_choice->GetSelection()};
     if (sel >= 0) this->_presets_choice->SetString(sel, this->_preset->dropdown_name());
@@ -191,17 +333,6 @@ void PresetEditor::delete_preset() {
     if (this->on_save_preset != nullptr) this->on_save_preset(this->_preset != nullptr ? this->_preset->name : wxString(), this->type());
 }
 
-/// TODO: Can this get deleted before the callback executes?
-void PresetEditor::_on_value_change(std::string opt_key) {
-    SLIC3RAPP->CallAfter(
-    [this, opt_key]() {
-        this->current_preset->apply_dirty(this->config);
-        if (this->on_value_change != nullptr) this->on_value_change(opt_key);
-        this->load_presets();
-        this->_update(opt_key);
-    } ); 
-}
-
 void PresetEditor::_on_select_preset(bool force) {
     auto& presets = SLIC3RAPP->presets.at(this->typeId());
     const int id {this->_presets_choice->GetSelection()};
@@ -211,10 +342,10 @@ void PresetEditor::_on_select_preset(bool force) {
     // the editor's options with the preset's values (unsaved changes included)
     this->config = Slic3r::Config::new_from_defaults(known_keys(this->my_options()));
     this->config->apply(this->_preset->dirty_config());
-    for (auto& refresh : this->_refreshers) refresh();
-    this->apply_rules();
-    this->_btn_delete_preset->Enable(!this->_preset->default_preset);
+    this->_btn_delete_preset->Enable(!this->_preset->default_preset && !this->_preset->external);
+    this->_compatible_choosing = false;
     this->_on_preset_loaded();
+    this->refresh_all();
     if (this->on_select_preset != nullptr) this->on_select_preset(this->_preset->name, this->type());
 }
 void PresetEditor::select_preset(int id, bool force) {
@@ -236,33 +367,22 @@ void PresetEditor::select_preset_by_name(const wxString& name, bool force) {
 }
 
 PresetPage* PresetEditor::add_options_page(const wxString& _title, const wxString& _icon) {
-    
+    int icon {-1};
     if (_icon.size() > 0) {
         auto bitmap { wxBitmap(var(_icon), wxBITMAP_TYPE_PNG) };
         this->_icons->Add(bitmap);
-        this->_iconcount += 1;
+        icon = ++this->_iconcount;
     }
 
-    PresetPage* page {new PresetPage(this, _title, this->_iconcount)};
+    PresetPage* page {new PresetPage(this, _title, icon)};
     page->Hide();
     this->_sizer->Add(page, 1, wxEXPAND | wxLEFT, 5); 
     _pages.push_back(page);
     return page;
 }
 
-// TODO
-void PresetEditor::reload_config() {
-}
-
-// TODO
-void PresetEditor::reload_preset() {
-}
-
-// TODO
-void PresetEditor::_update_tree() {
-}
-
 void PresetEditor::load_presets() {
+    this->set_tooltips();
     // the list from the app; keeps the selection by name, else the plater's choice
     wxString current {this->_preset_name};
     if (current.IsEmpty() && !ui_settings->default_presets.at(this->typeId()).empty())

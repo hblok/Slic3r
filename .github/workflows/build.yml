@@ -63,6 +63,8 @@ jobs:
         run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-tools tools
       - name: C++ GUI File menu test
         run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-files files
+      - name: C++ GUI preset editor test
+        run: utils/cpp_gui_presets.sh build-gui/slic3r build/slic3r cpp-gui-presets
       - name: Keep the screenshot
         if: always()
         uses: actions/upload-artifact@v7
@@ -74,6 +76,7 @@ jobs:
             cpp-gui-objects/*.png
             cpp-gui-tools/*.png
             cpp-gui-files/*.png
+            cpp-gui-presets/*.png
 
   # Perl application: XS module, Perl tests, and a GUI smoke test under Xvfb.
   perl:

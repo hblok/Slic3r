@@ -9,6 +9,7 @@
 
 
 #include "Plater.hpp"
+#include "OptionsGroup/OverridePanel.hpp"
 #include "ProgressStatusBar.hpp"
 #include "Log.hpp"
 #include "MainFrame.hpp"
@@ -54,13 +55,16 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     });
     */
     _presets->load();
-    _presets->on_settings = [this](preset_t group) { this->show_preset_editor(group, 0); };
-    _presets->on_preset_selected = [this](preset_t group, wxString name) {
+    _presets->on_settings = [this](preset_t group, size_t index) { this->show_preset_editor(group, index); };
+    _presets->on_preset_selected = [this](preset_t group, wxString name, size_t index) {
         auto& editors {this->GetFrame()->preset_editor_tabs};
-        if (editors.count(group) > 0) editors[group]->select_preset_by_name(name, true);
+        if (editors.count(group) > 0 && editors[group]->chooser_index == index)
+            editors[group]->select_preset_by_name(name, true);
         this->refresh_config();
         this->invalidate_slices();
+        this->update_shortcuts();
     };
+    _presets->confirm_leave = [this](preset_t group, const wxString& name) { return this->confirm_leave(group, name); };
 
     // Initialize handlers for canvases
     auto on_select_object {[this](ObjIdx obj_idx) { this->select_object(obj_idx); }};
@@ -243,11 +247,24 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     buttons_sizer->AddStretchSpacer(1);
     buttons_sizer->Add(this->btn_export_gcode, 0, 0, 0);
 
+    // the print preset's shortcuts, scrolling when there are many
+    this->_shortcuts_window = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 0), wxVSCROLL);
+    this->_shortcuts_window->SetScrollRate(0, ui_settings->scroll_step());
+    this->_shortcuts = new OverridePanel(this->_shortcuts_window, PrintEditor::options(),
+        [this]() -> DynamicPrintConfig& { return this->_shortcut_config; },
+        [this](const std::string& key) { this->shortcut_changed(key); }, -1);
+    this->_shortcuts->can_add = false;
+    {
+        auto* inner {new wxBoxSizer(wxVERTICAL)};
+        inner->Add(this->_shortcuts, 0, wxEXPAND);
+        this->_shortcuts_window->SetSizer(inner);
+    }
+
     // right panel sizer
     auto* right_sizer {this->right_sizer};
     right_sizer->Add(this->_presets, 0, wxEXPAND | wxTOP, 10);
     right_sizer->Add(buttons_sizer, 0, wxEXPAND | wxBOTTOM, 5);
-//    $right_sizer->Add($self->{settings_override_panel}, 1, wxEXPAND, 5);
+    right_sizer->Add(this->_shortcuts_window, 1, wxEXPAND, 5);
     right_sizer->Add(object_info_sizer, 0, wxEXPAND, 0);
 //    $right_sizer->Add($object_info_sizer, 0, wxEXPAND, 0);
 //    $right_sizer->Add($print_info_sizer, 0, wxEXPAND, 0);
@@ -286,7 +303,58 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
         }
     };
     this->SetDropTarget(new DropTarget(this));
+    this->update_shortcuts();
+}
 
+Preset* Plater::selected_print_preset() {
+    const wxString name {this->_presets->selected(preset_t::Print)};
+    for (auto& preset : SLIC3RAPP->presets.at(get_preset(preset_t::Print)))
+        if (preset.name == name) return &preset;
+    return nullptr;
+}
+
+void Plater::update_shortcuts() {
+    if (this->_shortcuts == nullptr) return;
+    // first: it stores a value being typed, which comes back here
+    const DynamicPrintConfig full {this->_presets->full_config().config()};
+    Preset* preset {this->selected_print_preset()};
+    this->_shortcut_config.clear();
+    this->_shortcuts->fixed.clear();
+    if (preset != nullptr) {
+        const Slic3r::Config config {preset->dirty_config()};
+        std::vector<std::string> keys;
+        if (config.config().has("shortcuts")) {
+            Slic3r::Config copy {config};
+            keys = copy.config().opt<ConfigOptionStrings>("shortcuts")->values;
+        }
+        this->_shortcuts->fixed.insert(keys.begin(), keys.end());
+        for (const auto& key : preset->dirty_options()) keys.push_back(key);
+        for (const auto& key : keys) {
+            if (key == "shortcuts" || !print_config_def.has(key) || !full.has(key)) continue;
+            this->_shortcut_config.set_deserialize(key, full.serialize(key));
+        }
+    }
+    // another preset's list is built anew
+    this->_shortcuts->update();
+}
+
+void Plater::shortcut_changed(const std::string& key) {
+    Preset* preset {this->selected_print_preset()};
+    if (preset == nullptr) return;
+    if (!this->_shortcut_config.has(key)) {
+        preset->revert(key);  // taken out of the list: the preset's own value again
+    } else {
+        preset->set_dirty(this->_shortcut_config, key);
+        // a shortcut is saved as soon as it is changed
+        if (this->_shortcuts->fixed.count(key) > 0 && !preset->save_option(key))
+            show_error(this, _("Could not write the preset file."));
+    }
+    this->_presets->load();
+    this->refresh_config();
+    this->invalidate_slices();
+    auto& editors {this->GetFrame()->preset_editor_tabs};
+    if (editors.count(preset_t::Print) > 0) editors[preset_t::Print]->reload_list();
+    this->CallAfter([this]() { this->update_shortcuts(); });
 }
 void Plater::add() {
     std::vector<std::string> files;
@@ -835,7 +903,11 @@ void Plater::show_preset_editor(preset_t group, unsigned int idx) {
     auto& editors {frame->preset_editor_tabs};
     auto* tabs {frame->tabs()};
     if (editors.count(group) > 0) {  // exists: show it (a settings button)
-        const int page {tabs->FindPage(editors[group])};
+        PresetEditor* editor {editors[group]};
+        editor->chooser_index = idx;
+        const wxString name {this->_presets->selected(group, idx)};
+        if (!name.IsEmpty()) editor->select_preset_by_name(name, true);
+        const int page {tabs->FindPage(editor)};
         if (page != wxNOT_FOUND) tabs->SetSelection(page);
         return;
     }
@@ -847,20 +919,26 @@ void Plater::show_preset_editor(preset_t group, unsigned int idx) {
         default: return;
     }
     // choosing a preset in the editor chooses it in the plater too
-    editor->on_select_preset = [this](wxString name, preset_t type) {
-        this->_presets->select_preset_by_name(name, type, 0);
+    editor->on_select_preset = [this, editor](wxString name, preset_t type) {
+        this->_presets->select_preset_by_name(name, type, editor->chooser_index);
     };
+    editor->confirm_leave = [this, group](const wxString& name) { return this->confirm_leave(group, name); };
     // after a save or delete every list is read again
-    editor->on_save_preset = [this, frame](wxString name, preset_t type) {
+    editor->on_save_preset = [this, frame, editor](wxString name, preset_t type) {
         for (auto& tab : frame->preset_editor_tabs) tab.second->reload_list();
         this->_presets->load();
-        if (!name.IsEmpty()) this->_presets->select_preset_by_name(name, type, 0);
-        this->invalidate_slices();
-    };
-    editor->on_value_change = [this](std::string) {
+        if (!name.IsEmpty()) this->_presets->select_preset_by_name(name, type, editor->chooser_index);
         this->refresh_config();
         this->invalidate_slices();
+        this->update_shortcuts();
     };
+    editor->on_value_change = [this](std::string) {
+        this->_presets->load();  // the "(modified)" marks and the number of extruders
+        this->refresh_config();
+        this->invalidate_slices();
+        this->update_shortcuts();
+    };
+    editor->plater_config = [this]() { return DynamicPrintConfig(this->_presets->full_config().config()); };
     editors[group] = editor;
     tabs->AddPage(editor, editor->title());
 }

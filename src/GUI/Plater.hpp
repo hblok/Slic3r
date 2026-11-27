@@ -29,6 +29,7 @@
 #include "Plater/Preview3D.hpp"
 #include "Plater/PreviewDLP.hpp"
 #include "Plater/PresetChooser.hpp"
+#include "PrintConfig.hpp"
 
 #include "Settings.hpp"
 
@@ -57,6 +58,7 @@ struct SliceJob {
 };
 
 class PlaterObject;
+class OverridePanel;
 class Plate2D;
 class MainFrame;
 
@@ -122,6 +124,9 @@ public:
 
     /// Before closing: ask to save or discard each modified preset. False: stay open.
     bool prompt_unsaved_changes();
+    /// Before the preset `name` is left for another: when it is modified, ask to save or
+    /// discard the changes. False: stay with it.
+    bool confirm_leave(preset_t group, const wxString& name);
 
     /// Create menu for object.
     wxMenu* object_menu();
@@ -284,8 +289,22 @@ private:
     info_fields object_info;
 
     PresetChooser* _presets;
+    /// Below the choosers: the print preset's shortcut settings and the ones changed.
+    wxScrolledWindow* _shortcuts_window {nullptr};
+    OverridePanel* _shortcuts {nullptr};
+    DynamicPrintConfig _shortcut_config {};
+    std::string _shortcut_preset_name {};
+    /// Show the selected print preset's shortcuts.
+    void update_shortcuts();
+    void shortcut_changed(const std::string& opt_key);
+    Preset* selected_print_preset();
 
     void load_presets();
+    /// Ask whether to save or discard a modified preset's changes, and do it; false:
+    /// cancelled (or saving failed).
+    bool ask_to_save(Preset& preset);
+    /// Read the presets from the data directory again, into every list.
+    void reload_presets();
 
 };
 

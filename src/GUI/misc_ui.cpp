@@ -1,4 +1,5 @@
 #include "misc_ui.hpp"
+#include <algorithm>
 #include "utils.hpp"
 #include <wx/stdpaths.h>
 #include <wx/msgdlg.h>
@@ -153,6 +154,24 @@ std::vector<wxString> open_model(wxWindow* parent, wxWindow* top) {
 
 wxString trim_zeroes(wxString in) { return wxString(_trim_zeroes(in.ToStdString())); }
 
+
+std::vector<wxString> scan_serial_ports() {
+    std::vector<wxString> ports;
+    wxDir dev("/dev");
+    if (!dev.IsOpened()) return ports;
+    wxString name;
+    for (bool more = dev.GetFirst(&name, "", wxDIR_FILES | wxDIR_DIRS | wxDIR_HIDDEN); more; more = dev.GetNext(&name))
+        if (name.StartsWith("ttyUSB") || name.StartsWith("ttyACM") || name.StartsWith("rfcomm")
+                || name.StartsWith("tty.") || name.StartsWith("cu."))
+            if (!name.Contains("Bluetooth") && !name.Contains("FireFly")) ports.push_back("/dev/" + name);
+    std::sort(ports.begin(), ports.end(), [](const wxString& a, const wxString& b) { return a.Cmp(b) < 0; });
+    return ports;
+}
+
+bool has_avahi_browse() {
+    wxString path;
+    return wxGetEnv("PATH", &path) && !wxPathList(wxSplit(path, ':', 0)).FindValidPath("avahi-browse").IsEmpty();
+}
 
 }} // namespace Slic3r::GUI
 

@@ -147,6 +147,11 @@ The Perl GUI is the reference for behaviour and layout.
       in AMF/3MF files
 - [x] Object > Settings: "Create modifier…" (slab, box, cylinder, sphere, centred on the
       object) and the position of a part in mm (2026-11-27)
+- [x] Preset editors as in Perl (2026-11-27): hand-made pages with its controls, extruder
+      count and a page per extruder, one material chooser per extruder (merged as Perl
+      does; a material's overrides apply to its extruder only), compatible printers, bed
+      shape dialog, filament overrides, shortcuts, asking before a modified preset is
+      left, serial/OctoPrint test and Bonjour browse (`cpp_gui_presets.sh`)
 - [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps

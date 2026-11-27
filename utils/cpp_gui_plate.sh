@@ -319,7 +319,7 @@ grep -q '^layer_height = 0.25' "$out/part.ini" || fail "import from G-code: laye
 ok "SVG, repair, configuration from G-code"
 
 click 230 43                                            # "Print Settings": Spiral vase asks
-xdotool mousemove 482 271 click 1; sleep 2
+xdotool mousemove 431 382 click 1; sleep 2
 shot spiral-vase-question
 key Return; sleep 1                                     # yes, adjust the other settings
 shot spiral-vase

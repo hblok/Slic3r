@@ -91,7 +91,7 @@ grep -q '^print = Ender-5-Pro-0.20mm' "$out/data-ender/slic3r.ini" || fail "slic
 # the preset editor: layer height 0.3 in the Print Settings tab, then "Save as" My-Print
 edit_layer_height() {
     click 230 43                                          # "Print Settings" tab
-    click 548 89                                          # "Layer height"
+    click 472 110                                         # "Layer height"
     xdotool key ctrl+a; xdotool type 0.3; xdotool key Return; sleep 1
     import -window root "$out/editor.edited.png"
     click 40 43                                           # back to the plater

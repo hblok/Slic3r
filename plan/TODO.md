@@ -10,8 +10,6 @@ preferences, editor rules, object settings and modifiers, a one-page wizard.
 
 Missing, compared with the Perl GUI:
 
-- [ ] Preset editors: hand-made page layouts, several extruders (extruder count),
-      compatible printers, bed shape dialog
 - [ ] Wizard on first start; remember loaded config files; reload options (keep
       transformations, added parts)
 - [ ] Preview: colour by extruder, greyed overlapping layers, camera shared with the 3D
@@ -20,8 +18,12 @@ Missing, compared with the Perl GUI:
 - [ ] SLA/projector (lower priority); the DLP/SLA tab is empty
 - [ ] Try the "Add…" dialog and drag and drop
 
-Done since: closing asks to save or discard modified presets, and saving or deleting a
-preset keeps the unsaved changes of the others.
+Done since: closing (and leaving a preset) asks to save or discard modified presets,
+saving or deleting a preset keeps the unsaved changes of the others, and the preset
+editors are complete: the Perl pages, several extruders with a material for each,
+compatible printers, bed shape dialog, material overrides, shortcuts beside the plate,
+serial port and print server buttons. Not tried with a real printer or server: the
+serial and OctoPrint "Test" buttons and "Browse…" (needs `avahi-browse`).
 
 Order: the missing features and the USB controller, then:
 

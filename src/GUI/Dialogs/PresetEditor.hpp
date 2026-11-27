@@ -4,6 +4,7 @@
 // stdlib
 #include <string>
 #include <functional>
+#include <initializer_list>
 #include <map>
 
 // Libslic3r
@@ -14,17 +15,31 @@
 // GUI
 #include "misc_ui.hpp"
 #include "Preset.hpp"
+#include "OptionsGroup/OptionControl.hpp"
 
 // Wx
 #include <wx/treectrl.h>
 #include <wx/imaglist.h>
 #include <wx/panel.h>
 #include <wx/scrolwin.h>
+#include <wx/checklst.h>
+#include <wx/spinctrl.h>
+#include <wx/statbox.h>
 
 using namespace std::string_literals;
 namespace Slic3r { namespace GUI {
 
 class PresetPage;
+class OverridePanel;
+
+/// A titled box of option rows on a page.
+struct OptionRows {
+    PresetPage* page;
+    wxWindow* parent;           ///< the box: the parent of the rows' controls
+    wxStaticBoxSizer* box;
+    wxFlexGridSizer* grid;
+    int label_width;            ///< 0: no labels, the controls span the box
+};
 
 /// Ask for the name to save a preset under; empty when cancelled or not usable.
 wxString ask_preset_name(wxWindow* parent, const wxString& question, const wxString& suggestion);
@@ -50,13 +65,9 @@ public:
     wxSizer* sizer() { return _sizer; };
     PresetEditor(wxWindow* parent, t_config_option_keys options = {});
     PresetEditor() : PresetEditor(nullptr, {}) {};
-    std::shared_ptr<Preset> current_preset;
-    
+
     /// Called after a preset was selected here (the plater follows) or saved.
     std::function<void (wxString, preset_t)> on_select_preset {nullptr};
-
-    /// Check if there is a dirty config that is different than the loaded config.
-    bool prompt_unsaved_changes();
 
     /// Perform a preset selection and possibly trigger the _on_select_preset 
     /// method.
@@ -70,17 +81,22 @@ public:
     /// (After App::load_presets the old Preset objects are gone: only the name is kept.)
     void reload_list() { const wxString name {this->_preset_name};
         this->_preset = nullptr; this->load_presets(); if (!name.IsEmpty()) this->select_preset_by_name(name, true); }
-    
-    /// suppress the callback when the tree selection is changed.
-    bool disable_tree_sel_changed_event {false};
+
+    /// Which of the plater's choosers for this group the editor follows (materials of
+    /// several extruders).
+    size_t chooser_index {0};
+    /// Asked before another preset replaces a modified one; false: stay with it.
+    std::function<bool (const wxString& name)> confirm_leave {nullptr};
+
+    /// The configuration the plater slices with, where a new override starts.
+    std::function<DynamicPrintConfig()> plater_config {nullptr};
 
     void save_preset();
     std::function<void (wxString, preset_t)> on_save_preset {nullptr};
     std::function<void (std::string)> on_value_change {nullptr};
 
     config_ptr config;
-    void reload_config();
-    void reload_preset();
+    /// A new, empty page at the end of the tree.
     PresetPage* add_options_page(const wxString& _title, const wxString& _icon = "");
 
     virtual wxString title() = 0;
@@ -100,29 +116,40 @@ protected:
 
     /// Vector of PresetPage pointers; trust wxWidgets RTTI to avoid leaks
     std::vector<PresetPage*> _pages {};
+    std::vector<wxTreeItemId> _page_items {};
     
     const unsigned int left_col_width {150};
-    void _update_tree();
+    /// Rebuild the tree from the pages, keeping the selected one.
+    void update_tree();
     void load_presets();
-    
-    /// Pages built from the option definitions: one page per option category, one row
-    /// per option (label, control by type, unit, tooltip).
-    /// ponytail: generic layout; the Perl GUI's hand-made pages and the rules that
-    /// enable/disable dependent options (_update) can replace it page by page.
-    void build_pages();
+
+    /// A box with a title on a page.
+    OptionRows add_group(PresetPage* page, const wxString& title, int label_width = 200);
+    /// One row for one option: label, control by its type, unit.
+    void add_option(OptionRows& rows, const std::string& opt_key, int index = -1, int width = -1, int height = -1);
+    /// Several options in one row, each with its short label.
+    void add_line(OptionRows& rows, const wxString& label, std::initializer_list<const char*> opt_keys, int index = -1);
+    /// A row with anything else; the controls' parent is rows.parent.
+    void add_widget(OptionRows& rows, const wxString& label, wxSizer* widget);
+    /// A control for an option, kept up to date and known to the rules.
+    wxWindow* add_control(OptionRows& rows, const std::string& opt_key, int index = -1, int width = -1, int height = -1);
+    /// A small button with an icon.
+    wxButton* make_button(wxWindow* parent, const wxString& label, const wxString& icon, std::function<void()> action);
+    void remove_page(PresetPage* page);
+    void add_compatible_printers(OptionRows& rows);
+    void reload_compatible_printers();
+
     /// The preset being edited (an element of the app's preset list) and its name, which
     /// survives a reload of that list.
     Preset* _preset {nullptr};
     wxString _preset_name {};
-    /// Reload every control from this->config.
-    std::vector<std::function<void()>> _refreshers {};
-    std::vector<wxTreeItemId> _page_items {};
-    void _show_page(size_t idx);
-    void _add_row(PresetPage* page, wxFlexGridSizer* grid, const std::string& opt_key);
     /// A value was changed in a control: into the preset's unsaved state.
     void _changed(const std::string& opt_key);
-    /// The control of each option, for the rules.
-    std::map<std::string, wxWindow*> _controls {};
+    /// Show this->config in every control, enable them by the rules.
+    void refresh_all();
+    /// Each option's control, by key, or key#index for one extruder's value.
+    struct Control { OptionControl control; PresetPage* page; };
+    std::map<std::string, Control> _controls {};
     bool _resolving {false};
     /// Enable the options that matter with the current values (Dialogs/PresetRules.cpp).
     void apply_rules();
@@ -130,17 +157,15 @@ protected:
     void resolve_conflicts(const std::string& changed);
 
     virtual void _build() = 0;
-    virtual void _update(const std::string& opt_key = "") = 0;
-    virtual void _on_preset_loaded() = 0;
+    /// Called after every load and change, for the widgets that are not options.
+    virtual void _update() {}
+    /// Called when a preset's values are in this->config, before the controls show them.
+    virtual void _on_preset_loaded() {}
 
     void set_tooltips() { 
         this->_btn_save_preset->SetToolTip(wxString(_("Save current ")) + this->title());
         this->_btn_delete_preset->SetToolTip(_("Delete this preset."));
     }
-
-
-    void reload_compatible_printers_widget();
-    wxSizer* compatible_printers_widget();
 
     /// This method is called:
     ///  - upon first initialization;
@@ -148,15 +173,14 @@ protected:
     ///  - whenever select_preset() or select_preset_by_name() are called.
     void _on_select_preset(bool force = false);
 
-    /// This method is supposed to be called whenever new values are loaded
-    /// or changed by the user (including when presets are loaded).
-    /// Pushes a callback onto the owning Slic3r app to be processed during 
-    /// an idle event.
-    void _on_value_change(std::string opt_key);
-
     virtual const std::string LogChannel() = 0; //< Which log these messages should go to.
 
-
+private:
+    wxCheckBox* _compatible_all {nullptr};
+    wxButton* _compatible_set {nullptr};
+    bool _compatible_choosing {false};  ///< "All" unticked, no printers chosen yet
+    void _show_page(const PresetPage* page);
+    bool _updating_tree {false};
 };
 
 class PrintEditor : public PresetEditor {
@@ -229,11 +253,12 @@ public:
     t_config_option_keys my_options() override { return PrintEditor::options(); }
 
 protected:
-    void _update(const std::string& opt_key = "") override;
+    void _update() override;
     void _build() override;
-    void _on_preset_loaded() override;
     const std::string LogChannel() override {return "PrintEditor"s; } //< Which log these messages should go to.
-    
+private:
+    wxCheckListBox* _shortcuts {nullptr};
+    t_config_option_keys _shortcut_keys {};  ///< the entries of _shortcuts
 };
 
 class PrinterEditor : public PresetEditor {
@@ -278,11 +303,33 @@ public:
     }
     
     t_config_option_keys my_options() override { return PrinterEditor::options(); }
+
+    /// The options that have one value for each extruder.
+    static t_config_option_keys extruder_options() {
+        return t_config_option_keys {
+            "nozzle_diameter"s, "min_layer_height"s, "max_layer_height"s, "extruder_offset"s,
+            "retract_length"s, "retract_lift"s, "retract_lift_above"s, "retract_lift_below"s, "retract_speed"s,
+            "retract_restart_extra"s, "retract_before_travel"s, "wipe"s, "retract_layer_change"s,
+            "retract_length_toolchange"s, "retract_restart_extra_toolchange"s
+        };
+    }
+    size_t extruder_count() const;
 protected:
-    void _update(const std::string& opt_key = "") override;
+    void _update() override;
     void _build() override;
     void _on_preset_loaded() override;
     const std::string LogChannel() override {return "PrinterEditor"s;} //< Which log these messages should go to.
+private:
+    wxSpinCtrl* _extruders {nullptr};
+    std::vector<PresetPage*> _extruder_pages {};
+    wxButton* _serial_test {nullptr};
+    wxButton* _host_browse {nullptr};
+    wxButton* _host_test {nullptr};
+    void _set_extruder_count(size_t count);
+    void _build_extruder_pages(size_t count);
+    void _test_serial();
+    void _test_octoprint();
+    void _browse_octoprint();
 };
 
 class MaterialEditor : public PresetEditor {
@@ -316,10 +363,12 @@ public:
     
     t_config_option_keys my_options() override { return MaterialEditor::options(); }
 protected:
-    void _update(const std::string& opt_key = "") override;
+    void _update() override;
     void _build() override;
-    void _on_preset_loaded() override;
     const std::string LogChannel() override {return "MaterialEditor"s;} //< Which log these messages should go to.
+private:
+    wxStaticText* _cooling_description {nullptr};
+    OverridePanel* _overrides {nullptr};
 };
 
 
@@ -336,6 +385,7 @@ public:
         }
     wxSizer* sizer() { return this->vsizer; }
     const wxString& get_title() const { return this->title; }
+    int icon() const { return this->iconID; }
 protected:
     wxSizer* vsizer {nullptr};
     wxString title {""};

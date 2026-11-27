@@ -146,6 +146,12 @@ sub CallAfter {
 }
 */
 
+/// The serial ports a printer may be on.
+std::vector<wxString> scan_serial_ports();
+
+/// Whether the program that lists devices announced in the network is installed.
+bool has_avahi_browse();
+
 wxString decode_path(const wxString& in);
 wxString encode_path(const wxString& in);
 
