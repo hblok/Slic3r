@@ -193,13 +193,13 @@ ok "mirror and reload from disk, transformations kept"
 
 select_first
 object_menu 16                                          # Settings: a modifier with a setting
-xdotool mousemove 140 311 click 1; sleep 2              # "Load modifier…"
+xdotool mousemove 140 391 click 1; sleep 2              # "Load modifier…"
 answer_open "$root/src/test/inputs/test_cli/20mmbox.stl"
-xdotool mousemove 557 26 click 1; sleep 1               # "Add setting": the third one
-xdotool mousemove 100 500                               # off the list: the keys count from its top
+xdotool mousemove 530 26 click 1; sleep 1               # "Add setting": the third one
+xdotool mousemove 100 570                               # off the list: the keys count from its top
 key Down; key Down; key Down; key Return; sleep 1
 shot object-settings
-xdotool mousemove 706 492 click 1; sleep 1              # "Close"
+xdotool mousemove 1046 572 click 1; sleep 1             # "Close"
 object_menu 19; answer "$out/modified.amf"              # Export object and modifiers as AMF
 grep -q 'type="slic3r.modifier">1<' "$out/modified.amf" || fail "no modifier in modified.amf"
 grep -q 'type="slic3r.bridge_flow_ratio"' "$out/modified.amf" || fail "the modifier's setting is not in modified.amf"
@@ -266,16 +266,16 @@ standard=$(export_layers standard)
 select_first
 object_menu 15; sleep 1                                 # Layer heights
 # right button: the thinnest layers (left edge) over the whole height
-xdotool mousemove 150 375 mousedown 3 mousemove 150 200 mousemove 140 16 mouseup 3; sleep 1
+xdotool mousemove 640 375 mousedown 3 mousemove 640 200 mousemove 494 16 mouseup 3; sleep 1
 shot layers-curve
-xdotool mousemove 570 458 click 1; sleep 2              # "OK"
+xdotool mousemove 925 542 click 1; sleep 2              # "OK"
 drawn=$(export_layers drawn)
 [ "$drawn" -gt $((standard * 3 / 2)) ] || fail "layer curve: $drawn layers, $standard before"
 undo
 select_first
 object_menu 15; sleep 1
-xdotool mousemove 495 300 click 1; xdotool type "0 6 0.15"; shot layers-range    # a height range
-xdotool mousemove 570 458 click 1; sleep 2
+xdotool mousemove 850 300 click 1; xdotool type "0 6 0.15"; shot layers-range    # a height range
+xdotool mousemove 925 542 click 1; sleep 2
 ranged=$(export_layers ranged)
 [ "$ranged" -gt $((standard * 5 / 4)) ] && [ "$ranged" -lt "$drawn" ] \
     || fail "height range: $ranged layers ($standard standard, $drawn drawn)"
@@ -284,12 +284,12 @@ ok "layer heights: curve ($standard to $drawn layers) and range ($ranged)"
 
 select_first
 object_menu 16; sleep 1                                 # Settings
-xdotool mousemove 140 350 click 1; sleep 1              # "Create modifier…": a slab
-xdotool mousemove 392 212 click 1; key ctrl+a; xdotool type 3.25
-xdotool mousemove 450 344 click 1; sleep 1              # "OK"
-xdotool mousemove 226 448 click 1; key ctrl+a; xdotool type 5.5; key Tab    # its position: Z
+xdotool mousemove 140 430 click 1; sleep 1              # "Create modifier…": a slab
+xdotool mousemove 560 253 click 1; key ctrl+a; xdotool type 3.25    # "Thickness"
+xdotool mousemove 620 385 click 1; sleep 1              # "OK"
+xdotool mousemove 226 528 click 1; key ctrl+a; xdotool type 5.5; key Tab    # its position: Z
 shot modifier-created
-xdotool mousemove 706 492 click 1; sleep 1              # "Close"
+xdotool mousemove 1046 572 click 1; sleep 1             # "Close"
 object_menu 19; answer "$out/created.amf"               # Export object and modifiers as AMF
 grep -q 'type="slic3r.modifier">1<' "$out/created.amf" || fail "no created modifier in created.amf"
 grep -q '<z>5.5</z>' "$out/created.amf" && grep -q '<z>8.75</z>' "$out/created.amf" \

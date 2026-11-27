@@ -12,8 +12,6 @@ Missing, compared with the Perl GUI:
 
 - [ ] Printer controller (USB); the Controller tab is empty
 - [ ] SLA/projector (lower priority); the DLP/SLA tab is empty
-- [ ] Object settings: a 3D view of the parts, scale and rotate a single part; layer
-      heights dialog: its 3D preview and quality slider
 - [ ] Try the "Add…" dialog and drag and drop
 
 Done since: closing (and leaving a preset) asks to save or discard modified presets,

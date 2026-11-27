@@ -8,7 +8,9 @@
 
 #include <wx/dcbuffer.h>
 
+#include "ExPolygon.hpp"
 #include "Print.hpp"
+#include "TriangleMesh.hpp"
 #include "misc_ui.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -37,6 +39,18 @@ void SplineCanvas::reset() {
     for (size_t i = 0; i < positions.size(); ++i) heights[i] = positions[i] - (i == 0 ? 0 : positions[i - 1]);
     changed = true;
     this->Refresh();
+    if (on_change) on_change();
+}
+
+void SplineCanvas::set_spline(const LayerHeightSpline& other) {
+    spline = other;
+    before = other;
+    positions = spline.getOriginalLayers();
+    heights.clear();
+    for (const auto z : positions) heights.push_back(spline.getLayerHeightAt(z));
+    changed = false;
+    this->Refresh();
+    if (on_change) on_change();
 }
 
 wxPoint SplineCanvas::to_pixel(double thickness, double z) const {
@@ -80,6 +94,7 @@ void SplineCanvas::drag(const wxMouseEvent& e) {
         if (e.LeftUp() || e.RightUp()) {
             dragging = false;
             if (this->HasCapture()) this->ReleaseMouse();
+            if (on_change) on_change();
         }
         this->Refresh();
     } else if (e.Moving()) {
@@ -120,33 +135,98 @@ void SplineCanvas::paint() {
     dc.DrawLabel(wxString::Format("%.4g mm", max_height), wxRect(size), wxALIGN_RIGHT | wxALIGN_BOTTOM);
 }
 
-LayerHeightsDialog::LayerHeightsDialog(wxWindow* parent, const ModelObject& object, const DynamicPrintConfig& config) :
-    wxDialog(parent, wxID_ANY, _("Layer heights"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
-{
+LayersCanvas::LayersCanvas(wxWindow* parent, const ModelObject& object) : ObjectCanvas(parent, object), mesh(object.raw_mesh()) {
+    bb = mesh.bounding_box();
+    const Pointf3 center {bb.center()};
+    shift = Pointf3(-center.x, -center.y, -bb.min.z);
+    mesh.repair();
+    volumes.clear();
+    GLVertexArray vertices;
+    vertices.load_mesh(mesh);
+    volumes.push_back(Volume {ui_settings->color->COLOR_PARTS(), shift, vertices, bb});
+}
+
+void LayersCanvas::show_layers(const std::vector<coordf_t>& heights) {
+    std::vector<float> at;
+    // cut just below each layer's top, where the mesh has a section
+    for (const auto z : heights)
+        if (z <= bb.size().z + 1e-6) at.push_back(static_cast<float>(bb.min.z + z - 1e-3));
+    std::vector<ExPolygons> sections;
+    TriangleMesh copy {mesh};
+    if (!at.empty()) TriangleMeshSlicer<Z>(&copy).slice(at, &sections);
+    lines.clear();
+    for (size_t i = 0; i < sections.size(); ++i)
+        for (const auto& section : sections[i])
+            for (const auto& line : section.lines())
+                for (const Point& p : {line.a, line.b}) lines.push_back(Pointf3(unscale(p.x), unscale(p.y), at[i]));
+    Refresh();
+}
+
+void LayersCanvas::after_render() {
+    glDisable(GL_LIGHTING);
+    glLineWidth(1);
+    glColor3ub(0, 0, 0);
+    glBegin(GL_LINES);
+    for (const auto& point : lines) glVertex3d(point.x + shift.x, point.y + shift.y, point.z + shift.z);
+    glEnd();
+    glEnable(GL_LIGHTING);
+}
+
+LayerHeightSpline LayerHeightsDialog::sliced_spline(double& min_height, double& max_height, double& height) {
     // the layers slicing would make, from a print of this object alone
-    Slic3r::Model alone;
-    ModelObject* copy {alone.add_object(object)};
     Slic3r::Print print;
-    print.apply_config(config);
-    print.auto_assign_extruders(copy);
-    print.add_model_object(copy);
+    print.apply_config(this->print_config);
+    print.auto_assign_extruders(this->object_copy);
+    print.add_model_object(this->object_copy);
     PrintObject* sliced {print.objects.front()};
     sliced->prepare_layer_heights();
-
-    double min_height {0}, max_height {1e6};
+    min_height = 0;
+    max_height = 1e6;
     for (const size_t extruder : print.object_extruders()) {
         min_height = std::max(min_height, print.config.min_layer_height.get_at(extruder));
         max_height = std::min(max_height, print.config.max_layer_height.get_at(extruder));
     }
+    height = unscale(sliced->size.z);
+    return sliced->layer_height_spline;
+}
+
+LayerHeightsDialog::LayerHeightsDialog(wxWindow* parent, const ModelObject& object, const DynamicPrintConfig& config) :
+    wxDialog(parent, wxID_ANY, _("Layer heights"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+{
+    this->print_config.apply(config);
+    this->object_copy = this->alone.add_object(object);
+    double min_height, max_height, height;
+    LayerHeightSpline spline {this->sliced_spline(min_height, max_height, height)};
 
     auto* columns {new wxBoxSizer(wxHORIZONTAL)};
+    view = new LayersCanvas(this, object);
+    columns->Add(view, 2, wxEXPAND | wxLEFT | wxTOP | wxBOTTOM, 10);
     auto* left {new wxBoxSizer(wxVERTICAL)};
-    if (sliced->layer_height_spline.hasData()) {
-        canvas = new SplineCanvas(this, sliced->layer_height_spline, min_height, max_height, unscale(sliced->size.z));
+    if (spline.hasData()) {
+        canvas = new SplineCanvas(this, spline, min_height, max_height, height);
         left->Add(canvas, 1, wxEXPAND);
+        canvas->on_change = [this]() { view->show_layers(canvas->spline.getInterpolatedLayers()); };
+        view->show_layers(canvas->spline.getInterpolatedLayers());
         auto* reset {new wxButton(this, wxID_ANY, _("Reset curve"))};
         reset->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { canvas->reset(); });
         left->Add(reset, 0, wxTOP, 5);
+        // the quality of adaptive slicing, a setting of this object
+        const DynamicPrintConfig& own {object.config};
+        auto value = [&own, &config](const std::string& key) {
+            return own.has(key) ? own.serialize(key) : config.has(key) ? config.serialize(key) : std::string("0");
+        };
+        quality_before = std::atoi(value("adaptive_slicing_quality").c_str());
+        left->Add(new wxStaticText(this, wxID_ANY, _("Adaptive quality %")), 0, wxTOP, 8);
+        quality = new wxSlider(this, wxID_ANY, quality_before, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_LABELS);
+        quality->Enable(value("adaptive_slicing") == "1");
+        quality->Bind(wxEVT_SLIDER, [this](wxCommandEvent&) {
+            const std::string text {std::to_string(quality->GetValue())};
+            this->object_copy->config.set_deserialize("adaptive_slicing_quality", text + "%");
+            this->object_copy->layer_height_spline = LayerHeightSpline();
+            double low, high, tall;
+            canvas->set_spline(this->sliced_spline(low, high, tall));
+        });
+        left->Add(quality, 0, wxEXPAND);
     } else {
         left->Add(new wxStaticText(this, wxID_ANY, _("This object has too few layers for a curve.")));
     }
@@ -194,6 +274,10 @@ bool LayerHeightsDialog::parse_ranges() {
 
 void LayerHeightsDialog::apply(ModelObject& object) const {
     object.layer_height_ranges = parsed;
+    if (quality != nullptr && quality->GetValue() != quality_before) {
+        object.config.set_deserialize("adaptive_slicing_quality", std::to_string(quality->GetValue()) + "%");
+        object.layer_height_spline = LayerHeightSpline();  // sliced anew with it
+    }
     if (canvas != nullptr && canvas->changed) object.layer_height_spline = canvas->spline;
 }
 

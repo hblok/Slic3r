@@ -164,6 +164,10 @@ The Perl GUI is the reference for behaviour and layout.
 - [x] Previews and 3D (2026-11-28): colour by filament (View menu), thicker layers above
       greyed in the 2D toolpaths, U/D keys, one camera for the 3D plater and preview,
       right and double click in the 3D plater, the section outline in the cut preview
+- [x] Object dialogs (2026-11-28): a 3D view of the parts in "Settings" (click to select)
+      and scale/rotate of a single part from the list's menu; "Layer heights" has the
+      adaptive quality slider and a 3D view with a line at each layer (the Perl dialog
+      showed the toolpaths there)
 - [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps

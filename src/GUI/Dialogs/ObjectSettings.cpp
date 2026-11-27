@@ -4,6 +4,9 @@
 #include <algorithm>
 
 #include <wx/filename.h>
+#include <wx/textdlg.h>
+
+#include "Geometry.hpp"
 
 #include "OptionsGroup/OptionControl.hpp"
 #include "misc_ui.hpp"
@@ -78,9 +81,58 @@ bool ask_shape(wxWindow* parent, TriangleMesh& mesh, std::string& name, const Si
 
 } // namespace
 
+PartsCanvas::PartsCanvas(wxWindow* parent, const ModelObject& object) : ObjectCanvas(parent, object), object(object) {
+    // the parts as they are in the object, without the instances' rotation and scale
+    bb = object.raw_mesh().bounding_box();
+    for (const auto* volume : object.volumes) bb.merge(volume->bounding_box());
+    const Pointf3 center {bb.center()};
+    shift = Pointf3(-center.x, -center.y, -bb.min.z);
+    const coord_t half {scale_(std::max(bb.size().x, bb.size().y))};
+    set_bed_shape({Point(-half, -half), Point(half, -half), Point(half, half), Point(-half, half)});
+    this->show_parts(-1);
+}
+
+void PartsCanvas::show_parts(int selected) {
+    volumes.clear();
+    for (size_t i = 0; i < object.volumes.size(); ++i) {
+        const ModelVolume* volume {object.volumes[i]};
+        wxColour colour {static_cast<int>(i) == selected ? ui_settings->color->SELECTED_COLOR() : ui_settings->color->COLOR_PARTS()};
+        if (volume->modifier) colour.Set(colour.Red(), colour.Green(), colour.Blue(), 128);
+        GLVertexArray vertices;
+        vertices.load_mesh(volume->mesh);
+        volumes.push_back(Volume {colour, shift, vertices, volume->mesh.bounding_box()});
+    }
+    Refresh();
+}
+
+void PartsCanvas::mouse_up(wxMouseEvent& e) {
+    if (!dragging && e.LeftUp()) {
+        Linef3 ray {this->ray_at(e.GetPosition())};
+        ray.a.translate(-shift.x, -shift.y, -shift.z);
+        ray.b.translate(-shift.x, -shift.y, -shift.z);
+        // the nearest of the volumes the ray goes through
+        int hit {-1};
+        double nearest {0};
+        for (size_t i = 0; i < object.volumes.size(); ++i) {
+            TriangleMesh mesh {object.volumes[i]->mesh};
+            const int facet {mesh.first_facet_hit(ray)};
+            if (facet < 0) continue;
+            const stl_vertex& v {mesh.stl.facet_start[facet].vertex[0]};
+            const double along {(v.x - ray.a.x) * (ray.b.x - ray.a.x) + (v.y - ray.a.y) * (ray.b.y - ray.a.y)
+                + (v.z - ray.a.z) * (ray.b.z - ray.a.z)};
+            if (hit < 0 || along < nearest) {
+                hit = static_cast<int>(i);
+                nearest = along;
+            }
+        }
+        if (on_select) on_select(hit);
+    }
+    Scene3D::mouse_up(e);
+}
+
 ObjectSettingsDialog::ObjectSettingsDialog(wxWindow* parent, ModelObject* object, const DynamicPrintConfig& defaults,
         std::function<void()> changed) :
-    wxDialog(parent, wxID_ANY, _("Object Settings"), wxDefaultPosition, wxSize(760, 520), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+    wxDialog(parent, wxID_ANY, _("Object Settings"), wxDefaultPosition, wxSize(1100, 600), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
     object(object), defaults(defaults), changed(changed)
 {
     parts = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(260, 200));
@@ -118,6 +170,8 @@ ObjectSettingsDialog::ObjectSettingsDialog(wxWindow* parent, ModelObject* object
     auto* columns {new wxBoxSizer(wxHORIZONTAL)};
     columns->Add(left, 0, wxEXPAND | wxALL, 10);
     columns->Add(right, 1, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT, 10);
+    view = new PartsCanvas(this, *object);
+    columns->Add(view, 1, wxEXPAND | wxTOP | wxBOTTOM | wxRIGHT, 10);
     auto* sizer {new wxBoxSizer(wxVERTICAL)};
     sizer->Add(columns, 1, wxEXPAND);
     auto* close {new wxButton(this, wxID_CANCEL, _("Close"))};
@@ -125,6 +179,16 @@ ObjectSettingsDialog::ObjectSettingsDialog(wxWindow* parent, ModelObject* object
     this->SetSizer(sizer);
 
     parts->Bind(wxEVT_LISTBOX, [this](wxCommandEvent&) { this->show_settings(); });
+    parts->Bind(wxEVT_CONTEXT_MENU, [this](wxContextMenuEvent&) { this->volume_menu(); });
+    view->on_select = [this](int volume) {
+        parts->SetSelection(volume + 1);
+        this->show_settings();
+    };
+    ui_settings->restore_window_pos(this, "object_settings");
+    this->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
+        ui_settings->save_window_pos(this, "object_settings");
+        e.Skip();
+    }, wxID_CANCEL);
     load_part->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { this->load_volumes(false); });
     load_modifier->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { this->load_volumes(true); });
     delete_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { this->delete_volume(); });
@@ -162,6 +226,7 @@ void ObjectSettingsDialog::list_parts(int select) {
 void ObjectSettingsDialog::show_settings() {
     const int selected {std::max(parts->GetSelection(), 0)};
     delete_button->Enable(selected > 0);
+    view->show_parts(selected - 1);
     DynamicPrintConfig& config {this->selected_config()};
     const Pointf3 corner {selected > 0 ? object->volumes.at(selected - 1)->bounding_box().min : Pointf3()};
     const double values[] {corner.x, corner.y, corner.z};
@@ -262,6 +327,55 @@ void ObjectSettingsDialog::move_volume() {
     volume->translate(dx, dy, dz);
     object->invalidate_bounding_box();
     this->changed();
+    view->show_parts(selected);
+}
+
+void ObjectSettingsDialog::volume_menu() {
+    if (parts->GetSelection() <= 0) return;
+    wxMenu menu;
+    const wxString axes[] {"X", "Y", "Z"};
+    auto submenu = [this, &menu, &axes](const wxString& title, bool uniform, const wxString& entry, bool to_size, bool rotate) {
+        auto* sub {new wxMenu()};
+        auto add = [this, sub, to_size, rotate](const wxString& label, int axis) {
+            append_menu_item(sub, label, "", [this, axis, to_size, rotate](wxCommandEvent&) {
+                this->CallAfter([this, axis, to_size, rotate]() { this->transform_volume(axis, to_size, rotate); });
+            });
+        };
+        if (uniform) add(_(L"Uniformly…"), -1);
+        for (int axis = 0; axis < 3; ++axis) add(wxString::Format(entry, axes[axis]), axis);
+        menu.AppendSubMenu(sub, title);
+    };
+    submenu(_("Scale"), true, _(L"Along %s axis…"), false, false);
+    submenu(_("Scale to size"), true, _(L"Along %s axis…"), true, false);
+    submenu(_("Rotate"), false, _(L"Around %s axis…"), false, true);
+    parts->PopupMenu(&menu);
+}
+
+void ObjectSettingsDialog::transform_volume(int axis, bool to_size, bool rotate) {
+    const int selected {parts->GetSelection() - 1};
+    if (selected < 0 || selected >= static_cast<int>(object->volumes.size())) return;
+    ModelVolume* volume {object->volumes[selected]};
+    const Sizef3 size {volume->bounding_box().size()};
+    const double along[] {size.x, size.y, size.z};
+    const double current {rotate ? 0 : !to_size ? 100 : axis < 0 ? std::max(size.x, std::max(size.y, size.z)) : along[axis]};
+    const wxString question {rotate ? _("Enter the rotation angle:")
+        : to_size ? _("Enter the new size for the selected mesh (mm):") : _("Enter the scale % for the selected object:")};
+    wxString text {wxGetTextFromUser(question, rotate ? _("Rotate") : _("Scale"), wxString::Format("%g", current), this)};
+    text.Replace("%", "");
+    double value {0};
+    if (text.IsEmpty() || !text.ToCDouble(&value) || (!rotate && (value <= 0 || current <= 0))) return;
+    const Axis which {axis == 1 ? Y : axis == 2 ? Z : X};
+    if (rotate) {
+        if (value == 0) return;
+        volume->rotate(Geometry::deg2rad(value), which);
+    } else {
+        const double factor {value / current};
+        if (axis < 0) volume->scale(factor);
+        else volume->scale(which == X ? factor : 1, which == Y ? factor : 1, which == Z ? factor : 1);
+    }
+    object->invalidate_bounding_box();
+    this->changed();
+    this->list_parts(selected + 1);
 }
 
 void ObjectSettingsDialog::delete_volume() {

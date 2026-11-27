@@ -12,8 +12,23 @@
 
 #include "Model.hpp"
 #include "PrintConfig.hpp"
+#include "ObjectCutDialog.hpp"
 
 namespace Slic3r { namespace GUI {
+
+/// The object's parts and modifiers in 3D (modifiers see-through, the selected one
+/// highlighted); a click selects one.
+class PartsCanvas : public ObjectCanvas {
+public:
+    PartsCanvas(wxWindow* parent, const ModelObject& object);
+    void show_parts(int selected);
+    /// A volume was clicked (its index), or the background (-1).
+    std::function<void(int)> on_select {nullptr};
+protected:
+    void mouse_up(wxMouseEvent& e) override;
+private:
+    const ModelObject& object;
+};
 
 /// An object's parts and modifiers, and the print settings that apply to the object or
 /// one of its volumes only. Edits the object directly (undo takes it back).
@@ -35,6 +50,10 @@ private:
     std::vector<std::string> addable;   ///< the keys in add_choice
     /// The selected entry's own settings: the object's or a volume's.
     DynamicPrintConfig& selected_config();
+    PartsCanvas* view;
+    /// Scale or rotate the selected volume (the list's context menu).
+    void volume_menu();
+    void transform_volume(int axis, bool to_size, bool rotate);
     void list_parts(int select);
     void show_settings();
     void load_volumes(bool modifier);
