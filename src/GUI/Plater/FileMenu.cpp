@@ -46,10 +46,11 @@ void Plater::select_external_config(const wxString& file) {
             [&external](const Preset& p) { return p.external && p.name == external.name; }), presets.end());
         presets.push_back(external);
     }
+    // the editors' lists first: selecting in the plater selects in them too
+    for (auto& editor : GetFrame()->preset_editor_tabs) editor.second->reload_list();
     this->_presets->load();
     for (const auto group : {preset_t::Printer, preset_t::Material, preset_t::Print})
         this->_presets->select_preset_by_name(path.GetName(), group, 0);
-    for (auto& editor : GetFrame()->preset_editor_tabs) editor.second->reload_list();
     this->refresh_config();
     this->invalidate_slices();
 }

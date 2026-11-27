@@ -156,6 +156,30 @@ near reloaded size_z 10                                  # the box is 20 x 20 x 
 near reloaded number_of_facets 12
 ok "mirror and reload from disk"
 
+select_first
+object_menu 14                                          # Settings: a modifier with a setting
+xdotool mousemove 172 351 click 1; sleep 2              # "Load modifier…"
+answer "$root/src/test/inputs/test_cli/20mmbox.stl"
+xdotool mousemove 559 59 click 1; sleep 1               # "Add setting": the second one
+key Down; key Down; key Return; sleep 1
+shot object-settings
+xdotool mousemove 680 435 click 1; sleep 1              # "Close"
+object_menu 17; answer "$out/modified.amf"              # Export object and modifiers as AMF
+grep -q 'type="slic3r.modifier">1<' "$out/modified.amf" || fail "no modifier in modified.amf"
+grep -q 'type="slic3r.bridge_flow_ratio"' "$out/modified.amf" || fail "the modifier's setting is not in modified.amf"
+undo
+select_first
+object_menu 17; answer "$out/unmodified.amf"
+! grep -q 'slic3r.modifier' "$out/unmodified.amf" || fail "undo kept the modifier"
+ok "object settings: modifier with a setting, undo"
+
+file_menu 12                                            # Preferences
+xdotool mousemove 437 239 click 1; sleep 1              # "Background processing"
+shot preferences
+xdotool mousemove 508 365 click 1; sleep 1              # "OK"
+grep -q '^background_processing = 1' "$out/data/slic3r.ini" || fail "the preference is not in slic3r.ini"
+ok "preferences"
+
 # ---- the File menu ----
 file_menu 3; answer "$out/exported.ini"                 # Export Config
 grep -q '^layer_height = 0.3' "$out/exported.ini" || fail "exported.ini lacks the default layer height"
@@ -178,6 +202,18 @@ grep -q '^v ' "$out/repaired.obj" || fail "no repaired OBJ"
 file_menu 6; answer "$out/part.gcode"; sleep 2          # Import Config from G-code
 grep -q '^layer_height = 0.25' "$out/part.ini" || fail "import from G-code: layer height missing"
 ok "SVG, repair, configuration from G-code"
+
+click 230 43                                            # "Print Settings": Spiral vase asks
+xdotool mousemove 482 271 click 1; sleep 2
+shot spiral-vase-question
+key Return; sleep 1                                     # yes, adjust the other settings
+shot spiral-vase
+click 40 43
+file_menu 3; answer "$out/vase.ini"
+for line in 'spiral_vase = 1' 'perimeters = 1' 'top_solid_layers = 0' 'fill_density = 0'; do
+    grep -q "^$line" "$out/vase.ini" || fail "vase.ini lacks '$line'"
+done
+ok "preset editor: the spiral vase rule"
 
 alive end
 if grep -q "wx assertion" "$out/gui.log"; then

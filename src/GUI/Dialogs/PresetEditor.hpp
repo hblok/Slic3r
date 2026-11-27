@@ -177,7 +177,10 @@ public:
         {
             "layer_height"s, "first_layer_height"s,
             "adaptive_slicing"s, "adaptive_slicing_quality"s, "match_horizontal_surfaces"s,
-            "perimeters"s, "spiral_vase"s,
+            "perimeters"s, "spiral_vase"s, "min_shell_thickness"s, "min_top_bottom_shell_thickness"s,
+            "fuzzy_skin"s, "fuzzy_skin_thickness"s, "fuzzy_skin_point_dist"s,
+            "ironing"s, "ironing_flowrate"s, "ironing_spacing"s,
+            "support_material_pillar_size"s, "support_material_pillar_spacing"s, "label_printed_objects"s,
             "top_solid_layers"s, "bottom_solid_layers"s,
             "extra_perimeters"s, "avoid_crossing_perimeters"s, "thin_walls"s, "overhangs"s,
             "seam_position"s, "external_perimeters_first"s,
@@ -253,7 +256,7 @@ public:
         return t_config_option_keys
         {
             "bed_shape"s, "z_offset"s, "z_steps_per_mm"s, "has_heatbed"s,
-            "gcode_flavor"s, "use_relative_e_distances"s,
+            "machine_acceleration"s, "fan_percentage"s, "gcode_flavor"s, "use_relative_e_distances"s,
             "serial_port"s, "serial_speed"s,
             "host_type"s, "print_host"s, "octoprint_apikey"s,
             "use_firmware_retraction"s, "pressure_advance"s, "vibration_limit"s,

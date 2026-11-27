@@ -32,7 +32,17 @@ Preset::Preset(std::string load_dir, std::string filename, preset_t p) : group(p
     this->name = this->_file.GetName();
     this->_dirty_config = Slic3r::Config::new_from_ini(_file.GetFullPath().ToStdString());
     this->_config = Slic3r::Config::new_from_ini(_file.GetFullPath().ToStdString());
-
+    // a full configuration loaded as a preset holds the other groups' settings too, and
+    // would override what is edited there: drop them (keys no editor knows stay)
+    for (const auto& others : {std::make_pair(preset_t::Print, PrintEditor::options()),
+            std::make_pair(preset_t::Material, MaterialEditor::options()),
+            std::make_pair(preset_t::Printer, PrinterEditor::options())}) {
+        if (others.first == this->group) continue;
+        for (const auto& key : others.second) {
+            this->_config->config().erase(key);
+            this->_dirty_config->config().erase(key);
+        }
+    }
 }
 
 t_config_option_keys Preset::dirty_options() const {
