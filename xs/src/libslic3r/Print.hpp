@@ -161,6 +161,10 @@ class PrintObject
     void bridge_over_infill();
     coordf_t adjust_layer_height(coordf_t layer_height) const;
     std::vector<coordf_t> generate_object_layers(coordf_t first_layer_height);
+    /// Fill layer_height_spline as slicing would, without slicing (layer height editor).
+    void prepare_layer_heights();
+    /// Height of the first object layer; raft_height: where the object starts above a raft.
+    coordf_t first_object_layer_height(coordf_t* raft_height) const;
     void _slice();
     std::vector<ExPolygons> _slice_region(size_t region_id, std::vector<float> z, bool modifier);
 

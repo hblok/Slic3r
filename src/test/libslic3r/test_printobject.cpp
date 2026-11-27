@@ -176,3 +176,41 @@ SCENARIO("PrintObject: minimum horizontal shells") {
         }
     }
 }
+
+SCENARIO("PrintObject: drawn layer heights are used when the object is sliced anew") {
+    GIVEN("A 20mm cube with 0.4mm layers") {
+        auto config {Slic3r::Config::new_from_defaults()};
+        config->set("nozzle_diameter", "0.5");
+        config->set("layer_height", 0.4);
+        config->set("first_layer_height", 0.4);
+        Slic3r::Model model;
+        auto print {Slic3r::Test::init_print({TestMesh::cube_20x20x20}, model, config)};
+        auto* object {print->objects[0]};
+        object->prepare_layer_heights();
+        auto spline {object->layer_height_spline};
+        const auto positions {spline.getOriginalLayers()};
+        const size_t standard {positions.size()};
+
+        // the layers of a new print of the same model
+        auto layers = [&config](Slic3r::Model& what) {
+            Slic3r::Print again;
+            again.apply_config(config->config());
+            again.add_model_object(what.objects[0]);
+            coordf_t raft {0};
+            return again.objects[0]->generate_object_layers(again.objects[0]->first_object_layer_height(&raft)).size();
+        };
+
+        WHEN("all heights are drawn at 0.2mm") {
+            REQUIRE(spline.updateLayerHeights(std::vector<coordf_t>(positions.size(), 0.2)));
+            model.objects[0]->layer_height_spline = spline;
+            THEN("there are about twice the layers") {
+                REQUIRE(standard == 50);
+                REQUIRE(layers(model) > 90);
+            }
+            AND_THEN("an object of another height gets the standard layers") {
+                model.objects[0]->scale(Pointf3(1, 1, 2));
+                REQUIRE(layers(model) == 100);
+            }
+        }
+    }
+}

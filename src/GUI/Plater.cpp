@@ -817,6 +817,8 @@ wxMenu* Plater::object_menu() {
     item(_(L"Cut…"), _("Open the 3D cutting tool"), [this]() { this->object_cut_dialog(); }, "package.png");
     item(_(L"Rotate face to plane…"), _("Turn the object so that a face lies parallel to a plane"),
         [this]() { this->rotate_face(); }, "rotate_face.png");
+    item(_(L"Layer heights…"), _("Draw the object's layer heights and set height ranges"),
+        [this]() { this->layer_heights_dialog(); }, "variable_layer_height.png");
     menu->AppendSeparator();
     item(_(L"Settings…"), _("Parts, modifiers and settings of this object"), [this]() { this->object_settings_dialog(); }, "cog.png");
     menu->AppendSeparator();

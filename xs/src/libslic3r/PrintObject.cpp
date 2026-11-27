@@ -596,7 +596,12 @@ std::vector<coordf_t> PrintObject::generate_object_layers(coordf_t first_layer_h
 
     // Update object size at the spline object to define upper border
     this->layer_height_spline.setObjectHeight(unscale(this->size.z));
-    if (this->state.is_done(posLayers)) {
+    // Heights drawn by the user hold as long as they were drawn for an object of this
+    // height (not scaled, cut or turned since).
+    const bool drawn = this->layer_height_spline.layerHeightsUpdated()
+        && this->layer_height_spline.hasData()
+        && std::abs(this->layer_height_spline.getOriginalLayers().back() - unscale(this->size.z)) <= max_layer_height;
+    if (this->state.is_done(posLayers) || drawn) {
         // layer heights are already generated, just update layers from spline
         // we don't need to respect first layer here, it's correctly provided by the spline object
         result = this->layer_height_spline.getInterpolatedLayers();
@@ -742,6 +747,43 @@ std::vector<coordf_t> PrintObject::generate_object_layers(coordf_t first_layer_h
     return result;
 }
 
+coordf_t
+PrintObject::first_object_layer_height(coordf_t* raft_height) const
+{
+    coordf_t first_layer_height = this->config.first_layer_height.get_abs_value(this->config.layer_height.value);
+    *raft_height = 0;
+    if (this->config.raft_layers <= 0) return first_layer_height;
+
+    coordf_t min_support_nozzle_diameter = 1.0;
+    std::set<size_t> support_material_extruders = this->_print->support_material_extruders();
+    for (std::set<size_t>::const_iterator it_extruder = support_material_extruders.begin(); it_extruder != support_material_extruders.end(); ++ it_extruder) {
+        min_support_nozzle_diameter = std::min(min_support_nozzle_diameter, this->_print->config.nozzle_diameter.get_at(*it_extruder));
+    }
+    coordf_t support_material_layer_height = 0.75 * min_support_nozzle_diameter;
+
+    // raise first object layer Z by the thickness of the raft itself
+    // plus the extra distance required by the support material logic
+    *raft_height += first_layer_height;
+    *raft_height += support_material_layer_height * (this->config.raft_layers - 1);
+
+    // reset for later layer generation
+    first_layer_height = 0;
+
+    // detachable support
+    if(this->config.support_material_contact_distance > 0) {
+        first_layer_height = min_support_nozzle_diameter;
+        *raft_height += this->config.support_material_contact_distance;
+    }
+    return first_layer_height;
+}
+
+void
+PrintObject::prepare_layer_heights()
+{
+    coordf_t raft_height = 0;
+    this->generate_object_layers(this->first_object_layer_height(&raft_height));
+}
+
 // 1) Decides Z positions of the layers,
 // 2) Initializes layers and their regions
 // 3) Slices the object meshes
@@ -755,37 +797,9 @@ void PrintObject::_slice()
 {
 
     coordf_t raft_height = 0;
-    coordf_t first_layer_height = this->config.first_layer_height.get_abs_value(this->config.layer_height.value);
-
-
+    const coordf_t first_layer_height = this->first_object_layer_height(&raft_height);
     // take raft layers into account
-    int id = 0;
-
-    if (this->config.raft_layers > 0) {
-        id = this->config.raft_layers;
-
-        coordf_t min_support_nozzle_diameter = 1.0;
-        std::set<size_t> support_material_extruders = this->_print->support_material_extruders();
-        for (std::set<size_t>::const_iterator it_extruder = support_material_extruders.begin(); it_extruder != support_material_extruders.end(); ++ it_extruder) {
-            min_support_nozzle_diameter = std::min(min_support_nozzle_diameter, this->_print->config.nozzle_diameter.get_at(*it_extruder));
-        }
-        coordf_t support_material_layer_height = 0.75 * min_support_nozzle_diameter;
-
-        // raise first object layer Z by the thickness of the raft itself
-        // plus the extra distance required by the support material logic
-        raft_height += first_layer_height;
-        raft_height += support_material_layer_height * (this->config.raft_layers - 1);
-
-        // reset for later layer generation
-        first_layer_height = 0;
-
-        // detachable support
-        if(this->config.support_material_contact_distance > 0) {
-            first_layer_height = min_support_nozzle_diameter;
-            raft_height += this->config.support_material_contact_distance;
-
-        }
-    }
+    int id = std::max(this->config.raft_layers.value, 0);
 
     // Initialize layers and their slice heights.
     std::vector<float> slice_zs;

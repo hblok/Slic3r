@@ -431,6 +431,7 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
     ${GUI_LIBDIR}/Dialogs/MaterialEditor.cpp
     ${GUI_LIBDIR}/Dialogs/ObjectCutDialog.cpp
     ${GUI_LIBDIR}/Dialogs/ObjectFaceDialog.cpp
+    ${GUI_LIBDIR}/Dialogs/LayerHeightsDialog.cpp
     ${GUI_LIBDIR}/Dialogs/Preferences.cpp
     ${GUI_LIBDIR}/GUI.cpp
     ${GUI_LIBDIR}/MainFrame.cpp

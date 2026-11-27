@@ -89,7 +89,7 @@ export_plate() { # name: "Export plate as STL"
     "$cli_bin" --info "$out/$1.stl" >"$out/$1.info"
 }
 export_object() {
-    object_menu 17
+    object_menu 18
     answer "$out/$1.stl"
     alive "$1"
     [ -s "$out/$1.stl" ] || fail "$1: no STL exported"
@@ -181,26 +181,26 @@ near mirrored size_x 20
 near mirrored volume "$(info flat volume)"
 cp "$root/src/test/inputs/test_cli/20mmbox.stl" "$out/part.stl"
 select_first
-object_menu 16                                          # Reload from Disk
+object_menu 17                                          # Reload from Disk
 export_plate reloaded
 near reloaded size_z 10                                  # the box is 20 x 20 x 10
 near reloaded number_of_facets 12
 ok "mirror and reload from disk"
 
 select_first
-object_menu 15                                          # Settings: a modifier with a setting
+object_menu 16                                          # Settings: a modifier with a setting
 xdotool mousemove 172 351 click 1; sleep 2              # "Load modifier…"
 answer_open "$root/src/test/inputs/test_cli/20mmbox.stl"
 xdotool mousemove 559 59 click 1; sleep 1               # "Add setting": the second one
 key Down; key Down; key Return; sleep 1
 shot object-settings
 xdotool mousemove 680 435 click 1; sleep 1              # "Close"
-object_menu 18; answer "$out/modified.amf"              # Export object and modifiers as AMF
+object_menu 19; answer "$out/modified.amf"              # Export object and modifiers as AMF
 grep -q 'type="slic3r.modifier">1<' "$out/modified.amf" || fail "no modifier in modified.amf"
 grep -q 'type="slic3r.bridge_flow_ratio"' "$out/modified.amf" || fail "the modifier's setting is not in modified.amf"
 undo
 select_first
-object_menu 18; answer "$out/unmodified.amf"
+object_menu 19; answer "$out/unmodified.amf"
 ! grep -q 'slic3r.modifier' "$out/unmodified.amf" || fail "undo kept the modifier"
 ok "object settings: modifier with a setting, undo"
 
@@ -250,6 +250,32 @@ near tiles size_y 25
 near tiles volume "$(info loaded volume)"
 undo
 ok "cut by grid"
+
+# the number of layers in an export of the plate
+export_layers() { # name
+    plater_menu 8; answer "$out/$1.gcode"                  # "Export G-code..."
+    for i in $(seq 1 30); do [ -s "$out/$1.gcode" ] && break; sleep 1; done
+    grep -c '^G1 Z' "$out/$1.gcode"
+}
+standard=$(export_layers standard)
+select_first
+object_menu 15; sleep 1                                 # Layer heights
+# right button: the thinnest layers (left edge) over the whole height
+xdotool mousemove 150 375 mousedown 3 mousemove 150 200 mousemove 140 16 mouseup 3; sleep 1
+shot layers-curve
+xdotool mousemove 570 458 click 1; sleep 2              # "OK"
+drawn=$(export_layers drawn)
+[ "$drawn" -gt $((standard * 3 / 2)) ] || fail "layer curve: $drawn layers, $standard before"
+undo
+select_first
+object_menu 15; sleep 1
+xdotool mousemove 495 300 click 1; xdotool type "0 6 0.15"; shot layers-range    # a height range
+xdotool mousemove 570 458 click 1; sleep 2
+ranged=$(export_layers ranged)
+[ "$ranged" -gt $((standard * 5 / 4)) ] && [ "$ranged" -lt "$drawn" ] \
+    || fail "height range: $ranged layers ($standard standard, $drawn drawn)"
+undo
+ok "layer heights: curve ($standard to $drawn layers) and range ($ranged)"
 fi
 
 # ---- the File menu ----

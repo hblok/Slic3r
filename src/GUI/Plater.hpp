@@ -107,6 +107,8 @@ public:
     void object_cut_dialog();
     /// Turn the selected object so that a chosen face lies parallel to a plane.
     void rotate_face();
+    /// Draw the selected object's layer heights and set height ranges.
+    void layer_heights_dialog();
     void reload_from_disk();
     void export_plate(IO::ExportFormat format);
     void export_object(IO::ExportFormat format);

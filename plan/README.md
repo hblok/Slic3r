@@ -140,6 +140,11 @@ The Perl GUI is the reference for behaviour and layout.
       configuration wizard (2026-11-27)
 - [x] Rotate face to plane, cut by grid, live cut preview (2026-11-27, `cpp_gui_plate.sh`
       part `tools`). The preview leaves out the Perl GUI's section outline
+- [x] Object > "Layer heights…" (2026-11-27): the curve to drag and height ranges. Slicing
+      now keeps drawn heights on a fresh print, as long as the object keeps its height.
+      Left out: the Perl dialog's 3D preview beside the curve and its quality slider
+      (`adaptive_slicing_quality` is an object setting). Ranges and curves are not saved
+      in AMF/3MF files
 - [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md). Printer controller (USB) and
       SLA/projector: decide before porting
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps

@@ -15,6 +15,8 @@
 #include "Dialogs/AnglePicker.hpp"
 #include "Dialogs/ObjectCutDialog.hpp"
 #include "Dialogs/ObjectFaceDialog.hpp"
+#include "Dialogs/LayerHeightsDialog.hpp"
+#include "PresetChooser.hpp"
 #include "BoundingBox.hpp"
 #include "Geometry.hpp"
 #include "IO.hpp"
@@ -464,6 +466,16 @@ void Plater::rotate_face() {
     object->rotate(dialog.normal(), dialog.target());
     object->align_to_ground();
     this->make_thumbnail(idx);
+    this->on_model_change();
+}
+
+void Plater::layer_heights_dialog() {
+    ModelObject* object {this->selected_model_object()};
+    if (object == nullptr) return;
+    this->refresh_config();
+    LayerHeightsDialog dialog(this, *object, this->_presets->full_config().config());
+    if (dialog.ShowModal() != wxID_OK) return;
+    dialog.apply(*object);
     this->on_model_change();
 }
 
