@@ -42,7 +42,7 @@ Settings are stored in ~/.Slic3r.
 
 Runtime packages (Debian 13):
 
-    sudo apt install perl liblocal-lib-perl libmoo-perl libencode-locale-perl \\
+    sudo apt install perl libmoo-perl libencode-locale-perl \\
       libio-stringy-perl libclass-xsaccessor-perl libclass-accessor-perl libwww-perl \\
       libwx-perl libwx-glcanvas-perl libopengl-perl \\
       libboost-thread1.83.0 libboost-filesystem1.83.0

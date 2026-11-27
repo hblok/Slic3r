@@ -6,7 +6,11 @@ use warnings;
 BEGIN {
     use FindBin;
     use lib "$FindBin::Bin/lib";
-    use local::lib '--no-create', "$FindBin::Bin/local-lib";
+    # only for a bundled local-lib/ (none in utils/make_dist.sh's run directory)
+    if (-d "$FindBin::Bin/local-lib") {
+        require local::lib;
+        local::lib->import('--no-create', "$FindBin::Bin/local-lib");
+    }
 }
 
 use File::Basename qw(basename);
