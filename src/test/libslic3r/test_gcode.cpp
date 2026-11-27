@@ -2,6 +2,7 @@
 #include <regex>
 #include "test_data.hpp"
 #include "GCodeReader.hpp"
+#include "GCodeTimeEstimator.hpp"
 #include "GCode.hpp"
 
 using namespace Slic3r::Test;
@@ -65,5 +66,30 @@ SCENARIO( "Test of COG calculation") {
         }
 
         gcode.clear();
+    }
+}
+
+SCENARIO("Print time estimate") {
+    using Slic3r::GCodeTimeEstimator;
+    THEN("times are written as hours, minutes and seconds") {
+        REQUIRE(GCodeTimeEstimator::format_time(59.6) == "1m 0s");
+        REQUIRE(GCodeTimeEstimator::format_time(3725) == "1h 2m 5s");
+        REQUIRE(GCodeTimeEstimator::format_time(7) == "7s");
+    }
+    GIVEN("a 100 mm move at 50 mm/s") {
+        const std::string gcode = "G1 X100 F3000\n";
+        THEN("a lower acceleration gives a longer estimate") {
+            GCodeTimeEstimator slow(500), fast(9000);
+            slow.parse(gcode);
+            fast.parse(gcode);
+            REQUIRE(fast.time == Approx(2.0).epsilon(0.05));  // 100 mm / 50 mm/s plus a little
+            REQUIRE(slow.time > fast.time);
+        }
+        THEN("an M204 in the G-code wins") {
+            GCodeTimeEstimator e(500), f(9000);
+            e.parse("M204 S9000\n" + gcode);
+            f.parse(gcode);
+            REQUIRE(e.time == Approx(f.time));
+        }
     }
 }

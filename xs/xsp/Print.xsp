@@ -309,6 +309,8 @@ _constant()
                 croak("%s\n", e.what());
             }
         %};
+    double estimated_print_time()
+        %code%{ RETVAL = THIS->estimated_print_time; %};
     // the C++ SVG export (replaces the Perl Print::export_svg)
     std::string _export_svg()
         %code%{

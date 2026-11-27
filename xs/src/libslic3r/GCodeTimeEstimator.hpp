@@ -10,6 +10,13 @@ class GCodeTimeEstimator : public GCodeReader {
     public:
     float time = 0;  // in seconds
     
+    GCodeTimeEstimator() {};
+    /// acceleration in mm/s² until the G-code sets one with M204 (0: the old default)
+    explicit GCodeTimeEstimator(double acceleration) { if (acceleration > 0) this->acceleration = acceleration; };
+    
+    /// "1h 2m 3s"
+    static std::string format_time(double seconds);
+    
     void parse(const std::string &gcode);
     void parse_file(const std::string &file);
     

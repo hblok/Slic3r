@@ -1250,7 +1250,7 @@ sub title { 'Printer Settings' }
 
 sub options {
     return qw(
-        bed_shape z_offset z_steps_per_mm has_heatbed
+        bed_shape z_offset z_steps_per_mm has_heatbed machine_acceleration
         fan_percentage
         gcode_flavor use_relative_e_distances
         serial_port serial_speed
@@ -1416,6 +1416,7 @@ sub build {
             $optgroup->append_single_option_line('pressure_advance');
             $optgroup->append_single_option_line('vibration_limit');
             $optgroup->append_single_option_line('z_steps_per_mm');
+            $optgroup->append_single_option_line('machine_acceleration');
             $optgroup->append_single_option_line('use_set_and_wait_extruder');
             $optgroup->append_single_option_line('use_set_and_wait_bed');
             $optgroup->append_single_option_line('fan_percentage');

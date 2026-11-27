@@ -814,6 +814,15 @@ PrintConfigDef::PrintConfigDef()
     def->cli = "match-horizontal-surfaces!";
     def->default_value = new ConfigOptionBool(false);
 
+    def = this->add("machine_acceleration", coFloat);
+    def->label = __TRANS("Acceleration for time estimates");
+    def->category = __TRANS("General");
+    def->tooltip = __TRANS("The printer's default acceleration (M204 in M503), used only to estimate the print time; acceleration commands in the G-code still apply. Set zero for the old estimate (9000 mm/s²).");
+    def->sidetext = "mm/s²";
+    def->cli = "machine-acceleration=f";
+    def->min = 0;
+    def->default_value = new ConfigOptionFloat(0);
+
     def = this->add("max_fan_speed", coInt);
     def->label = __TRANS("Max");
     def->tooltip = __TRANS("This setting represents the maximum speed of your fan.");

@@ -238,6 +238,7 @@ class Print
     std::function<void(std::vector<std::string>)> post_process_cb {nullptr};
     
     double total_used_filament, total_extruded_volume, total_cost, total_weight;
+    double estimated_print_time {0};  ///< seconds, set by export_gcode
     std::map<size_t,float> filament_stats;
     PrintState<PrintStep> state;
 

@@ -1,5 +1,6 @@
 #include "slic3r.hpp"
 #include "GCodeSender.hpp"
+#include "GCodeTimeEstimator.hpp"
 #include "Geometry.hpp"
 #include "IO.hpp"
 #include "Log.hpp"
@@ -400,7 +401,8 @@ int CLI::run(int argc, char **argv) {
                     << std::fmod(duration, 60.0) << " seconds." << std::endl
                     << std::setprecision(2)
                     << "Filament required: " << print.total_used_filament() << "mm"
-                    << " (" << print.total_extruded_volume()/1000 << "cm3)" << std::endl;
+                    << " (" << print.total_extruded_volume()/1000 << "cm3)" << std::endl
+                    << "Estimated print time: " << GCodeTimeEstimator::format_time(print.print().estimated_print_time) << std::endl;
             }
         } else if (opt_key == "print") {
             if (this->models.size() > 1) {

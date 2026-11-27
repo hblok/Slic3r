@@ -1,5 +1,6 @@
 #include "GCodeTimeEstimator.hpp"
 #include <cmath>
+#include <cstdio>
 #include <boost/version.hpp>
 #if BOOST_VERSION >= 107300
 #include <boost/bind/bind.hpp>
@@ -50,6 +51,20 @@ GCodeTimeEstimator::_parser(GCodeReader&, const GCodeReader::GCodeLine &line)
             this->time += line.get_float('P')/1000;
         }
     }
+}
+
+std::string
+GCodeTimeEstimator::format_time(double seconds)
+{
+    const long s = std::lround(seconds);
+    char buf[64];
+    if (s >= 3600)
+        snprintf(buf, sizeof(buf), "%ldh %ldm %lds", s / 3600, s / 60 % 60, s % 60);
+    else if (s >= 60)
+        snprintf(buf, sizeof(buf), "%ldm %lds", s / 60, s % 60);
+    else
+        snprintf(buf, sizeof(buf), "%lds", s);
+    return buf;
 }
 
 // Wildly optimistic acceleration "bell" curve modeling.

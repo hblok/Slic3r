@@ -8574,6 +8574,7 @@ M84 X Y E ; motors off except Z
 ; interior_brim_width = 0
 ; label_printed_objects = 0
 ; layer_gcode = 
+; machine_acceleration = 500
 ; max_fan_speed = 100
 ; max_layer_height = 0.3
 ; max_print_speed = 80
@@ -8692,3 +8693,4 @@ M84 X Y E ; motors off except Z
 ; top_infill_pattern = rectilinear
 ; top_solid_infill_speed = 30
 ; top_solid_layers = 4
+; estimated printing time = 16m 5s

@@ -458,6 +458,7 @@ class PrintConfig : public GCodeConfig
     ConfigOptionFloat               infill_acceleration;
     ConfigOptionBool                infill_first;
     ConfigOptionFloat               interior_brim_width;
+    ConfigOptionFloat               machine_acceleration;
     ConfigOptionInt                 max_fan_speed;
     ConfigOptionFloats              max_layer_height;
     ConfigOptionInt                 min_fan_speed;
@@ -522,6 +523,7 @@ class PrintConfig : public GCodeConfig
         OPT_PTR(infill_acceleration);
         OPT_PTR(infill_first);
         OPT_PTR(interior_brim_width);
+        OPT_PTR(machine_acceleration);
         OPT_PTR(max_fan_speed);
         OPT_PTR(max_layer_height);
         OPT_PTR(min_fan_speed);

@@ -4,6 +4,7 @@
 #include "ClipperUtils.hpp"
 #include "Fill/Fill.hpp"
 #include "Flow.hpp"
+#include "GCodeTimeEstimator.hpp"
 #include "Geometry.hpp"
 #include "SupportMaterial.hpp"
 #include <algorithm>
@@ -695,7 +696,14 @@ Print::export_gcode(std::ostream& output, bool quiet)
     if (this->status_cb != nullptr) 
         this->status_cb(90, "Exporting G-Code...");
     
-    Slic3r::PrintGCode(*this, output).output();
+    // the estimate needs the whole G-code; it is appended at the end
+    std::ostringstream gcode;
+    Slic3r::PrintGCode(*this, gcode).output();
+    GCodeTimeEstimator estimator(this->config.machine_acceleration.value);
+    estimator.parse(gcode.str());
+    this->estimated_print_time = estimator.time;
+    output << gcode.str()
+        << "; estimated printing time = " << GCodeTimeEstimator::format_time(estimator.time) << "\n";
 }
 
 void

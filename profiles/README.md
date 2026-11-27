@@ -40,3 +40,6 @@ from this machine. Check them in phase 3 (`M115`, `M503`, a test print):
 - The start G-code heats while homing, then waits (`M190`, `M109`) before the purge
   line. Slic3r adds no temperature commands of its own when the start G-code has them.
 - The end G-code lowers the bed 10 mm (relative move) and leaves Z powered.
+- `machine_acceleration = 500` (only for the print time estimate) is the stock Creality
+  Marlin default; `M503` prints the real one in its `M204` line. Compare the estimate at
+  the end of the G-code with the real print time.

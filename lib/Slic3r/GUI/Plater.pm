@@ -2349,11 +2349,9 @@ sub on_export_completed {
     } else {
         $message = "Export failed";
     }
-    # Estimate print duration
+    # print duration, estimated by the G-code export (also at the end of the G-code)
     {
-        my $estimator = Slic3r::GCode::TimeEstimator->new;
-        $estimator->parse_file($self->{export_gcode_output_file});
-        my $time = $estimator->time;
+        my $time = $self->{print}->estimated_print_time;
         $self->{print_info_tim}->SetLabel(sprintf(
             "%d hours, %d minutes and %d seconds",
             int($time / 3600),

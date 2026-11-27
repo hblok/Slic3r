@@ -2151,6 +2151,7 @@ M140 S0 ; set bed temperature
 ; interior_brim_width = 0
 ; label_printed_objects = 0
 ; layer_gcode = 
+; machine_acceleration = 0
 ; max_fan_speed = 100
 ; max_layer_height = 0.3
 ; max_print_speed = 80
@@ -2269,3 +2270,4 @@ M140 S0 ; set bed temperature
 ; top_infill_pattern = rectilinear
 ; top_solid_infill_speed = 15
 ; top_solid_layers = 3
+; estimated printing time = 5m 52s
