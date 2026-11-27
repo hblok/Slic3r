@@ -152,8 +152,9 @@ Open:
   `PrintGCode.cpp`); ported, now identical.
 - Not compared yet: GUI-only steps. `--gcode-arcs` is refused by Perl as incomplete.
 
-`src/test/libslic3r/test_support_material.cpp` is still not part of the test build;
-the golden `table_support` output covers the default case.
+`src/test/libslic3r/test_support_material.cpp` is in the test build since 2026-11-27;
+its bridge speed test always passed (a helper returned true) and now ports
+`t/support.t`.
 
 ## Other findings
 
@@ -167,7 +168,7 @@ the golden `table_support` output covers the default case.
   fixed 2026-11-27: it read `--dont-arrange` without a default, and the config
   exceptions returned a pointer into a destroyed string from `what()`. Output equals Perl.
 - `src/test/inputs/20mmbox.stl` is an 84-byte empty STL; use `test_cli/20mmbox.stl`.
-- `src/CMakeLists.txt` has `target_compile_options(libslic3r -DBOOST_INCLUDE_NOWIDE)`
-  behind a misspelled variable, so it never runs.
+- ~~`src/CMakeLists.txt` set `-DBOOST_INCLUDE_NOWIDE` behind a misspelled variable~~
+  removed 2026-11-27: no source uses the macro.
 - Bundled third-party code (`admesh`, `clipper`, `expat`, `miniz`, `poly2tri`,
   parts of Boost) is old and due for review.

@@ -241,9 +241,6 @@ add_library(libslic3r STATIC
 target_compile_features(libslic3r PUBLIC cxx_std_11)
 target_include_directories(libslic3r SYSTEM PUBLIC ${SLIC3R_INCLUDES})
 target_include_directories(libslic3r PUBLIC ${LIBSLIC3R_INCLUDES})
-if (BOOST_NOWIDE_FOUND)
-    target_compile_options(libslic3r -DBOOST_INCLUDE_NOWIDE)
-endif()
 
 add_library(BSpline STATIC
     ${LIBDIR}/BSpline/BSpline.cpp
@@ -328,6 +325,7 @@ set(SLIC3R_TEST_SOURCES
     ${TESTDIR}/libslic3r/test_printgcode.cpp
     ${TESTDIR}/libslic3r/test_printobject.cpp
     ${TESTDIR}/libslic3r/test_skirt_brim.cpp
+    ${TESTDIR}/libslic3r/test_support_material.cpp
     ${TESTDIR}/libslic3r/test_test_data.cpp
     ${TESTDIR}/libslic3r/test_transformationmatrix.cpp
     ${TESTDIR}/libslic3r/test_trianglemesh.cpp
