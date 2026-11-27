@@ -61,5 +61,7 @@ check adaptive_sloping_hole models/sloping_hole.stl --adaptive-slicing
 check modifier models/modifier.amf
 check two_extruders_parts models/two_parts.amf --load two_extruders.ini
 check ooze_prevention $box --load two_extruders.ini --ooze-prevention --infill-extruder 2 --skirts 2
+# fuzzy skin: seeded, so the output is the same on every run (with libstdc++)
+check fuzzy_skin models/cube_with_hole.stl --fuzzy-skin
 
 exit $failed

@@ -630,6 +630,31 @@ PrintConfigDef::PrintConfigDef()
         def->default_value = opt;
     }
     
+    def = this->add("fuzzy_skin", coBool);
+    def->label = __TRANS("Fuzzy skin");
+    def->category = __TRANS("Layers and Perimeters");
+    def->tooltip = __TRANS("Move the points of the outer wall randomly in and out, for a rough, textured surface. Holes and the first layer stay smooth.");
+    def->cli = "fuzzy-skin!";
+    def->default_value = new ConfigOptionBool(false);
+
+    def = this->add("fuzzy_skin_point_dist", coFloat);
+    def->label = __TRANS("Fuzzy skin point distance");
+    def->category = __TRANS("Layers and Perimeters");
+    def->tooltip = __TRANS("Average distance between the moved points along the outer wall (they vary between 3/4 and 5/4 of it).");
+    def->sidetext = __TRANS("mm");
+    def->cli = "fuzzy-skin-point-dist=f";
+    def->min = 0.1;
+    def->default_value = new ConfigOptionFloat(0.8);
+
+    def = this->add("fuzzy_skin_thickness", coFloat);
+    def->label = __TRANS("Fuzzy skin thickness");
+    def->category = __TRANS("Layers and Perimeters");
+    def->tooltip = __TRANS("How far each point may move, inwards or outwards.");
+    def->sidetext = __TRANS("mm");
+    def->cli = "fuzzy-skin-thickness=f";
+    def->min = 0;
+    def->default_value = new ConfigOptionFloat(0.3);
+
     def = this->add("gap_fill_speed", coFloatOrPercent);
     def->label = __TRANS("↳ gaps");
     def->full_label = "Gap fill speed";

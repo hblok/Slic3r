@@ -3,6 +3,7 @@
 #include "ExtrusionEntityCollection.hpp"
 #include <cmath>
 #include <cassert>
+#include <random>
 
 namespace Slic3r {
 
@@ -348,6 +349,33 @@ PerimeterGenerator::process()
     }
 }
 
+// Fuzzy skin: points every point_dist * (3/4 .. 5/4) along the outline, each moved
+// sideways by a random distance in [-thickness, thickness] (scaled units). The idea is
+// PrusaSlicer's; this is a separate implementation with a seeded generator, so the
+// G-code is the same on every run.
+static void
+fuzzy_polygon(Polygon &polygon, double thickness, double point_dist, std::mt19937 &rng)
+{
+    std::uniform_real_distribution<double> unit(0., 1.);
+    const double min_step = point_dist * 0.75, step_range = point_dist * 0.5;
+    const size_t n = polygon.points.size();
+    Points out;
+    double next = unit(rng) * min_step;  // distance from the segment start to the next point
+    for (size_t i = 0; i < n; ++i) {
+        const Point &a = polygon.points[i], &b = polygon.points[(i + 1) % n];
+        const double dx = double(b.x - a.x), dy = double(b.y - a.y);
+        const double length = std::sqrt(dx * dx + dy * dy);
+        for (; next < length; next += min_step + unit(rng) * step_range) {
+            const double r = (unit(rng) * 2. - 1.) * thickness;
+            out.emplace_back(
+                coord_t(std::round(a.x + (dx * next - dy * r) / length)),
+                coord_t(std::round(a.y + (dy * next + dx * r) / length)));
+        }
+        next -= length;
+    }
+    if (out.size() >= 3) polygon.points = std::move(out);
+}
+
 ExtrusionEntityCollection
 PerimeterGenerator::_traverse_loops(const PerimeterGeneratorLoops &loops,
     ThickPolylines &thin_walls) const
@@ -358,6 +386,15 @@ PerimeterGenerator::_traverse_loops(const PerimeterGeneratorLoops &loops,
     for (PerimeterGeneratorLoops::const_iterator loop = loops.begin();
         loop != loops.end(); ++loop) {
         bool is_external = loop->is_external();
+        
+        // the outer wall of an island, not of a hole; not on the first layer (adhesion)
+        Polygon polygon = loop->polygon;
+        if (this->config->fuzzy_skin && is_external && loop->is_contour && this->layer_id > 0) {
+            std::seed_seq seed{ this->layer_id, int(polygon.points.front().x), int(polygon.points.front().y) };
+            std::mt19937 rng(seed);
+            fuzzy_polygon(polygon, scale_(this->config->fuzzy_skin_thickness.value),
+                scale_(this->config->fuzzy_skin_point_dist.value), rng);
+        }
         
         ExtrusionRole role;
         ExtrusionLoopRole loop_role;
@@ -377,7 +414,7 @@ PerimeterGenerator::_traverse_loops(const PerimeterGeneratorLoops &loops,
             && !(this->object_config->support_material && this->object_config->support_material_contact_distance.value == 0)) {
             // get non-overhang paths by intersecting this loop with the grown lower slices
             {
-                const Polylines polylines = intersection_pl(loop->polygon, this->_lower_slices_p);
+                const Polylines polylines = intersection_pl(polygon, this->_lower_slices_p);
                 for (const Polyline &polyline : polylines) {
                     ExtrusionPath path(role);
                     path.polyline   = polyline;
@@ -392,7 +429,7 @@ PerimeterGenerator::_traverse_loops(const PerimeterGeneratorLoops &loops,
             // outside the grown lower slices (thus where the distance between
             // the loop centerline and original lower slices is >= half nozzle diameter
             {
-                const Polylines polylines = diff_pl(loop->polygon, this->_lower_slices_p);
+                const Polylines polylines = diff_pl(polygon, this->_lower_slices_p);
                 for (const Polyline &polyline : polylines) {
                     ExtrusionPath path(erOverhangPerimeter);
                     path.polyline   = polyline;
@@ -409,7 +446,7 @@ PerimeterGenerator::_traverse_loops(const PerimeterGeneratorLoops &loops,
             paths = ExtrusionEntityCollection(paths).chained_path();
         } else {
             ExtrusionPath path(role);
-            path.polyline   = loop->polygon.split_at_first_point();
+            path.polyline   = polygon.split_at_first_point();
             path.mm3_per_mm = is_external ? this->_ext_mm3_per_mm           : this->_mm3_per_mm;
             path.width      = is_external ? this->ext_perimeter_flow.width  : this->perimeter_flow.width;
             path.height     = this->layer_height;

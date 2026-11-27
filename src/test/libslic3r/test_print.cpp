@@ -3,7 +3,10 @@
 #include "test_data.hpp"
 #include "libslic3r.h"
 #include "Print.hpp"
+#include "GCodeReader.hpp"
 #include <boost/filesystem.hpp>
+#include <map>
+#include <sstream>
 
 using namespace Slic3r::Test;
 using namespace std::literals;
@@ -171,6 +174,37 @@ SCENARIO("Post-processing scripts (as the Perl escaped_split)") {
             THEN("it is an error") {
                 REQUIRE_THROWS(run_post_process_script("/nonexistent/script", file));
             }
+        }
+    }
+}
+
+SCENARIO("Fuzzy skin") {
+    // extrusion moves per layer height
+    auto moves_by_z = [] (std::shared_ptr<Slic3r::Config> config) {
+        Slic3r::Model model;
+        auto print {init_print({TestMesh::cube_20x20x20}, model, config)};
+        std::stringstream gcode;
+        Slic3r::Test::gcode(gcode, print);
+        std::map<double, std::vector<std::string>> moves;
+        Slic3r::GCodeReader().parse_stream(gcode, [&moves] (Slic3r::GCodeReader& self, const Slic3r::GCodeReader::GCodeLine& line) {
+            if (line.extruding() && line.dist_XY() > 0) moves[self.Z].push_back(line.raw);
+        });
+        return moves;
+    };
+    GIVEN("a 20 mm cube") {
+        auto config {Slic3r::Config::new_from_defaults()};
+        const auto plain {moves_by_z(config)};
+        config->set("fuzzy_skin", true);
+        const auto fuzzy {moves_by_z(config)};
+        THEN("the first layer is unchanged") {
+            REQUIRE(fuzzy.begin()->second == plain.begin()->second);
+        }
+        THEN("the outer wall of the other layers has many more points") {
+            const double z = std::next(plain.begin(), 3)->first;
+            REQUIRE(fuzzy.at(z).size() > plain.at(z).size() + 50);
+        }
+        THEN("the output is the same on every run") {
+            REQUIRE(moves_by_z(config) == fuzzy);
         }
     }
 }

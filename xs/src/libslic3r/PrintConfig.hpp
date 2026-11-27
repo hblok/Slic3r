@@ -249,6 +249,9 @@ class PrintRegionConfig : public virtual StaticPrintConfig
     ConfigOptionPercent             fill_density;
     ConfigOptionBool                fill_gaps;
     ConfigOptionEnum<InfillPattern> fill_pattern;
+    ConfigOptionBool                fuzzy_skin;
+    ConfigOptionFloat               fuzzy_skin_point_dist;
+    ConfigOptionFloat               fuzzy_skin_thickness;
     ConfigOptionFloatOrPercent      gap_fill_speed;
     ConfigOptionInt                 infill_extruder;
     ConfigOptionFloatOrPercent      infill_extrusion_width;
@@ -292,6 +295,9 @@ class PrintRegionConfig : public virtual StaticPrintConfig
         OPT_PTR(fill_density);
         OPT_PTR(fill_gaps);
         OPT_PTR(fill_pattern);
+        OPT_PTR(fuzzy_skin);
+        OPT_PTR(fuzzy_skin_point_dist);
+        OPT_PTR(fuzzy_skin_thickness);
         OPT_PTR(gap_fill_speed);
         OPT_PTR(infill_extruder);
         OPT_PTR(infill_extrusion_width);

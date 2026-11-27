@@ -82,7 +82,10 @@ PrintRegion::invalidate_state_by_config(const PrintConfigBase &config)
             || opt_key == "first_layer_extrusion_width"
             || opt_key == "perimeter_extrusion_width"
             || opt_key == "thin_walls"
-            || opt_key == "external_perimeters_first") {
+            || opt_key == "external_perimeters_first"
+            || opt_key == "fuzzy_skin"
+            || opt_key == "fuzzy_skin_point_dist"
+            || opt_key == "fuzzy_skin_thickness") {
             steps.insert(posPerimeters);
         } else if (opt_key == "first_layer_extrusion_width") {
             steps.insert(posSupportMaterial);

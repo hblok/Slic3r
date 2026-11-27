@@ -440,6 +440,7 @@ sub options {
         perimeters spiral_vase
         top_solid_layers min_shell_thickness min_top_bottom_shell_thickness bottom_solid_layers
         extra_perimeters avoid_crossing_perimeters thin_walls overhangs
+        fuzzy_skin fuzzy_skin_thickness fuzzy_skin_point_dist
         seam_position external_perimeters_first
         fill_density fill_pattern top_infill_pattern bottom_infill_pattern fill_gaps
         infill_every_layers infill_only_where_needed
@@ -547,6 +548,12 @@ sub build {
             my $optgroup = $page->new_optgroup('Advanced');
             $optgroup->append_single_option_line('seam_position');
             $optgroup->append_single_option_line('external_perimeters_first');
+        }
+        {
+            my $optgroup = $page->new_optgroup('Fuzzy skin');
+            $optgroup->append_single_option_line('fuzzy_skin');
+            $optgroup->append_single_option_line('fuzzy_skin_thickness');
+            $optgroup->append_single_option_line('fuzzy_skin_point_dist');
         }
     }
     
@@ -888,9 +895,13 @@ sub _update {
     my $have_perimeters = ($config->perimeters > 0) || ($config->min_shell_thickness > 0);
     if (any { /$opt_key/ } qw(all_keys perimeters)) {
         $self->get_field($_)->toggle($have_perimeters)
-            for qw(extra_perimeters thin_walls overhangs seam_position external_perimeters_first
+            for qw(extra_perimeters thin_walls overhangs seam_position external_perimeters_first fuzzy_skin
                     external_perimeter_extrusion_width
                     perimeter_speed small_perimeter_speed external_perimeter_speed);
+    }
+    if (any { /$opt_key/ } qw(all_keys perimeters fuzzy_skin)) {
+        $self->get_field($_)->toggle($have_perimeters && $config->fuzzy_skin)
+            for qw(fuzzy_skin_thickness fuzzy_skin_point_dist);
     }
 
     my $have_adaptive_slicing = $config->adaptive_slicing;

@@ -33,7 +33,7 @@ Sources: OrcaSlicer wiki (adaptive pressure advance calibration), Prusa help cen
 |---|---|
 | Ender 5 Pro profiles | Everyone's starting point (phase 3) |
 | ~~Better time estimate in the G-code~~ done 2026-11-27, needs the test print | `; estimated printing time = ...` at the end of the G-code, in the CLI output and the GUI; `machine_acceleration` (printer, Ender profile 500) sets the estimator's acceleration. Compare with the real print time and `M503`; the estimator model itself (`GCodeTimeEstimator`) is simple, refine it if the numbers are off |
-| Fuzzy skin | Simple perimeter jitter |
+| ~~Fuzzy skin~~ done 2026-11-27, needs a test print | `--fuzzy-skin`, `fuzzy_skin_thickness` (0.3 mm), `fuzzy_skin_point_dist` (0.8 mm); outer walls of islands only, not holes or the first layer; per region, so a modifier can limit it to part of a model. Seeded, so the G-code is reproducible |
 | Calibration generators (flow, temperature, retraction) | Faster tuning, matters on a Bowden extruder |
 | ~~Input files and their hashes in the G-code header~~ done 2026-11-26 | Find the model and settings again from a print. Still missing: object positions, rotations and scales set in the GUI |
 

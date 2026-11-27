@@ -8669,6 +8669,9 @@ M84 X Y E ; motors off except Z
 ; fill_density = 20%
 ; fill_gaps = 1
 ; fill_pattern = stars
+; fuzzy_skin = 0
+; fuzzy_skin_point_dist = 0.8
+; fuzzy_skin_thickness = 0.3
 ; gap_fill_speed = 20
 ; infill_every_layers = 1
 ; infill_extruder = 1
