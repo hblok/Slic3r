@@ -12,6 +12,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
+#include <numeric>
 #include <thread>
 #include <sstream>
 
@@ -740,6 +742,55 @@ Print::export_gcode(std::string outfile, bool quiet)
             // directly without launching a shell. #4000
         }
     }
+}
+
+void
+Print::export_svg(std::ostream& f) const
+{
+    // as Perl's former Print::export_svg.
+    // ponytail: Perl also drew lines to anchor unsupported islands when support was
+    // on (an SLA aid); left out, --export-sla-svg has SLA supports
+    std::vector<const Layer*> layers;
+    for (PrintObject* o : this->objects) {
+        o->slice();
+        layers.insert(layers.end(), o->layers.begin(), o->layers.end());
+    }
+    std::stable_sort(layers.begin(), layers.end(),
+        [](const Layer* a, const Layer* b) { return a->print_z < b->print_z; });
+    const BoundingBox bb = this->bounding_box();
+    f << std::setprecision(15);  // Perl printed numbers with 15 significant digits
+    f << "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+      << "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.0//EN\" \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\">\n"
+      << "<svg width=\"" << unscale(bb.size().x) << "\" height=\"" << unscale(bb.size().y)
+      << "\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:slic3r=\"http://slic3r.org/namespaces/slic3r\">\n"
+      << "  <!-- \n  Generated using Slic3r " << SLIC3R_VERSION << "\n  https://slic3r.org/\n   -->\n";
+    auto polygon = [&f](const Polygon &poly, bool contour) {
+        f << "    <polygon slic3r:type=\"" << (contour ? "contour" : "hole") << "\" points=\"";
+        for (size_t i = 0; i < poly.points.size(); ++i)
+            f << (i ? " " : "") << unscale(poly.points[i].x) << "," << unscale(poly.points[i].y);
+        f << "\" style=\"fill: " << (contour ? "white" : "black") << "\" />\n";
+    };
+    for (size_t id = 0; id < layers.size(); ++id) {
+        f << "  <g id=\"layer" << id << "\" slic3r:z=\"" << layers[id]->slice_z << "\">\n";
+        // outermost first, so islands inside holes are painted on top: by nesting depth
+        const ExPolygons &slices = layers[id]->slices.expolygons;
+        std::vector<size_t> depth(slices.size(), 0);
+        for (size_t i = 0; i < slices.size(); ++i)
+            for (size_t j = 0; j < slices.size(); ++j)
+                if (i != j && slices[j].contour.contains(slices[i].contour.first_point())) ++depth[i];
+        std::vector<size_t> order(slices.size());
+        std::iota(order.begin(), order.end(), 0);
+        std::stable_sort(order.begin(), order.end(), [&depth](size_t a, size_t b) { return depth[a] < depth[b]; });
+        for (const Point &copy : layers[id]->object()->_shifted_copies)
+            for (const size_t i : order) {
+                ExPolygon slice = slices[i];
+                slice.translate(copy.x - bb.min.x, copy.y - bb.min.y);
+                polygon(slice.contour, true);
+                for (const Polygon &hole : slice.holes) polygon(hole, false);
+            }
+        f << "  </g>\n";
+    }
+    f << "</svg>\n";
 }
 
 #ifndef SLIC3RXS

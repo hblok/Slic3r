@@ -270,6 +270,9 @@ class Print
     /// Performs a gcode export and then runs post-processing scripts (if any)
     void export_gcode(std::string filename, bool quiet = false);
 
+    /// Slices and writes the solid slices of every layer as one SVG (SLA style).
+    void export_svg(std::ostream& f) const;
+
     /// commands a gcode export to a temporary file and return its name
     std::string export_gcode(bool quiet = false);
     

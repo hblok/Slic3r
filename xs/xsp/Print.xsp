@@ -300,6 +300,13 @@ _constant()
             THIS->export_gcode(ss, true);
             RETVAL = ss.str();
         %};
+    // the C++ SVG export (replaces the Perl Print::export_svg)
+    std::string _export_svg()
+        %code%{
+            std::ostringstream ss;
+            THIS->export_svg(ss);
+            RETVAL = ss.str();
+        %};
 %{
 
 double

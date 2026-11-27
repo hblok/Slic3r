@@ -159,101 +159,21 @@ sub export_gcode {
     }
 }
 
-# Export SVG slices for the offline SLA printing.
+# Export SVG slices for the offline SLA printing (written by the C++ Print::export_svg).
 sub export_svg {
     my $self = shift;
     my %params = @_;
-    
-    $_->slice for @{$self->objects};
     
     my $fh = $params{output_fh};
     if (!$fh) {
         my $output_file = $self->output_filepath($params{output_file} // '');
         $output_file =~ s/\.gcode$/.svg/i;
         Slic3r::open(\$fh, ">", $output_file) or die "Failed to open $output_file for writing\n";
+        binmode $fh;
         print "Exporting to $output_file..." unless $params{quiet};
     }
-    
-    my $print_bb = $self->bounding_box;
-    my $print_size = $print_bb->size;
-    print $fh sprintf <<"EOF", unscale($print_size->[X]), unscale($print_size->[Y]);
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg width="%s" height="%s" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:slic3r="http://slic3r.org/namespaces/slic3r">
-  <!-- 
-  Generated using Slic3r $Slic3r::VERSION
-  https://slic3r.org/
-   -->
-EOF
-    
-    my $print_polygon = sub {
-        my ($polygon, $type) = @_;
-        printf $fh qq{    <polygon slic3r:type="%s" points="%s" style="fill: %s" />\n},
-            $type, (join ' ', map { join ',', map unscale $_, @$_ } @$polygon),
-            ($type eq 'contour' ? 'white' : 'black');
-    };
-    
-    my @layers = sort { $a->print_z <=> $b->print_z }
-        map { @{$_->layers}, @{$_->support_layers} }
-        @{$self->objects};
-    
-    my $layer_id = -1;
-    my @previous_layer_slices = ();
-    for my $layer (@layers) {
-        $layer_id++;
-        if ($layer->slice_z == -1) {
-            printf $fh qq{  <g id="layer%d">\n}, $layer_id;
-        } else {
-            printf $fh qq{  <g id="layer%d" slic3r:z="%s">\n}, $layer_id, $layer->slice_z;  # already in mm
-        }
-        
-        my @current_layer_slices = ();
-        # sort slices so that the outermost ones come first: by nesting depth (the old
-        # comparator, "contains ? 0 : 1", was not an ordering); same in the C++ CLI
-        my @slices = @{$layer->slices};
-        my @depth = map { my $i = $_; scalar grep { $_ != $i
-            && $slices[$_]->contour->contains_point($slices[$i]->contour->first_point) } 0..$#slices } 0..$#slices;
-        @slices = @slices[ sort { $depth[$a] <=> $depth[$b] || $a <=> $b } 0..$#slices ];
-        foreach my $copy (@{$layer->object->_shifted_copies}) {
-            foreach my $slice (@slices) {
-                my $expolygon = $slice->clone;
-                $expolygon->translate(@$copy);
-                $expolygon->translate(-$print_bb->x_min, -$print_bb->y_min);
-                $print_polygon->($expolygon->contour, 'contour');
-                $print_polygon->($_, 'hole') for @{$expolygon->holes};
-                push @current_layer_slices, $expolygon;
-            }
-        }
-        # generate support material
-        if ($self->has_support_material && $layer->id > 0) {
-            my (@supported_slices, @unsupported_slices) = ();
-            foreach my $expolygon (@current_layer_slices) {
-                my $intersection = intersection_ex(
-                    [ map @$_, @previous_layer_slices ],
-                    [ @$expolygon ],
-                );
-                @$intersection
-                    ? push @supported_slices, $expolygon
-                    : push @unsupported_slices, $expolygon;
-            }
-            my @supported_points = map @$_, @$_, @supported_slices;
-            foreach my $expolygon (@unsupported_slices) {
-                # look for the nearest point to this island among all
-                # supported points
-                my $contour = $expolygon->contour;
-                my $support_point = $contour->first_point->nearest_point(\@supported_points)
-                    or next;
-                my $anchor_point = $support_point->nearest_point([ @$contour ]);
-                printf $fh qq{    <line x1="%s" y1="%s" x2="%s" y2="%s" style="stroke-width: 2; stroke: white" />\n},
-                    map @$_, $support_point, $anchor_point;
-            }
-        }
-        print $fh qq{  </g>\n};
-        @previous_layer_slices = @current_layer_slices;
-    }
-    
-    print $fh "</svg>\n";
-    close $fh;
+    print $fh $self->_export_svg;
+    close $fh unless $params{output_fh};
     print "Done.\n" unless $params{quiet};
 }
 
