@@ -10,6 +10,8 @@
 #
 # Usage: utils/gui_smoke.sh OUTDIR   (screenshots, logs and G-code are written there)
 set -eu
+# hang guard: after 290 s the whole run is killed, Xvfb and the program included
+[ "${GUI_TEST_GUARD:-}" = "$0" ] || GUI_TEST_GUARD=$0 exec timeout -v -k 5 290 "$0" "$@"
 cd "$(dirname "$0")/.."
 out=$(realpath -m "$1")
 mkdir -p "$out"

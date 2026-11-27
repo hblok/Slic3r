@@ -22,6 +22,18 @@ before proposing a change of direction.
 support generation (`Print.xsp`); their Perl ports are deleted. Goal: Perl only for the
 GUI, then not at all (plan/README.md, "Perl and the GUI path").
 
+## Tests: two labelled sets
+
+| Set | Command | What | Limit |
+|---|---|---|---|
+| `quick` | `ctest --test-dir build -L quick -j8 --output-on-failure` | unit and functional tests, golden G-code (about 6 s) | 2 min each |
+| `gui` | `ctest --test-dir build-gui -L gui -j2 --output-on-failure` | full C++ GUI under Xvfb | 5 min each |
+
+Build first (below). Run `quick` while working, `gui` after GUI changes. A new test gets
+one of the two labels and a `TIMEOUT` in `src/CMakeLists.txt`. The GUI scripts also kill
+themselves after 290 s, run by hand or in CI. Never wait longer than 5 minutes for a test:
+a run that gets there is stuck.
+
 ## Build and test (C++ core)
 
 Target is Debian 13:
@@ -33,11 +45,10 @@ sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-
 ```sh
 cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
-./build/slic3r_test
-src/test/golden/check.sh build/slic3r
+ctest --test-dir build -L quick -j8 --output-on-failure   # slic3r_test and golden/check.sh
 ```
 
-Run both the tests and the golden check before committing C++ changes. If the golden
+Run the quick set before committing C++ changes. If the golden
 output changes on purpose, run `check.sh build/slic3r --update` and review the diff.
 Expected output is recorded on Debian 13.
 
@@ -57,11 +68,12 @@ Also needs `libwxgtk3.2-dev libgl-dev libglu1-mesa-dev xvfb xdotool imagemagick`
 ```sh
 cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
 cmake --build build-gui -j$(nproc) --target slic3r   # building every target fails
-utils/cpp_gui_smoke.sh build-gui/slic3r build/slic3r /tmp/gui-smoke   # slicing, presets, preview
-utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r /tmp/gui-plate   # plater, menus, dialogs
+ctest --test-dir build-gui -L gui -j2 --output-on-failure
 ```
 
-Run both after GUI changes. They click at fixed positions and count menu entries: a new
+That runs `utils/cpp_gui_smoke.sh` (slicing, presets, preview) and `utils/cpp_gui_plate.sh`
+(plater, menus, dialogs); screenshots end up in `build-gui/gui-smoke` and `gui-plate`.
+Run it after GUI changes. They click at fixed positions and count menu entries: a new
 menu entry or layout change needs the scripts adjusted (see their screenshots).
 
 ## Build and test (Perl application and GUI)

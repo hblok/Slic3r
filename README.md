@@ -86,7 +86,7 @@ called through `slic3r.pl`. Its output equals what the Perl program produced; se
 sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev
 cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
-./build/slic3r_test
+ctest --test-dir build -L quick --output-on-failure   # tests, a few seconds
 ./build/slic3r --help
 ```
 

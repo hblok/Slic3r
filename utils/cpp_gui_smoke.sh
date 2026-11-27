@@ -16,6 +16,8 @@
 # (build/slic3r), Xvfb, xdotool and ImageMagick.
 # Usage: utils/cpp_gui_smoke.sh path/to/gui/slic3r path/to/cli/slic3r OUTDIR
 set -eu
+# hang guard: after 290 s the whole run is killed, Xvfb and the program included
+[ "${GUI_TEST_GUARD:-}" = "$0" ] || GUI_TEST_GUARD=$0 exec timeout -v -k 5 290 "$0" "$@"
 gui_bin=$(realpath "$1")
 cli_bin=$(realpath "$2")
 out=$(realpath -m "$3")

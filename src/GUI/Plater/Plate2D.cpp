@@ -43,8 +43,8 @@ Plate2D::Plate2D(wxWindow* parent, const wxSize& size, std::vector<PlaterObject>
 
 void Plate2D::repaint(wxPaintEvent& e) {
 
-    // Need focus to catch keyboard events.
-    this->SetFocus();
+    // No SetFocus() here: on GTK it activates the whole window, so every redraw took
+    // the focus from other programs (closing their popups). mouse_down() takes it.
 
     // create the device context.
     wxAutoBufferedPaintDC dc(this);

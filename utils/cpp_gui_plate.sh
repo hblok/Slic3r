@@ -9,6 +9,8 @@
 # Needs the GUI and CLI builds, Xvfb, xdotool and ImageMagick.
 # Usage: utils/cpp_gui_plate.sh path/to/gui/slic3r path/to/cli/slic3r OUTDIR
 set -eu
+# hang guard: after 290 s the whole run is killed, Xvfb and the program included
+[ "${GUI_TEST_GUARD:-}" = "$0" ] || GUI_TEST_GUARD=$0 exec timeout -v -k 5 290 "$0" "$@"
 gui_bin=$(realpath "$1")
 cli_bin=$(realpath "$2")
 out=$(realpath -m "$3")
@@ -51,6 +53,9 @@ plater_menu() { menu 66 "$@"; }
 object_menu() { menu 121 "$@"; }
 # answer a file dialog (or a text entry) by typing
 answer() { sleep 1; key ctrl+a; xdotool type "$1"; sleep 0.5; key Return; sleep 2; }
+# A dialog that opens a file also needs the keyboard handed to it (there is no window
+# manager to do it), or its inline completion mangles the typed path.
+answer_open() { sleep 1; xdotool search --onlyvisible --name "^(Choose|Select) " windowfocus --sync; answer "$1"; }
 
 info() { sed -n "s/^$2 = *//p" "$out/$1.info"; }
 near() { # name key value
@@ -159,7 +164,7 @@ ok "mirror and reload from disk"
 select_first
 object_menu 14                                          # Settings: a modifier with a setting
 xdotool mousemove 172 351 click 1; sleep 2              # "Load modifier…"
-answer "$root/src/test/inputs/test_cli/20mmbox.stl"
+answer_open "$root/src/test/inputs/test_cli/20mmbox.stl"
 xdotool mousemove 559 59 click 1; sleep 1               # "Add setting": the second one
 key Down; key Down; key Return; sleep 1
 shot object-settings
@@ -184,9 +189,9 @@ ok "preferences"
 file_menu 3; answer "$out/exported.ini"                 # Export Config
 grep -q '^layer_height = 0.3' "$out/exported.ini" || fail "exported.ini lacks the default layer height"
 sed 's/^layer_height = .*/layer_height = 0.25/' "$out/exported.ini" >"$out/loaded-config.ini"
-file_menu 2; answer "$out/loaded-config.ini"            # Load Config
+file_menu 2; answer_open "$out/loaded-config.ini"            # Load Config
 shot config-loaded
-file_menu 7; answer "$out/part.stl"; sleep 3            # Quick Slice
+file_menu 7; answer_open "$out/part.stl"; sleep 3            # Quick Slice
 [ -s "$out/part.gcode" ] || fail "quick slice wrote nothing"
 "$cli_bin" -g --load "$out/loaded-config.ini" "$out/part.stl" -o "$out/part.cli.gcode" >"$out/cli.log" 2>&1
 for f in part part.cli; do
@@ -195,11 +200,11 @@ done
 cmp -s "$out/part.cmp" "$out/part.cli.cmp" || fail "quick slice differs from the CLI (diff $out/part.cmp $out/part.cli.cmp)"
 ok "export and load a configuration, quick slice equals the CLI"
 
-file_menu 10; answer "$out/part.stl"; answer "$out/part.svg"; sleep 2   # Slice to SVG: input, output
+file_menu 10; answer_open "$out/part.stl"; answer "$out/part.svg"; sleep 2            # Slice to SVG: input, output
 grep -q '<svg' "$out/part.svg" || fail "no SVG"
-file_menu 11; answer "$out/part.stl"; answer "$out/repaired.obj"; key Return   # Repair STL
+file_menu 11; answer_open "$out/part.stl"; answer "$out/repaired.obj"; key Return   # Repair STL
 grep -q '^v ' "$out/repaired.obj" || fail "no repaired OBJ"
-file_menu 6; answer "$out/part.gcode"; sleep 2          # Import Config from G-code
+file_menu 6; answer_open "$out/part.gcode"; sleep 2            # Import Config from G-code
 grep -q '^layer_height = 0.25' "$out/part.ini" || fail "import from G-code: layer height missing"
 ok "SVG, repair, configuration from G-code"
 
