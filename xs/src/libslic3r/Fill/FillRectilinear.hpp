@@ -37,6 +37,25 @@ protected:
     virtual float _layer_angle(size_t idx) const { return 0.f; };
 };
 
+/// Straight lines like rectilinear, laid strictly in order across the surface: a line is
+/// printed only after every line of the previous column next to it, so each new line
+/// always meets an already printed neighbour on the same side (even top surfaces).
+/// The idea is PrusaSlicer's monotonic infill; this is a separate, simpler implementation.
+class FillMonotonic : public FillRectilinear
+{
+public:
+    virtual Fill* clone() const { return new FillMonotonic(*this); };
+    virtual ~FillMonotonic() {}
+    virtual bool no_sort() const { return true; };  // the order is the point
+
+protected:
+    virtual void _fill_surface_single(
+        unsigned int                     thickness_layers,
+        const direction_t               &direction,
+        ExPolygon                       &expolygon,
+        Polylines*                      polylines_out);
+};
+
 class FillGrid : public FillRectilinear
 {
 public:

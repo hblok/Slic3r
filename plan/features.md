@@ -41,7 +41,7 @@ Sources: OrcaSlicer wiki (adaptive pressure advance calibration), Prusa help cen
 
 | Feature | Why |
 |---|---|
-| Monotonic top infill | Clearly better top surfaces |
+| ~~Monotonic top infill~~ done 2026-11-27, needs a test print | `--top-infill-pattern monotonic` (also bottom): a line is printed only after the lines of the previous column next to it; neighbours are linked when the link stays inside. Follow-up: fewer travel moves on shapes with many holes (it does not plan regions like PrusaSlicer) |
 | Ironing | Smooth top surfaces; check upstream `merill_ironing` first |
 | Seam placement control, scarf seam | Visible quality |
 | Adaptive cubic and lightning infill | Less filament and time |

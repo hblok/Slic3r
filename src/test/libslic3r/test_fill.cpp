@@ -4,6 +4,11 @@
 #include "Print.hpp"
 #include "Geometry.hpp"
 #include "Flow.hpp"
+#include <algorithm>
+#include <array>
+#include <memory>
+#include <set>
+#include <cmath>
 
 using namespace Slic3r;
 using namespace Slic3r::Geometry;
@@ -444,4 +449,59 @@ bool test_if_solid_surface_filled(const ExPolygon& expolygon, double flow_spacin
 
     return uncovered.size() == 0; // solid surface is fully filled
 
+}
+
+TEST_CASE("Fill: monotonic") {
+    // 20 mm square with an 8 mm hole in the middle, solid fill with vertical lines
+    ExPolygon square;
+    square.contour = Polygon::new_scale({Pointf(0,0), Pointf(20,0), Pointf(20,20), Pointf(0,20)});
+    Polygon hole = Polygon::new_scale({Pointf(6,6), Pointf(6,14), Pointf(14,14), Pointf(14,6)});  // clockwise
+    square.holes.push_back(hole);
+    auto lines_of = [&square] (const char* pattern) {
+        std::unique_ptr<Slic3r::Fill> filler {Slic3r::Fill::new_from_type(pattern)};
+        filler->angle = PI / 2.0;  // vertical lines in the rotated frame: x is the column
+        filler->min_spacing = 0.5;
+        filler->density = 1;
+        const Polylines polylines = filler->fill_surface(Slic3r::Surface(stTop, square));
+        // the straight lines in printing order: (column x, y from, y to)
+        std::vector<std::array<coord_t,3>> lines;
+        for (const Polyline &p : polylines)
+            for (size_t i = 1; i < p.points.size(); ++i)
+                if (std::abs(p.points[i].x - p.points[i-1].x) < 10 && std::abs(p.points[i].y - p.points[i-1].y) > scale_(1))
+                    lines.push_back({p.points[i].x, std::min(p.points[i].y, p.points[i-1].y), std::max(p.points[i].y, p.points[i-1].y)});
+        return lines;
+    };
+    // lines of the column just before a line, overlapping it, printed after it
+    // columns: x rounded to 0.01 mm (rotating back leaves a unit or two of noise)
+    auto column = [] (coord_t x) { return coord_t(std::lround(x / double(scale_(0.01)))); };
+    // lines of the column just before a line, overlapping it, printed after it
+    auto violations = [&column] (const std::vector<std::array<coord_t,3>> &lines, int sign) {
+        std::set<coord_t> xs;
+        for (const auto &l : lines) xs.insert(column(l[0]));
+        std::vector<coord_t> col(xs.begin(), xs.end());
+        auto index = [&] (coord_t x) { return std::lower_bound(col.begin(), col.end(), column(x)) - col.begin(); };
+        size_t v = 0;
+        for (size_t k = 0; k < lines.size(); ++k)
+            for (size_t j = k + 1; j < lines.size(); ++j)
+                if (index(lines[j][0]) == index(lines[k][0]) - sign && lines[j][1] < lines[k][2] && lines[k][1] < lines[j][2]) ++v;
+        return v;
+    };
+    const auto mono = lines_of("monotonic");
+    const auto rect = lines_of("rectilinear");
+    SECTION("the columns are evenly spaced from edge to edge") {
+        std::set<coord_t> xs;
+        for (const auto &l : mono) xs.insert(column(l[0]));
+        std::vector<coord_t> col(xs.begin(), xs.end());
+        REQUIRE(col.size() > 30);
+        for (size_t i = 2; i < col.size(); ++i)
+            REQUIRE(std::abs((col[i] - col[i-1]) - (col[1] - col[0])) <= 1);
+        REQUIRE(col.front() * scale_(0.01) < scale_(0.5));
+        REQUIRE(col.back() * scale_(0.01) > scale_(19.5));
+    }
+    SECTION("every line follows its neighbours in the previous column") {
+        REQUIRE(std::min(violations(mono, 1), violations(mono, -1)) == 0);
+    }
+    SECTION("rectilinear is not monotonic here (it goes around the hole)") {
+        REQUIRE(std::min(violations(rect, 1), violations(rect, -1)) > 0);
+    }
 }

@@ -14,11 +14,13 @@ PrintConfigDef::PrintConfigDef()
     external_fill_pattern.type = coEnum;
     external_fill_pattern.enum_keys_map = ConfigOptionEnum<InfillPattern>::get_enum_values();
     external_fill_pattern.enum_values.push_back("rectilinear");
+    external_fill_pattern.enum_values.push_back("monotonic");
     external_fill_pattern.enum_values.push_back("concentric");
     external_fill_pattern.enum_values.push_back("hilbertcurve");
     external_fill_pattern.enum_values.push_back("archimedeanchords");
     external_fill_pattern.enum_values.push_back("octagramspiral");
     external_fill_pattern.enum_labels.push_back(__TRANS("Rectilinear"));
+    external_fill_pattern.enum_labels.push_back(__TRANS("Monotonic"));
     external_fill_pattern.enum_labels.push_back(__TRANS("Concentric"));
     external_fill_pattern.enum_labels.push_back(__TRANS("Hilbert Curve"));
     external_fill_pattern.enum_labels.push_back(__TRANS("Archimedean Chords"));

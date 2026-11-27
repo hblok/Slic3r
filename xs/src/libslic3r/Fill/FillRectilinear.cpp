@@ -457,6 +457,100 @@ void FillRectilinear::_fill_surface_single(
     this->_fill_single_direction(expolygon, direction, 0, out);
 }
 
+static Polyline
+segment(const Point &a, const Point &b)
+{
+    Polyline p;
+    p.points.push_back(a);
+    p.points.push_back(b);
+    return p;
+}
+
+void FillMonotonic::_fill_surface_single(
+    unsigned int                    thickness_layers,
+    const direction_t               &direction,
+    ExPolygon                       &expolygon,
+    Polylines*                      out)
+{
+    // vertical lines in a rotated frame, as rectilinear
+    expolygon.rotate(-direction.first);
+    const coord_t min_spacing = scale_(this->min_spacing);
+    coord_t line_spacing = coord_t(double(min_spacing) / this->density);
+    BoundingBox bb = expolygon.contour.bounding_box();
+    if (bb.size().x < min_spacing) return;
+    bb.min.x += SCALED_EPSILON;
+    bb.max.x -= SCALED_EPSILON;
+    if (this->density > 0.9999f && !this->dont_adjust) {
+        line_spacing = Flow::solid_spacing(bb.size().x, line_spacing);
+        this->_spacing = unscale(line_spacing);
+    }
+    
+    // cut the scan lines with the surface; one column per scan line
+    Polylines lines;
+    for (coord_t x = bb.min.x; x <= bb.max.x; x += line_spacing)
+        lines.push_back(segment(Point(x, bb.min.y - 1), Point(x, bb.max.y + 1)));
+    struct Piece { coord_t x, y0, y1; size_t column; bool done; };
+    std::vector<Piece> pieces;
+    for (const Polyline &p : intersection_pl(lines, (Polygons)expolygon)) {
+        if (p.points.size() < 2) continue;
+        const coord_t y0 = std::min(p.first_point().y, p.last_point().y);
+        const coord_t y1 = std::max(p.first_point().y, p.last_point().y);
+        pieces.push_back(Piece{ p.first_point().x, y0, y1, 0, false });
+    }
+    if (pieces.empty()) return;
+    std::sort(pieces.begin(), pieces.end(), [](const Piece &a, const Piece &b) {
+        return a.x < b.x || (a.x == b.x && a.y0 < b.y0); });
+    for (size_t i = 1; i < pieces.size(); ++i)
+        pieces[i].column = pieces[i-1].column + (pieces[i].x != pieces[i-1].x);
+    
+    // a piece may be printed once all pieces of the previous column overlapping it are
+    auto overlaps = [](const Piece &a, const Piece &b) { return a.y0 <= b.y1 && b.y0 <= a.y1; };
+    auto ready = [&](size_t i) {
+        for (const Piece &q : pieces)
+            if (q.column + 1 == pieces[i].column && !q.done && overlaps(q, pieces[i])) return false;
+        return true;
+    };
+    
+    const size_t n_out = out->size();
+    Point last;          // end of the last printed piece
+    bool have_last = false;
+    size_t last_piece = 0;
+    for (size_t printed = 0; printed < pieces.size(); ++printed) {
+        // continue into the next column next to the last piece if possible
+        size_t next = pieces.size();
+        if (have_last) {
+            const Piece &lp = pieces[last_piece];
+            for (size_t i = 0; i < pieces.size(); ++i)
+                if (!pieces[i].done && pieces[i].column == lp.column + 1 && overlaps(pieces[i], lp) && ready(i)) {
+                    next = i;
+                    break;
+                }
+        }
+        const bool continuing = next < pieces.size();
+        if (!continuing)
+            for (size_t i = 0; i < pieces.size(); ++i)
+                if (!pieces[i].done && ready(i)) { next = i; break; }
+        Piece &p = pieces[next];
+        p.done = true;
+        // start at the end nearer to where we are
+        Point a(p.x, p.y0), b(p.x, p.y1);
+        if (have_last && a.distance_to(last) > b.distance_to(last)) std::swap(a, b);
+        // join to the previous line when the link stays inside the surface
+        if (continuing && expolygon.contains(Line(last, a)) && last.distance_to(a) < 3 * line_spacing) {
+            out->back().points.push_back(a);
+            out->back().points.push_back(b);
+        } else {
+            out->push_back(segment(a, b));
+        }
+        last = b;
+        have_last = true;
+        last_piece = next;
+    }
+    
+    for (auto it = out->begin() + n_out; it != out->end(); ++it)
+        it->rotate(direction.first);
+}
+
 void FillGrid::_fill_surface_single(
     unsigned int                    thickness_layers,
     const direction_t               &direction,

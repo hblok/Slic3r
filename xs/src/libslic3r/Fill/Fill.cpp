@@ -28,6 +28,7 @@ Fill::new_from_type(const InfillPattern type)
         
         case ipRectilinear:         return new FillRectilinear();
         case ipAlignedRectilinear:  return new FillAlignedRectilinear();
+        case ipMonotonic:           return new FillMonotonic();
         case ipGrid:                return new FillGrid();
         
         case ipTriangles:           return new FillTriangles();
