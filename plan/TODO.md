@@ -14,7 +14,7 @@ Missing, compared with the Perl GUI:
 - [ ] "Create modifier" (box, cylinder, slab) and moving parts in Object > Settings;
       layer height ranges
 - [ ] Preset editors: hand-made page layouts, several extruders (extruder count),
-      compatible printers, bed shape dialog, unsaved-changes prompts
+      compatible printers, bed shape dialog
 - [ ] Wizard on first start; remember loaded config files; reload options (keep
       transformations, added parts)
 - [ ] Preview: colour by extruder, greyed overlapping layers, camera shared with the 3D
