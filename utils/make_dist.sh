@@ -4,7 +4,7 @@
 # Debian 13 (listed in the README written below).
 #
 # Usage: utils/make_dist.sh [output dir]   (default: build/dist-gui, ignored by git)
-# Needs the build packages from README.md plus libwxgtk3.2-dev libgl-dev libglu1-mesa-dev.
+# Needs Bazel (Bazelisk), g++, libwxgtk3.2-dev, libgl-dev and libglu1-mesa-dev.
 # Files from an earlier run are overwritten; nothing is removed.
 set -eu
 root=$(cd "$(dirname "$0")/.." && pwd)
@@ -16,14 +16,16 @@ if [ -e "$out" ] && [ ! -e "$out/bin/slic3r" ]; then
     exit 1
 fi
 
-cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON >/dev/null
-cmake --build build-gui -j"$(nproc)" --target slic3r
+# the commit goes into the program (G-code header, About box); only Slic3r's own files
+# are compiled again when it changes
+commit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)
+bazel build "--per_file_copt=^src/.*@-DSLIC3R_BUILD_COMMIT=$commit" //src:slic3r
 
 mkdir -p "$out/bin"
-cp build-gui/slic3r "$out/bin/slic3r"
+install -m 755 build/bazel/bin/src/slic3r "$out/bin/slic3r"
 strip --strip-unneeded "$out/bin/slic3r"
 # the program looks for its icons in ../var, seen from the directory it is in
-cp -r var profiles LICENSE "$out/"
+tar -c --exclude=BUILD.bazel var profiles LICENSE | tar -x -C "$out"
 
 cat >"$out/slic3r" <<'EOT'
 #!/bin/sh
@@ -35,7 +37,7 @@ chmod +x "$out/slic3r"
 cat >"$out/README.md" <<EOF2
 # Slic3r (hblok fork), run directory
 
-Built $(date -u +%Y-%m-%d) from commit $(git rev-parse --short HEAD 2>/dev/null || echo unknown).
+Built $(date -u +%Y-%m-%d) from commit $commit.
 
     ./slic3r                      # GUI
     ./slic3r model.stl            # GUI with a model on the plate
