@@ -44,4 +44,4 @@ Differences from the Perl GUI, to fix if they matter:
 
 - [x] An empty Google Test builds, runs and passes (`bazel test //...`, 2026-11-28)
 - [ ] Go through the [steps](bazel.md#steps), one target and its test at a time; next:
-      `log` (a Bazel job in CI and the `.deb` come later)
+      `conditional_gcode` (a Bazel job in CI and the `.deb` come later)

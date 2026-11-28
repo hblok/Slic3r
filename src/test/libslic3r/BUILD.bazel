@@ -12,3 +12,13 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "log_test",
+    size = "small",
+    srcs = ["log_test.cpp"],
+    deps = [
+        "//src/libslic3r:log",
+        "@googletest//:gtest_main",
+    ],
+)

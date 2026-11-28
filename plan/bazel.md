@@ -38,8 +38,8 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 |---|---|---|---|---|
 | 1 | none | Google Test | `minimal_test`: asserts true | done |
 | 2 | `exception` (header) | nothing | `exception_test` (new) | done |
-| 3 | `log` | Boost.Locale, Boost.Algorithm | the cases of `test_log.cpp` | the first Boost target |
-| 4 | `conditional_gcode` | `exprtk` | new, small | |
+| 3 | `log` | Boost.Locale, Boost.Algorithm | `log_test`: ported from `test_log.cpp` (its 80 checks less 3 repeats) | done |
+| 4 | `conditional_gcode` | `exprtk` | new, small | next |
 | 5 | `bspline`, `libslic3r` (common header), `layer_height_spline` | Boost.Thread | new, small | |
 | 6 | `utils` | `log` | new, small | |
 | 7 | `gcode_sender` | Boost.Asio | new, with a pseudo terminal | |

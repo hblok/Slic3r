@@ -8,3 +8,14 @@ cc_library(
     hdrs = ["Exception.hpp"],
     includes = ["."],
 )
+
+cc_library(
+    name = "log",
+    srcs = ["Log.cpp"],
+    hdrs = ["Log.hpp"],
+    includes = ["."],
+    deps = [
+        "@boost.algorithm",
+        "@boost.locale",
+    ],
+)
