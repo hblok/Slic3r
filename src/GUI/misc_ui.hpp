@@ -117,14 +117,15 @@ void set_menu_item_icon(wxMenuItem* item, const wxString& icon);
 /// to permit translation.
 template <typename T>
 wxMenuItem* append_menu_item(wxMenu* menu, const wxString& name,const wxString& help, T lambda, int id = wxID_ANY, const wxString& icon = "", const wxString& accel = "", const wxItemKind kind = wxITEM_NORMAL) {
-    wxMenuItem* tmp = menu->Append(wxID_ANY, name, help, kind);
+    wxMenuItem* tmp = new wxMenuItem(menu, wxID_ANY, name, help, kind);
+    set_menu_item_icon(tmp, icon);  // GTK takes it only before the item is in the menu
+    menu->Append(tmp);
     wxAcceleratorEntry* a = new wxAcceleratorEntry();
     if (!accel.IsEmpty()) {
         a->FromString(accel);
         tmp->SetAccel(a); // set the accelerator if and only if the accelerator is fine
     }
     tmp->SetHelp(help);
-    set_menu_item_icon(tmp, icon);
 
     if (typeid(lambda) != typeid(nullptr))
         menu->Bind(wxEVT_MENU, lambda, tmp->GetId(), tmp->GetId());
