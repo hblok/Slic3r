@@ -25,7 +25,6 @@ Scene3D::Scene3D(wxWindow* parent, const wxSize& size) :
         Refresh();
     });
 
-
     // Bind the varying mouse events
     this->Bind(wxEVT_MOTION, [this](wxMouseEvent &e) { this->mouse_move(e); });
     this->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent &e) { this->mouse_up(e); });
@@ -83,16 +82,7 @@ void Scene3D::mouse_move(wxMouseEvent &e){
                 phi += (pos.x - drag_start.x) * TRACKBALLSIZE;
                 theta -= (pos.y - drag_start.y) * TRACKBALLSIZE;
                 theta = clamp(0, theta, GIMBAL_LOCK_THETA_MAX);
-                /*} else {
-                    my $size = $self->GetClientSize;
-                    my @quat = trackball(
-                        $orig->x / ($size->width / 2) - 1,
-                        1 - $orig->y / ($size->height / 2),       #/
-                        $pos->x / ($size->width / 2) - 1,
-                        1 - $pos->y / ($size->height / 2),        #/
-                    );
-                    $self->_quat(mulquats($self->_quat, \@quat));
-                }*/
+
             } else if (e.MiddleIsDown() || e.RightIsDown()) {
                 // if dragging over blank area with right button, translate
                 // get point in model space at Z = 0
@@ -124,24 +114,6 @@ void Scene3D::mouse_wheel(wxMouseEvent &e){
         _zoom /= 10;
         zoom /= 1-_zoom;
         user_view = true;
-        /* 
-        # In order to zoom around the mouse point we need to translate
-        # the camera target
-        my $size = Slic3r::Pointf->new($self->GetSizeWH);
-        my $pos = Slic3r::Pointf->new($e->GetX, $size->y - $e->GetY); #-
-        $self->_camera_target->translate(
-            # ($pos - $size/2) represents the vector from the viewport center
-            # to the mouse point. By multiplying it by $zoom we get the new,
-            # transformed, length of such vector.
-            # Since we want that point to stay fixed, we move our camera target
-            # in the opposite direction by the delta of the length of such vector
-            # ($zoom - 1). We then scale everything by 1/$self->_zoom since 
-            # $self->_camera_target is expressed in terms of model units.
-            -($pos->x - $size->x/2) * ($zoom) / $self->_zoom,
-            -($pos->y - $size->y/2) * ($zoom) / $self->_zoom,
-            0,
-        ) if 0;
-        */
 
         dirty = true;
         Refresh();
@@ -215,7 +187,7 @@ void Scene3D::resize(){
     glViewport(0,0,s.GetWidth(),s.GetHeight());
     const auto x = s.GetWidth()/zoom,
                y = s.GetHeight()/zoom,
-               depth = 1000.0f; // my $depth = 10 * max(@{ $self->max_bounding_box->size });
+               depth = 1000.0f;
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(
@@ -282,7 +254,6 @@ void Scene3D::set_bed_shape(Points _bed_shape){
         }
     }
     
-    //$self->origin(Slic3r::Pointf->new(0,0));
 }
 
 void Scene3D::init_gl(){
@@ -301,7 +272,6 @@ void Scene3D::init_gl(){
     // Set antialiasing/multisampling
     glDisable(GL_LINE_SMOOTH);
     glDisable(GL_POLYGON_SMOOTH);
-    //glEnable(GL_MULTISAMPLE) if ($self->{can_multisample});
     
     // ambient lighting
     GLfloat ambient[] = {0.1f, 0.1f, 0.1f, 1.0f};
@@ -329,7 +299,6 @@ void Scene3D::init_gl(){
     // A handy trick -- have surface material mirror the color.
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
     glEnable(GL_COLOR_MATERIAL);
-    //glEnable(GL_MULTISAMPLE) if ($self->{can_multisample});
 }
 
 void Scene3D::draw_background(){
@@ -368,14 +337,7 @@ void Scene3D::draw_ground(){
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     glEnableClientState(GL_VERTEX_ARRAY);
-    /*my $triangle_vertex;
-    if (HAS_VBO) {
-        ($triangle_vertex) =
-            glGenBuffersARB_p(1);
-        $self->bed_triangles->bind($triangle_vertex);
-        glBufferDataARB_p(GL_ARRAY_BUFFER_ARB, $self->bed_triangles, GL_STATIC_DRAW_ARB);
-        glVertexPointer_c(3, GL_FLOAT, 0, 0);
-    } else {*/
+
     // fall back on old behavior
     glVertexPointer(3, GL_FLOAT, 0, bed_verts.data());
     const auto ground = ui_settings->color->GROUND_COLOR(), grid = ui_settings->color->GRID_COLOR();
@@ -390,14 +352,7 @@ void Scene3D::draw_ground(){
 
     // draw grid
     glLineWidth(2);
-    /*my $grid_vertex;
-    if (HAS_VBO) {
-        ($grid_vertex) =
-            glGenBuffersARB_p(1);
-        $self->bed_grid_lines->bind($grid_vertex);
-        glBufferDataARB_p(GL_ARRAY_BUFFER_ARB, $self->bed_grid_lines, GL_STATIC_DRAW_ARB);
-        glVertexPointer_c(3, GL_FLOAT, 0, 0);
-    } else {*/
+
     // fall back on old behavior
     glVertexPointer(3, GL_FLOAT, 0, grid_verts.data());
     
@@ -407,49 +362,11 @@ void Scene3D::draw_ground(){
     glDisableClientState(GL_VERTEX_ARRAY);
     
     glDisable(GL_BLEND);
-    /*if (HAS_VBO) { 
-        # Turn off buffer objects to let the rest of the draw code work.
-        glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-        glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
-        glDeleteBuffersARB_p($grid_vertex);
-        glDeleteBuffersARB_p($triangle_vertex);
-    }*/
+
 }
 
 void Scene3D::draw_axes (Pointf3 center, float length, int width, bool always_visible){
-    /*
-    my $volumes_bb = $self->volumes_bounding_box;
-    
-    {
-        # draw axes
-        # disable depth testing so that axes are not covered by ground
-        glDisable(GL_DEPTH_TEST);
-        my $origin = $self->origin;
-        my $axis_len = max(
-            max(@{ $self->bed_bounding_box->size }),
-            1.2 * max(@{ $volumes_bb->size }),
-        );
-        glLineWidth(2);
-        glBegin(GL_LINES);
-        # draw line for x axis
-        glColor3f(1, 0, 0);
-        glVertex3f(@$origin, $ground_z);
-        glVertex3f($origin->x + $axis_len, $origin->y, $ground_z);  #,,
-        # draw line for y axis
-        glColor3f(0, 1, 0);
-        glVertex3f(@$origin, $ground_z);
-        glVertex3f($origin->x, $origin->y + $axis_len, $ground_z);  #++
-        glEnd();
-        # draw line for Z axis
-        # (re-enable depth test so that axis is correctly shown when objects are behind it)
-        glEnable(GL_DEPTH_TEST);
-        glBegin(GL_LINES);
-        glColor3f(0, 0, 1);
-        glVertex3f(@$origin, $ground_z);
-        glVertex3f(@$origin, $ground_z+$axis_len);
-        glEnd();
-    }
-   */ 
+
     if (always_visible) {
         glDisable(GL_DEPTH_TEST);
     } else {
@@ -512,10 +429,7 @@ void Scene3D::repaint(wxPaintEvent& e) {
     
     glRotatef(-theta, 1, 0, 0); // pitch
     glRotatef(phi, 0, 0, 1);   // yaw
-    /*} else {
-        my @rotmat = quat_to_rotmatrix($self->quat);
-        glMultMatrixd_p(@rotmat[0..15]);
-    }*/
+
     glTranslatef(-_camera_target.x, -_camera_target.y, -_camera_target.z);
      
     // light from above
@@ -528,11 +442,7 @@ void Scene3D::repaint(wxPaintEvent& e) {
 
     draw_background();
     draw_ground();
-        /*my $origin = $self->origin;
-        my $axis_len = max(
-            max(@{ $self->bed_bounding_box->size }),
-            1.2 * max(@{ $volumes_bb->size }),
-        );*/
+
     draw_axes(Pointf3(0.0f,0.0f,0.0f),
     unscale(bed_bound.radius()),2,true/*origin,calulcated length,2, true*/);
     
@@ -542,7 +452,8 @@ void Scene3D::repaint(wxPaintEvent& e) {
     
     after_render();
     
-    if (dragging/*defined $self->_drag_start_pos || defined $self->_drag_start_xy*/) {
+    if (dragging
+) {
         draw_axes(_camera_target, 10.0f, 1, true/*camera,10,1,true*/);
         draw_axes(_camera_target, 10.0f, 4, false/*camera,10,4,false*/);
     }

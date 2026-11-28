@@ -10,7 +10,6 @@
 #include <iostream>
 #include <string>
 
-
 #include "MainFrame.hpp"
 #include "GUI.hpp"
 #include "misc_ui.hpp"
@@ -47,7 +46,6 @@ bool App::OnInit()
     const wxString& printer_ini = this->preset_ini[static_cast<int>(preset_t::Printer)];
     const wxString& material_ini = this->preset_ini[static_cast<int>(preset_t::Material)];
 
-
     // the first start: no data directory or no slic3r.ini yet
     const bool first_start {!wxDirExists(datadir) || !wxFileExists(slic3r_ini)};
     
@@ -72,7 +70,6 @@ bool App::OnInit()
 
     // Load presets
     this->load_presets();
-
 
     wxImage::AddHandler(new wxPNGHandler());
     MainFrame *frame = new MainFrame( "Slic3r", wxDefaultPosition, wxDefaultSize);
@@ -106,14 +103,6 @@ bool App::OnInit()
                 if (func != nullptr) func();
             } catch (std::exception& e) { Slic3r::Log::error(LogChannel, LOG_WSTRING("Exception thrown: " <<  e.what())); }
         });
-    /*
-    EVT_IDLE($frame, sub {
-        while (my $cb = shift @cb) {
-            $cb->();
-        }
-    });
-    */
-
 
     return true;
 }

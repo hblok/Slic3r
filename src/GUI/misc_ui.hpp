@@ -19,11 +19,9 @@
 #include "Log.hpp"
 #include "Point.hpp"
 
-
 /// Macro to build std::wstring that slic3r::log expects using << syntax of wxString
 /// Avoids wx pollution of libslic3r
 #define LOG_WSTRING(...) ((wxString("") << __VA_ARGS__).ToStdWstring())
-
 
 /// Common static (that is, free-standing) functions, not part of an object hierarchy.
 
@@ -54,7 +52,6 @@ constexpr bool isDev = false;
 
 constexpr bool threaded = false;
 
-
 // hopefully the compiler is smart enough to figure this out
 const std::map<const std::string, const std::string> FILE_WILDCARDS { 
       std::make_pair("known", "Known files (*.stl, *.obj, *.amf, *.xml, *.3mf)|*.3mf;*.3MF;*.stl;*.STL;*.obj;*.OBJ;*.amf;*.AMF;*.xml;*.XML"),
@@ -71,7 +68,6 @@ const std::string MODEL_WILDCARD { FILE_WILDCARDS.at("known") + std::string("|")
 const std::string STL_MODEL_WILDCARD { FILE_WILDCARDS.at("stl") };
 const std::string AMF_MODEL_WILDCARD { FILE_WILDCARDS.at("amf") };
 const std::string TMF_MODEL_WILDCARD { FILE_WILDCARDS.at("tmf") };
-
 
 /// Mostly useful for Linux distro maintainers, this will change where Slic3r assumes 
 /// its ./var directory lives (where its art assets are). 
@@ -138,13 +134,6 @@ wxMenuItem* append_menu_item(wxMenu* menu, const wxString& name,const wxString& 
 
 /// Construct and return a submenu to the menu, optionally with an icon. 
 wxMenuItem* append_submenu(wxMenu* menu, const wxString& name, const wxString& help, wxMenu* submenu, int id = wxID_ANY, const wxString& icon = "");
-
-/*
-sub CallAfter {
-    my ($self, $cb) = @_;
-    push @cb, $cb;
-}
-*/
 
 /// The serial ports a printer may be on.
 std::vector<wxString> scan_serial_ports();

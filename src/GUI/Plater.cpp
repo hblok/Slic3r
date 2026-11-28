@@ -9,7 +9,6 @@
 #include <wx/window.h> 
 #include <wx/numdlg.h> 
 
-
 #include "Plater.hpp"
 #include "OptionsGroup/OverridePanel.hpp"
 #include "OptionsGroup/OptionControl.hpp"
@@ -26,7 +25,6 @@
 #include <wx/filedlg.h>
 #include <wx/dnd.h>
 #include <wx/filename.h>
-
 
 namespace Slic3r { namespace GUI {
 
@@ -87,21 +85,6 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
         }};
     auto on_instances_moved {[this]() { this->on_model_change(); }};
 
-    /* 
-    # Initialize 3D plater
-    if ($Slic3r::GUI::have_OpenGL) {
-        $self->{canvas3D} = Slic3r::GUI::Plater::3D->new($self->{preview_notebook}, $self->{objects}, $self->{model}, $self->{config});
-        $self->{preview_notebook}->AddPage($self->{canvas3D}, '3D');
-        $self->{canvas3D}->set_on_select_object($on_select_object);
-        $self->{canvas3D}->set_on_double_click($on_double_click);
-        $self->{canvas3D}->set_on_right_click(sub { $on_right_click->($self->{canvas3D}, @_); });
-        $self->{canvas3D}->set_on_instances_moved($on_instances_moved);
-        $self->{canvas3D}->on_viewport_changed(sub {
-            $self->{preview3D}->canvas->set_viewport_from_scene($self->{canvas3D});
-        });
-    }
-    */
-
     // initialize 2D Preview Canvas
     canvas2D = new Plate2D(preview_notebook, wxDefaultSize, objects, model, config);
     preview_notebook->AddPage(canvas2D, _("2D"));
@@ -112,7 +95,6 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
     canvas2D->on_double_click = std::function<void ()>(on_double_click);
     canvas2D->on_right_click = std::function<void (const wxPoint& pos)>([=](const wxPoint& pos){ on_right_click(canvas2D, pos); });
     canvas2D->on_instances_moved = std::function<void ()>(on_instances_moved);
-
 
     canvas3D = new Plate3D(preview_notebook, wxDefaultSize, objects, model, config);
     preview_notebook->AddPage(canvas3D, _("3D"));
@@ -138,53 +120,6 @@ Plater::Plater(wxWindow* parent, const wxString& title) :
         e.Skip();
     });
 
-    /*
-    # Initialize 2D preview canvas
-    $self->{canvas} = Slic3r::GUI::Plater::2D->new($self->{preview_notebook}, wxDefaultSize, $self->{objects}, $self->{model}, $self->{config});
-    $self->{preview_notebook}->AddPage($self->{canvas}, '2D');
-    $self->{canvas}->on_select_object($on_select_object);
-    $self->{canvas}->on_double_click($on_double_click);
-    $self->{canvas}->on_right_click(sub { $on_right_click->($self->{canvas}, @_); });
-    $self->{canvas}->on_instances_moved($on_instances_moved);
-    # Initialize 3D toolpaths preview
-    $self->{preview3D_page_idx} = -1;
-    if ($Slic3r::GUI::have_OpenGL) {
-        $self->{preview3D} = Slic3r::GUI::Plater::3DPreview->new($self->{preview_notebook}, $self->{print});
-        $self->{preview3D}->canvas->on_viewport_changed(sub {
-            $self->{canvas3D}->set_viewport_from_scene($self->{preview3D}->canvas);
-        });
-        $self->{preview_notebook}->AddPage($self->{preview3D}, 'Preview');
-        $self->{preview3D_page_idx} = $self->{preview_notebook}->GetPageCount-1;
-    }
-    
-    # Initialize toolpaths preview
-    $self->{toolpaths2D_page_idx} = -1;
-    if ($Slic3r::GUI::have_OpenGL) {
-        $self->{toolpaths2D} = Slic3r::GUI::Plater::2DToolpaths->new($self->{preview_notebook}, $self->{print});
-        $self->{preview_notebook}->AddPage($self->{toolpaths2D}, 'Layers');
-        $self->{toolpaths2D_page_idx} = $self->{preview_notebook}->GetPageCount-1;
-    }
-    
-    EVT_NOTEBOOK_PAGE_CHANGED($self, $self->{preview_notebook}, sub {
-        wxTheApp->CallAfter(sub {
-            my $sel = $self->{preview_notebook}->GetSelection;
-            if ($sel == $self->{preview3D_page_idx} || $sel == $self->{toolpaths2D_page_idx}) {
-                if (!$Slic3r::GUI::Settings->{_}{background_processing} && !$self->{processed}) {
-                    $self->statusbar->SetCancelCallback(sub {
-                        $self->stop_background_process;
-                        $self->statusbar->SetStatusText("Slicing cancelled");
-                        $self->{preview_notebook}->SetSelection(0);
-
-                    });
-                    $self->start_background_process;
-                } else {
-                    $self->{preview3D}->load_print
-                        if $sel == $self->{preview3D_page_idx};
-                }
-            }
-        });
-    });
-    */
     wxStaticBoxSizer* object_info_sizer {nullptr};
     {
         auto* box {new wxStaticBox(this, wxID_ANY, _("Info"))};
@@ -856,8 +791,6 @@ std::vector<int> Plater::load_file(const std::string file) {
     return obj_idx;
 }
 
-
-
 MainFrame* Plater::GetFrame() { return dynamic_cast<MainFrame*>(wxGetTopLevelParent(this)); }
 
 void Plater::make_thumbnail(size_t idx) {
@@ -868,27 +801,7 @@ void Plater::make_thumbnail(size_t idx) {
         plater_object.make_thumbnail(this->model, idx);
         this->on_thumbnail_made(idx);
     }
-/*
-    my $plater_object = $self->{objects}[$obj_idx];
-    $plater_object->thumbnail(Slic3r::ExPolygon::Collection->new);
-    my $cb = sub {
-        $plater_object->make_thumbnail($self->{model}, $obj_idx);
-        
-        if ($Slic3r::have_threads) {
-            Wx::PostEvent($self, Wx::PlThreadEvent->new(-1, $THUMBNAIL_DONE_EVENT, shared_clone([ $obj_idx ])));
-            Slic3r::thread_cleanup();
-            threads->exit;
-        } else {
-            $self->on_thumbnail_made($obj_idx);
-        }
-    };
-    
-    @_ = ();
-    $Slic3r::have_threads
-        ? threads->create(sub { $cb->(); Slic3r::thread_cleanup(); })->detach
-        : $cb->();
-}
-*/
+
 }
 
 void Plater::on_thumbnail_made(size_t idx) {
@@ -1059,7 +972,6 @@ void Plater::build_toolbar() {
     toolbar->AddTool(TB_LAYERS, _(L"Layer heights…"), wxBitmap(var("variable_layer_height.png"), wxBITMAP_TYPE_PNG));
 
     toolbar->Realize();
-
 
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->add(); }, TB_ADD);
     toolbar->Bind(wxEVT_TOOL, [this](wxCommandEvent &e) { this->remove(); }, TB_REMOVE);
@@ -1251,7 +1163,6 @@ void Plater::show_preset_editor(preset_t group, unsigned int idx) {
     });
     dialog->Show();
 }
-
 
 void Plater::load_presets() {
     this->_presets->load();

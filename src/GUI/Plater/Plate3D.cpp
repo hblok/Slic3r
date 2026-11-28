@@ -138,7 +138,6 @@ void Plate3D::before_render(){
 
     // Color each volume a different color, render and test which color is beneath the mouse.
     
-    //glDisable(GL_MULTISAMPLE) if ($self->{can_multisample});
     glDisable(GL_LIGHTING);
     uint i = 1;
     for(Volume &volume : volumes){
@@ -154,8 +153,6 @@ void Plate3D::before_render(){
     // Handle the hovered volume
     uint index = (color[0]<<16) + (color[1]<<8) + color[2];
     hover = false;
-    ///*$self->_hover_volume_idx(undef);
-    //$_->hover(0) for @{$self->volumes};
     if (index != 0 && index <= volumes.size()) {
         hover = true;
         hover_volume = index - 1;
@@ -168,14 +165,8 @@ void Plate3D::before_render(){
             }
             k++;
         }
-        /*
-        $self->volumes->[$volume_idx]->hover(1);
-        my $group_id = $self->volumes->[$volume_idx]->select_group_id;
-        if ($group_id != -1) {
-            $_->hover(1) for grep { $_->select_group_id == $group_id } @{$self->volumes};
-        }*/
+
         
-        //$self->on_hover->($volume_idx) if $self->on_hover;
     }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glFlush();
