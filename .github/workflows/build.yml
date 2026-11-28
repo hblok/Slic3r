@@ -34,6 +34,42 @@ jobs:
       - name: Command line and script check
         run: src/test/cli/check.sh build/slic3r
 
+  # The Bazel build that is to replace CMake (plan/bazel.md), on the target system.
+  bazel:
+    runs-on: ubuntu-latest
+    container: debian:13
+    timeout-minutes: 60
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl git g++ python3 unzip zip
+      - uses: actions/checkout@v7
+      - name: Keep Bazel's downloads and build results
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cache/bazel-disk
+            ~/.cache/bazel-repository
+          key: bazel-${{ hashFiles('.bazelversion', '.bazelrc', 'MODULE.bazel.lock') }}-${{ github.run_id }}
+          restore-keys: bazel-${{ hashFiles('.bazelversion', '.bazelrc', 'MODULE.bazel.lock') }}-
+      - name: Install Bazelisk (it fetches the version in .bazelversion)
+        run: |
+          curl -fsSL -o /usr/local/bin/bazel \
+            https://github.com/bazelbuild/bazelisk/releases/download/v1.31.0/bazelisk-linux-amd64
+          echo "37c6c243a5a0d2cb6a16a74012c108c47ae9eb5c0455251881e66e7f393a4ce1  /usr/local/bin/bazel" | sha256sum -c -
+          chmod +x /usr/local/bin/bazel
+      - name: Build and test
+        run: |
+          bazel test --disk_cache="$HOME/.cache/bazel-disk" \
+            --repository_cache="$HOME/.cache/bazel-repository" //...
+      - name: Keep the test logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bazel-testlogs
+          path: build/bazel/testlogs/
+
   # C++ GUI (wxWidgets): build it and check that it starts under Xvfb.
   cpp-gui:
     runs-on: ubuntu-latest
