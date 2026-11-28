@@ -17,13 +17,6 @@ filegroup(
     visibility = ["//src:__subpackages__"],
 )
 
-# the models and reference G-code of the golden check
-filegroup(
-    name = "golden",
-    srcs = glob(["golden/**"]),
-    visibility = ["//src:__subpackages__"],
-)
-
 # the test meshes and "slice this" helpers of the tests that need whole prints
 cc_library(
     name = "print_test_data",
@@ -33,4 +26,16 @@ cc_library(
     includes = ["."],
     visibility = ["//src:__subpackages__"],
     deps = ["//src/libslic3r:slicing_core"],
+)
+
+cc_test(
+    name = "command_line_test",
+    size = "small",
+    srcs = ["command_line_test.cpp"],
+    data = [":inputs"],
+    deps = [
+        "//src:command_line",
+        "//src/libslic3r:gcode_reader",
+        "@googletest//:gtest_main",
+    ],
 )

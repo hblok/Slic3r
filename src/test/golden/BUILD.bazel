@@ -1,0 +1,26 @@
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
+# the models and reference G-code
+filegroup(
+    name = "files",
+    srcs = glob(
+        ["**"],
+        exclude = ["BUILD.bazel"],
+    ),
+    visibility = ["//src:__subpackages__"],
+)
+
+# Slices the models and compares with the stored G-code. The script finds its files from
+# where it is run, so the test stays in this directory.
+sh_test(
+    name = "golden_test",
+    size = "small",
+    srcs = ["check.sh"],
+    args = ["$(rootpath //src:slic3r-cli)"],
+    data = [
+        ":files",
+        "//profiles",
+        "//src:slic3r-cli",
+        "//src/test:inputs",
+    ],
+)

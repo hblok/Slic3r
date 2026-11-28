@@ -1,0 +1,9 @@
+# the Python scripts that work on Slic3r's files
+filegroup(
+    name = "scripts",
+    srcs = glob([
+        "*.py",
+        "post-processing/*.py",
+    ]),
+    visibility = ["//src:__subpackages__"],
+)

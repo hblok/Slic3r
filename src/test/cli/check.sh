@@ -5,7 +5,7 @@
 # Usage: src/test/cli/check.sh path/to/slic3r
 set -eu
 slic3r=$(realpath "$1")
-here=$(dirname "$(realpath "$0")")
+here=$(cd "$(dirname "$0")" && pwd)  # not through links: Bazel runs a copy of this
 root=$(realpath "$here/../../..")
 out=$(mktemp -d)
 trap 'rm -rf "$out"' EXIT

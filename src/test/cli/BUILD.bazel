@@ -1,0 +1,15 @@
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
+# The command line and the Python scripts in utils/ (skipped without python3).
+sh_test(
+    name = "command_line_script_test",
+    size = "small",
+    srcs = ["check.sh"],
+    args = ["$(rootpath //src:slic3r-cli)"],
+    data = [
+        "input.gcode",
+        "//src:slic3r-cli",
+        "//src/test/golden:files",
+        "//utils:scripts",
+    ] + glob(["expected/**"]),
+)

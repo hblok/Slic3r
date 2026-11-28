@@ -1,0 +1,38 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+COMMAND_LINE_DEPS = [
+    "//src/libslic3r:gcode_sender",
+    "//src/libslic3r:gcode_time_estimator",
+    "//src/libslic3r:geometry",
+    "//src/libslic3r:libslic3r_header",
+    "//src/libslic3r:log",
+    "//src/libslic3r:print_config",
+    "//src/libslic3r:simple_print",
+    "//src/libslic3r:sla_print",
+    "//src/libslic3r:slicing_core",
+    "@boost.filesystem",
+    "@boost.nowide",
+]
+
+# the command line as a library, without main(), for its tests
+cc_library(
+    name = "command_line",
+    srcs = ["slic3r.cpp"],
+    hdrs = ["slic3r.hpp"],
+    includes = ["."],
+    local_defines = ["BUILD_TEST"],
+    visibility = ["//src:__subpackages__"],
+    deps = COMMAND_LINE_DEPS,
+)
+
+# the program without a GUI: needs no wxWidgets
+cc_binary(
+    name = "slic3r-cli",
+    srcs = [
+        "slic3r.cpp",
+        "slic3r.hpp",
+    ],
+    visibility = ["//visibility:public"],
+    deps = COMMAND_LINE_DEPS,
+)

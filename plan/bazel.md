@@ -49,8 +49,8 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 | 11 | `config_base`, `print_config`, `config`, `placeholder_parser`, `extruder`, `gcode_reader`, `gcode_writer`, `gcode_time_estimator`, `pressure_regulator`, `vibration_limit` | geometry | 11 new and ported tests, one per target (`config_base` ... `vibration_limit`) | done |
 | 12 | `extrusion_entity` (2 units), `flow`, `perimeter_generator`, `fill` (7 units) | config | `extrusion_entity`, `flow`, `perimeter_generator`, `fill` tests | done |
 | 13 | `slicing_core` (15 units), `sla_print`, `simple_print` | all above, `expat`, `Zip` | `print`, `model`, G-code, support, mesh and file format tests, ported; `sla_print`, `simple_print` (new) | done |
-| 14 | `slic3r-cli`, a program without wxWidgets | core | golden G-code and command line checks | next |
-| 15 | GUI parts, bottom up, then `slic3r` | wxWidgets, OpenGL | unit tests per part, then the GUI scripts | |
+| 14 | `slic3r-cli`, a program without wxWidgets | core | `command_line_test` (ported), `golden_test`, `command_line_script_test` | done |
+| 15 | GUI parts, bottom up, then `slic3r` | wxWidgets, OpenGL | unit tests per part, then the GUI scripts | next |
 | 16 | `utils/make_dist.sh` on Bazel, a Bazel job in CI | | CI green; the owner tries the program | |
 | 17 | remove CMake, update `CLAUDE.md` and README | | CI green | |
 | later | `.deb` (`rules_pkg`), build container | | installs and slices in a clean `debian:13` | |
@@ -71,7 +71,9 @@ Libraries come from the Bazel Central Registry.
   `boost/nowide/cstdlib.hpp` instead of `cenv.hpp` (done in step 11).
 - **Where to build.** A program Bazel builds needs only the C and C++ runtime of the
   system (and wxWidgets for the GUI), but those must be as new as the build machine's:
-  build releases on Debian 13 (later: the build container). Test programs are linked
+  build releases on Debian 13 (later: the build container). Seen 2026-11-28:
+  `slic3r-cli` built in the Ubuntu development container asks for glibc 2.43 and does not
+  start on Debian 13 (2.41). Test programs are linked
   against files in Bazel's output tree and run through `bazel test`.
 - **wxWidgets** is not in the registry (looked for `wxwidgets` and `wxwidget`). For step
   15 it comes from the system (installing build packages in the container is agreed), or

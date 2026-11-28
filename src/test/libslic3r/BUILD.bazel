@@ -416,7 +416,7 @@ cc_test(
     size = "small",
     srcs = ["tmf_test.cpp"],
     data = [
-        "//src/test:golden",
+        "//src/test/golden:files",
         "//src/test:inputs",
     ],
     deps = [
