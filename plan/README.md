@@ -19,7 +19,7 @@ Each phase ends with something that can be checked.
 - [x] README: fork notice, AI disclosure, dead badges and download links removed
 - [x] `CONTRIBUTING.md`, `CODEOWNERS` point to this fork
 - [x] Dead CI, deploy and Windows/macOS packaging files deleted; upstream issue templates deleted
-- [ ] GitHub repo description and homepage (homepage still says slic3r.org)
+- [x] GitHub repo description set, upstream homepage cleared (2026-11-28)
 - [ ] Fetch upstream tags (the fork has none, so `git describe` fails)
 
 ### 1. C++ core builds, is verified, CI is ours (done 2026-11-26)

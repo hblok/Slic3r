@@ -38,8 +38,10 @@ Differences from the Perl GUI, to fix if they matter:
 
 - [ ] Look at the first CI run after 2026-11-27 afternoon (new preview checks and the
       `cpp_gui_plate.sh` step have not run on GitHub)
-- [ ] GitHub repo description and homepage (still slic3r.org)
-- [ ] Fetch upstream tags (no version tags in the fork, so `git describe` fails)
+- [ ] Upstream version tags are not on GitHub, so `git describe` in a fresh clone only
+      finds `perl-final`. A clone with the `upstream` remote gets them with
+      `git fetch upstream --tags` (done in the working copy 2026-11-28:
+      `git describe --match '[0-9]*'` says 1.3.0-…). Push them to the fork? Owner's call
 - [ ] `.deb` for Debian 13, built by CI, published as a GitHub release
 
 ## Later
