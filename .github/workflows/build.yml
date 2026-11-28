@@ -52,9 +52,11 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
-          cmake --build build-gui -j"$(nproc)" --target slic3r
+          cmake --build build-gui -j"$(nproc)" --target slic3r gui_test
           cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build -j"$(nproc)" --target slic3r
+      - name: C++ GUI unit tests
+        run: ctest --test-dir build-gui -R gui_unit --output-on-failure
       - name: C++ GUI smoke test
         run: utils/cpp_gui_smoke.sh build-gui/slic3r build/slic3r cpp-gui-smoke
       - name: C++ GUI plater test

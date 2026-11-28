@@ -10,10 +10,6 @@ Perl is gone; the GUI has been checked only under Xvfb.
 - [ ] Try drag and drop (the "Add…" dialog was tried once, 2026-11-28)
 - [ ] Not tried against hardware or real servers: the serial and OctoPrint "Test"
       buttons, "Browse…" (needs `avahi-browse`), the DLP projector
-- [ ] The Catch GUI tests left in `src/test/GUI` (presets, preset chooser, number
-      formatting; `-DGUI_BUILD_TESTS=ON`) are not run: `test_harness_gui.cpp` needs
-      `CATCH_CONFIG_NO_POSIX_SIGNALS` to compile and the two preset chooser tests fail.
-      Revive them or remove them
 
 Differences from the Perl GUI, to fix if they matter:
 

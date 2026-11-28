@@ -82,7 +82,8 @@ Tests (see [CLAUDE.md](CLAUDE.md)):
 ```sh
 cmake -S src -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j$(nproc)
 ctest --test-dir build -L quick --output-on-failure        # a few seconds
-ctest --test-dir build-gui -L gui -j5 --output-on-failure  # GUI under Xvfb; needs xvfb xdotool imagemagick
+cmake --build build-gui -j$(nproc)                         # also builds the GUI unit tests
+ctest --test-dir build-gui -L gui -j5 --output-on-failure  # GUI under Xvfb; needs xvfb xauth xdotool imagemagick
 ```
 
 ### Directory structure

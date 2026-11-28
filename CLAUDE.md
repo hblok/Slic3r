@@ -56,7 +56,7 @@ The first build downloads Catch2. CMake writes `src/test/test_options.hpp`
 
 ## Build and test (C++ GUI)
 
-Also needs `libwxgtk3.2-dev libgl-dev libglu1-mesa-dev xvfb xdotool imagemagick`.
+Also needs `libwxgtk3.2-dev libgl-dev libglu1-mesa-dev xvfb xauth xdotool imagemagick`.
 
 ```sh
 cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
@@ -64,7 +64,8 @@ cmake --build build-gui -j$(nproc)
 ctest --test-dir build-gui -L gui -j5 --output-on-failure
 ```
 
-That runs `utils/cpp_gui_smoke.sh` (slicing, presets, preview, quit prompt),
+That runs `gui_unit` (the Catch tests in `src/test/GUI`; a build directory from before
+2026-11-28 needs `-DGUI_BUILD_TESTS=ON`), `utils/cpp_gui_smoke.sh` (slicing, presets, preview, quit prompt),
 `utils/cpp_gui_presets.sh` (preset editors, shortcuts, several extruders, upload to a
 stand-in print server; that step needs python3), `utils/cpp_gui_controller.sh` (the
 Controller tab with a stand-in printer on a pseudo terminal; skipped where there are
