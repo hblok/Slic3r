@@ -105,6 +105,12 @@ TEST(TreeModel, AWideModelUnderTheRoofCarriesTheTree) {
     for (size_t i = 0; i < 20; ++i) EXPECT_TRUE(base[i].empty()) << "slab " << i;
 }
 
+TEST(TreeModel, DrawsThinBranchesWithoutTinyMoves) {
+    const auto base {tree().base(under_a_roof(100))};
+    for (const ExPolygon &tip : union_ex(base[98])) EXPECT_LE(tip.contour.points.size(), 8u);
+    for (const ExPolygon &trunk : union_ex(base[1])) EXPECT_GE(trunk.contour.points.size(), 16u);
+}
+
 TEST(TreeModel, PrintsBranchesAsTubes) {
     EXPECT_FALSE(tree().infill());
 }

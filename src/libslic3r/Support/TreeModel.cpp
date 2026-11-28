@@ -12,7 +12,9 @@ namespace {
 Polygon
 disc(const Point &centre, double radius /* mm */)
 {
-    constexpr int corners {24};
+    // sides of about 0.8 mm: a printer takes only so many moves a second, and a thin tip
+    // drawn finely asks for hundreds
+    const int corners {std::max(6, std::min(24, static_cast<int>(std::lround(2 * PI * radius / 0.8))))};
     Polygon polygon;
     for (int i = 0; i < corners; ++i) {
         const double angle {2 * PI * i / corners};
