@@ -7,7 +7,10 @@ filegroup(
         ["**"],
         exclude = ["BUILD.bazel"],
     ),
-    visibility = ["//src:__subpackages__"],
+    visibility = [
+        "//src:__subpackages__",
+        "//utils:__pkg__",
+    ],
 )
 
 # Slices the models and compares with the stored G-code. The script finds its files from

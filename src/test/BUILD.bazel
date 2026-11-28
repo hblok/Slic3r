@@ -14,7 +14,10 @@ cc_test(
 filegroup(
     name = "inputs",
     srcs = glob(["inputs/**"]),
-    visibility = ["//src:__subpackages__"],
+    visibility = [
+        "//src:__subpackages__",
+        "//utils:__pkg__",
+    ],
 )
 
 # the test meshes and "slice this" helpers of the tests that need whole prints

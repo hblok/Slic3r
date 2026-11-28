@@ -10,4 +10,7 @@ cc_library(
     visibility = ["//src:__subpackages__"],
 )
 
-exports_files(["under_xvfb.sh"])
+exports_files([
+    "gui_script.sh",
+    "under_xvfb.sh",
+])

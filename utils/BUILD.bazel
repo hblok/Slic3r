@@ -1,3 +1,5 @@
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 # the Python scripts that work on Slic3r's files
 filegroup(
     name = "scripts",
@@ -7,3 +9,36 @@ filegroup(
     ]),
     visibility = ["//src:__subpackages__"],
 )
+
+# The whole program under Xvfb, driven with the mouse and keyboard. The clicks are at
+# fixed positions, as Debian 13 draws the windows. Each script takes its own display.
+[sh_test(
+    name = "gui_%s_script_test" % name,
+    size = "medium",
+    srcs = ["//bazel:gui_script.sh"],
+    args = [
+        "$(rootpath //src:slic3r)",
+        "$(rootpath %s)" % script,
+        name,
+    ] + part,
+    data = [
+        script,
+        "fake_print_server.py",
+        "fake_printer.py",
+        "//profiles",
+        "//src:slic3r",
+        "//src/test:inputs",
+        "//src/test/golden:files",
+        "//var",
+    ],
+    tags = ["gui"],
+) for name, script, part in [
+    ("smoke", "cpp_gui_smoke.sh", []),
+    ("plate", "cpp_gui_plate.sh", ["plate"]),
+    ("objects", "cpp_gui_plate.sh", ["objects"]),
+    ("tools", "cpp_gui_plate.sh", ["tools"]),
+    ("files", "cpp_gui_plate.sh", ["files"]),
+    ("presets", "cpp_gui_presets.sh", []),
+    ("controller", "cpp_gui_controller.sh", []),
+    ("projector", "cpp_gui_projector.sh", []),
+]]

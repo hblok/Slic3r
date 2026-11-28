@@ -5,5 +5,8 @@ filegroup(
         ["**"],
         exclude = ["BUILD.bazel"],
     ),
-    visibility = ["//src:__subpackages__"],
+    visibility = [
+        "//src:__subpackages__",
+        "//utils:__pkg__",
+    ],
 )
