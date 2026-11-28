@@ -7,7 +7,6 @@ Feature candidates (not scheduled): [features.md](features.md).
 
 Perl is gone; the GUI has been checked only under Xvfb.
 
-- [ ] Try drag and drop (the "Add…" dialog was tried once, 2026-11-28)
 - [ ] Not tried against hardware or real servers: the serial and OctoPrint "Test"
       buttons, "Browse…" (needs `avahi-browse`), the DLP projector
 
@@ -29,6 +28,8 @@ Differences from the Perl GUI, to fix if they matter:
 ## Needs a real desktop
 
 - [ ] Try the C++ GUI with a window manager and GPU (`utils/make_dist.sh`, so far Xvfb only)
+- [ ] Drag a model from the file manager onto the plater (works under Xvfb from a test
+      window, tried 2026-11-28 on the 2D view, the 3D view and the side panel)
 
 ## Repo and release
 
