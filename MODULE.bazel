@@ -20,3 +20,8 @@ bazel_dep(name = "boost.thread", version = "1.90.0.bcr.1")
 bazel_dep(name = "rules_cc", version = "0.2.28")
 bazel_dep(name = "rules_shell", version = "0.8.0")
 bazel_dep(name = "googletest", version = "1.18.0.bcr.1", dev_dependency = True)
+
+# wxWidgets is not in the registry: it comes from the system, as for the CMake build
+system_wxwidgets = use_repo_rule("//bazel:wx.bzl", "system_wxwidgets")
+
+system_wxwidgets(name = "wxwidgets")

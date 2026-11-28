@@ -1,0 +1,11 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+# OpenGL and GLU from the system (libgl-dev, libglu1-mesa-dev)
+cc_library(
+    name = "opengl",
+    linkopts = [
+        "-lGL",
+        "-lGLU",
+    ],
+    visibility = ["//src:__subpackages__"],
+)

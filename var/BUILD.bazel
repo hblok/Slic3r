@@ -1,0 +1,9 @@
+# the icons the GUI shows
+filegroup(
+    name = "var",
+    srcs = glob(
+        ["**"],
+        exclude = ["BUILD.bazel"],
+    ),
+    visibility = ["//src:__subpackages__"],
+)

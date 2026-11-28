@@ -25,7 +25,10 @@ const wxString var(const wxString& in) {
     if (VAR_ABS) {
         return wxString(VAR_ABS_PATH) + "/" + in;
     } else {
-        return bin() + wxString(VAR_REL) + "/" + in;
+        wxString dir {bin() + wxString(VAR_REL)};
+        if (!wxDirExists(dir))  // as Bazel lays the program out: among its runfiles
+            dir = wxStandardPaths::Get().GetExecutablePath() + ".runfiles/_main/var";
+        return dir + "/" + in;
     }
 }
 

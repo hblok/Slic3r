@@ -1,0 +1,404 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+# The GUI. Every header is in :headers, so that a target needs another only where it
+# uses its code; then nearly every file is a target of its own. (plan/bazel.md)
+package(
+    default_visibility = ["//src:__subpackages__"],
+)
+
+cc_library(
+    name = "headers",
+    tags = ["gui"],
+    hdrs = glob(["**/*.hpp"]),
+    includes = ["."],
+    deps = [
+        "//bazel:opengl",
+        "@wxwidgets",
+        "//src/libslic3r:config",
+        "//src/libslic3r:config_base",
+        "//src/libslic3r:gcode_sender",
+        "//src/libslic3r:geometry",
+        "//src/libslic3r:layer_height_spline",
+        "//src/libslic3r:libslic3r_header",
+        "//src/libslic3r:log",
+        "//src/libslic3r:print_config",
+        "//src/libslic3r:sla_print",
+        "//src/libslic3r:slicing_core",
+    ],
+)
+
+cc_library(
+    name = "about_dialog",
+    tags = ["gui"],
+    srcs = ["Dialogs/AboutDialog.cpp"],
+    deps = [
+        ":headers",
+        ":misc_ui",
+    ],
+)
+
+# The application window, the plater and the preset editors need each other.
+cc_library(
+    name = "application",
+    tags = ["gui"],
+    srcs = [
+        "Dialogs/MaterialEditor.cpp",
+        "Dialogs/PresetEditor.cpp",
+        "Dialogs/PresetRules.cpp",
+        "Dialogs/PrintEditor.cpp",
+        "Dialogs/PrinterEditor.cpp",
+        "GUI.cpp",
+        "MainFrame.cpp",
+        "Plater.cpp",
+        "Plater/FileMenu.cpp",
+        "Plater/ObjectOperations.cpp",
+    ],
+    deps = [
+        ":headers",
+        ":about_dialog",
+        ":bed_shape_dialog",
+        ":config_wizard",
+        ":controller",
+        ":layer_heights_dialog",
+        ":misc_ui",
+        ":object_cut_dialog",
+        ":object_face_dialog",
+        ":object_settings",
+        ":octoprint",
+        ":option_control",
+        ":override_panel",
+        ":plate_2d",
+        ":plate_3d",
+        ":plater_object",
+        ":preferences",
+        ":preset",
+        ":preset_chooser",
+        ":preview_2d",
+        ":preview_3d",
+        ":preview_panel",
+        ":printer_panel",
+        ":progress_status_bar",
+        ":projector",
+        ":scene_3d",
+        ":settings",
+        "//src/libslic3r:extrusion_entity",
+        "//src/libslic3r:gcode_time_estimator",
+        "//src/libslic3r:placeholder_parser",
+    ],
+)
+
+cc_library(
+    name = "bed_shape_dialog",
+    tags = ["gui"],
+    srcs = ["Dialogs/BedShapeDialog.cpp"],
+    deps = [
+        ":headers",
+        ":misc_ui",
+    ],
+)
+
+cc_library(
+    name = "config_wizard",
+    tags = ["gui"],
+    srcs = ["Dialogs/ConfigWizard.cpp"],
+    deps = [
+        ":headers",
+        ":bed_shape_dialog",
+        ":option_control",
+    ],
+)
+
+cc_library(
+    name = "controller",
+    tags = ["gui"],
+    srcs = ["Controller/Controller.cpp"],
+    deps = [
+        ":headers",
+        ":misc_ui",
+        ":preset",
+        ":printer_panel",
+        ":settings",
+    ],
+)
+
+cc_library(
+    name = "layer_heights_dialog",
+    tags = ["gui"],
+    srcs = ["Dialogs/LayerHeightsDialog.cpp"],
+    deps = [
+        ":headers",
+        ":misc_ui",
+        ":object_cut_dialog",
+        ":scene_3d",
+        ":settings",
+        ":volume_scene",
+    ],
+)
+
+cc_library(
+    name = "manual_control_dialog",
+    tags = ["gui"],
+    srcs = ["Controller/ManualControlDialog.cpp"],
+    deps = [
+        ":headers",
+        ":bed_shape_dialog",
+        ":misc_ui",
+        ":settings",
+        "//src/libslic3r:gcode_writer",
+    ],
+)
+
+cc_library(
+    name = "misc_ui",
+    tags = ["gui"],
+    srcs = ["misc_ui.cpp"],
+    deps = [
+        ":headers",
+        "//src/libslic3r:utils",
+    ],
+)
+
+cc_library(
+    name = "object_cut_dialog",
+    tags = ["gui"],
+    srcs = ["Dialogs/ObjectCutDialog.cpp"],
+    deps = [
+        ":headers",
+        ":scene_3d",
+        ":settings",
+        ":volume_scene",
+    ],
+)
+
+cc_library(
+    name = "object_face_dialog",
+    tags = ["gui"],
+    srcs = ["Dialogs/ObjectFaceDialog.cpp"],
+    deps = [
+        ":headers",
+        ":object_cut_dialog",
+        ":scene_3d",
+    ],
+)
+
+cc_library(
+    name = "object_settings",
+    tags = ["gui"],
+    srcs = ["Dialogs/ObjectSettings.cpp"],
+    deps = [
+        ":headers",
+        ":misc_ui",
+        ":object_cut_dialog",
+        ":option_control",
+        ":scene_3d",
+        ":settings",
+        ":volume_scene",
+    ],
+)
+
+cc_library(
+    name = "octoprint",
+    tags = ["gui"],
+    srcs = ["octoprint.cpp"],
+    deps = [
+        ":headers",
+        ":settings",
+    ],
+)
+
+cc_library(
+    name = "option_control",
+    tags = ["gui"],
+    srcs = ["OptionsGroup/OptionControl.cpp"],
+    deps = [
+        ":headers",
+        ":misc_ui",
+    ],
+)
+
+cc_library(
+    name = "override_panel",
+    tags = ["gui"],
+    srcs = ["OptionsGroup/OverridePanel.cpp"],
+    deps = [
+        ":headers",
+        ":misc_ui",
+        ":option_control",
+        ":settings",
+    ],
+)
+
+cc_library(
+    name = "plate_2d",
+    tags = ["gui"],
+    srcs = ["Plater/Plate2D.cpp"],
+    deps = [
+        ":headers",
+        ":plater_object",
+        ":settings",
+    ],
+)
+
+cc_library(
+    name = "plate_3d",
+    tags = ["gui"],
+    srcs = ["Plater/Plate3D.cpp"],
+    deps = [
+        ":headers",
+        ":scene_3d",
+        ":settings",
+        ":volume_scene",
+    ],
+)
+
+cc_library(
+    name = "plater_object",
+    tags = ["gui"],
+    srcs = ["Plater/PlaterObject.cpp"],
+    deps = [
+        ":headers",
+    ],
+)
+
+cc_library(
+    name = "preferences",
+    tags = ["gui"],
+    srcs = ["Dialogs/Preferences.cpp"],
+    deps = [
+        ":headers",
+        ":settings",
+    ],
+)
+
+cc_library(
+    name = "preset",
+    tags = ["gui"],
+    srcs = ["Preset.cpp"],
+    deps = [
+        ":headers",
+    ],
+)
+
+cc_library(
+    name = "preset_chooser",
+    tags = ["gui"],
+    srcs = ["Plater/PresetChooser.cpp"],
+    deps = [
+        ":headers",
+        ":misc_ui",
+        ":option_control",
+        ":preset",
+        ":settings",
+    ],
+)
+
+cc_library(
+    name = "preview_2d",
+    tags = ["gui"],
+    srcs = ["Plater/Preview2D.cpp"],
+    deps = [
+        ":headers",
+        ":preview_panel",
+        ":settings",
+    ],
+)
+
+cc_library(
+    name = "preview_3d",
+    tags = ["gui"],
+    srcs = ["Plater/Preview3D.cpp"],
+    deps = [
+        ":headers",
+        ":preview_panel",
+        ":scene_3d",
+        ":settings",
+        ":volume_scene",
+    ],
+)
+
+cc_library(
+    name = "preview_panel",
+    tags = ["gui"],
+    srcs = ["Plater/PreviewPanel.cpp"],
+    deps = [
+        ":headers",
+        "//src/libslic3r:extrusion_entity",
+    ],
+)
+
+cc_library(
+    name = "printer_panel",
+    tags = ["gui"],
+    srcs = ["Controller/PrinterPanel.cpp"],
+    deps = [
+        ":headers",
+        ":manual_control_dialog",
+        ":misc_ui",
+        ":preset",
+        ":settings",
+        "//src/libslic3r:gcode_time_estimator",
+    ],
+)
+
+cc_library(
+    name = "progress_status_bar",
+    tags = ["gui"],
+    srcs = ["ProgressStatusBar.cpp"],
+    deps = [
+        ":headers",
+    ],
+)
+
+cc_library(
+    name = "projector",
+    tags = ["gui"],
+    srcs = ["Projector/Projector.cpp"],
+    deps = [
+        ":headers",
+        ":manual_control_dialog",
+        ":misc_ui",
+        ":option_control",
+        ":projector_screen",
+        ":settings",
+        "//src/libslic3r:extrusion_entity",
+        "//src/libslic3r:placeholder_parser",
+    ],
+)
+
+cc_library(
+    name = "projector_screen",
+    tags = ["gui"],
+    srcs = ["Projector/ProjectorScreen.cpp"],
+    deps = [
+        ":headers",
+        "//src/libslic3r:extrusion_entity",
+    ],
+)
+
+cc_library(
+    name = "scene_3d",
+    tags = ["gui"],
+    srcs = ["Scene3D.cpp"],
+    deps = [
+        ":headers",
+        ":settings",
+    ],
+)
+
+cc_library(
+    name = "settings",
+    tags = ["gui"],
+    srcs = ["Settings.cpp"],
+    deps = [
+        ":headers",
+    ],
+)
+
+cc_library(
+    name = "volume_scene",
+    tags = ["gui"],
+    srcs = ["3DScene.cpp"],
+    deps = [
+        ":headers",
+    ],
+)

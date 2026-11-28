@@ -36,3 +36,17 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = COMMAND_LINE_DEPS,
 )
+
+# the program: the GUI, and the command line when given files or options
+cc_binary(
+    name = "slic3r",
+    srcs = [
+        "slic3r.cpp",
+        "slic3r.hpp",
+    ],
+    data = ["//var"],
+    local_defines = ["USE_WX"],
+    tags = ["gui"],
+    visibility = ["//visibility:public"],
+    deps = COMMAND_LINE_DEPS + ["//src/GUI:application"],
+)
