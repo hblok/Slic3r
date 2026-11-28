@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Slic3r
+GenericName=3D Printing Slicer
+Comment=Prepare 3D models for printing
+Exec=slic3r %F
+Icon=slic3r
+Terminal=false
+Categories=Graphics;3DGraphics;Engineering;
+MimeType=model/stl;application/sla;model/3mf;application/x-amf;model/obj;

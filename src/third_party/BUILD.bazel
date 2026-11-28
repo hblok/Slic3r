@@ -116,3 +116,12 @@ cc_library(
     includes = ["."],
     deps = [":miniz"],
 )
+
+exports_files(
+    [
+        "BSpline/COPYRIGHT",
+        "expat/COPYING",
+        "miniz/LICENSE",
+    ],
+    visibility = ["//package:__pkg__"],
+)

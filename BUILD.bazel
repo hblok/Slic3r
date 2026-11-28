@@ -1,0 +1,4 @@
+exports_files(
+    ["LICENSE"],
+    visibility = ["//package:__pkg__"],
+)

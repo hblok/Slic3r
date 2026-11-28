@@ -1,0 +1,123 @@
+load("@rules_pkg//pkg:deb.bzl", "pkg_deb")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_files", "pkg_mklink", "strip_prefix")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+
+# The Debian package: bazel build --define=SLIC3R_DEB_VERSION=1.2.3 //package:deb
+# on Debian 13 (it needs dpkg-dev, and takes the dependencies from the machine it is built
+# on). CI builds it and installs it on a clean system: .github/workflows/release.yml.
+# "manual": not part of //...
+
+genrule(
+    name = "stripped_program",
+    srcs = ["//src:slic3r"],
+    outs = ["stripped/slic3r"],
+    cmd = "strip --strip-unneeded -o $@ $<",
+    tags = ["manual"],
+)
+
+# the program looks for its icons in ../var, so both live in one folder of their own
+pkg_files(
+    name = "program",
+    srcs = [":stripped_program"],
+    attributes = pkg_attributes(mode = "0755"),
+    prefix = "usr/lib/slic3r/bin",
+    tags = ["manual"],
+)
+
+pkg_files(
+    name = "icons",
+    srcs = ["//var"],
+    prefix = "usr/lib/slic3r/var",
+    strip_prefix = strip_prefix.from_root("var"),
+)
+
+pkg_mklink(
+    name = "command",
+    link_name = "usr/bin/slic3r",
+    target = "../lib/slic3r/bin/slic3r",
+)
+
+pkg_files(
+    name = "profiles",
+    srcs = ["//profiles"],
+    prefix = "usr/share/slic3r/profiles",
+    strip_prefix = strip_prefix.from_root("profiles"),
+)
+
+pkg_files(
+    name = "desktop_entry",
+    srcs = ["linux/slic3r.desktop"],
+    prefix = "usr/share/applications",
+)
+
+pkg_files(
+    name = "application_icon",
+    srcs = ["//var:Slic3r_192px.png"],
+    prefix = "usr/share/icons/hicolor/192x192/apps",
+    renames = {"//var:Slic3r_192px.png": "slic3r.png"},
+)
+
+# the licence, and those of the libraries from other projects that ask to be shipped
+pkg_files(
+    name = "licences",
+    srcs = [
+        "//:LICENSE",
+        "//src/third_party:BSpline/COPYRIGHT",
+        "//src/third_party:expat/COPYING",
+        "//src/third_party:miniz/LICENSE",
+    ],
+    prefix = "usr/share/doc/slic3r",
+    renames = {
+        "//:LICENSE": "copyright",
+        "//src/third_party:BSpline/COPYRIGHT": "copyright.BSpline",
+        "//src/third_party:expat/COPYING": "copyright.expat",
+        "//src/third_party:miniz/LICENSE": "copyright.miniz",
+    },
+)
+
+pkg_tar(
+    name = "data",
+    srcs = [
+        ":application_icon",
+        ":command",
+        ":desktop_entry",
+        ":icons",
+        ":licences",
+        ":profiles",
+        ":program",
+    ],
+    extension = "tar.xz",
+    tags = ["manual"],
+)
+
+genrule(
+    name = "depends",
+    srcs = ["//src:slic3r"],
+    outs = ["depends.txt"],
+    cmd = "$(location debian/shared_libraries.sh) $(location //src:slic3r) >$@",
+    tags = ["manual"],
+    tools = ["debian/shared_libraries.sh"],
+)
+
+genrule(
+    name = "version",
+    outs = ["version.txt"],
+    cmd = "echo '$(SLIC3R_DEB_VERSION)' >$@",
+    tags = ["manual"],
+)
+
+pkg_deb(
+    name = "deb",
+    architecture = "amd64",
+    data = ":data",
+    depends_file = ":depends",
+    description = "Slicer for 3D printers (unofficial fork of Slic3r)\n Turns 3D models into G-code. This independent fork is not affiliated with the\n original authors, and is maintained with the help of AI assistants.",
+    homepage = "https://github.com/hblok/Slic3r",
+    maintainer = "hblok <hblok@users.noreply.github.com>",
+    package = "slic3r",
+    # the 3D views need an OpenGL driver
+    recommends = ["libgl1-mesa-dri"],
+    section = "graphics",
+    tags = ["manual"],
+    version_file = ":version",
+)
