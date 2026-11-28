@@ -270,3 +270,100 @@ SCENARIO("Saving a config reports a failed write.") {
         }
     }
 }
+
+// ported from the Perl binding tests (xs/t/15_config.t)
+TEST_CASE("Config values serialize as in the ini files") {
+    DynamicPrintConfig config;
+    auto round_trip = [&config](const std::string &key, const std::string &text) {
+        config.set_deserialize(key, text);
+        return config.serialize(key);
+    };
+    REQUIRE(round_trip("layer_height", "0.3") == "0.3");
+    REQUIRE(round_trip("perimeters", "2") == "2");
+    REQUIRE(round_trip("extrusion_axis", "A") == "A");
+    REQUIRE(round_trip("notes", "bar\\nbaz") == "bar\\nbaz");
+    REQUIRE(config.opt<ConfigOptionString>("notes")->value == "bar\nbaz");
+    REQUIRE(round_trip("first_layer_height", "50%") == "50%");
+    config.set_deserialize("layer_height", "0.3");
+    REQUIRE(config.get_abs_value("first_layer_height") == Approx(0.15));
+    REQUIRE(round_trip("use_relative_e_distances", "1") == "1");
+    for (const char* flavor : {"teacup", "mach3", "machinekit"}) REQUIRE(round_trip("gcode_flavor", flavor) == flavor);
+    REQUIRE(round_trip("fill_pattern", "stars") == "stars");
+    REQUIRE(round_trip("support_material_pattern", "pillars") == "pillars");
+    REQUIRE(round_trip("extruder_offset", "10x20,30x45") == "10x20,30x45");
+    REQUIRE(round_trip("extruder_offset", "0x0") == "0x0");
+    REQUIRE(config.opt<ConfigOptionPoints>("extruder_offset")->values.size() == 1);
+    REQUIRE(round_trip("nozzle_diameter", "0.1,0.4") == "0.1,0.4");
+    REQUIRE(round_trip("temperature", "195,220") == "195,220");
+    REQUIRE(round_trip("wipe", "0,1,1") == "0,1,1");
+    REQUIRE(config.opt<ConfigOptionBools>("wipe")->get_at(9) == false);  // beyond the end: the first
+    config.set_deserialize("wipe", "");
+    REQUIRE(config.opt<ConfigOptionBools>("wipe")->values.empty());
+    REQUIRE(round_trip("post_process", "bar;baz") == "bar;baz");
+
+    // lists of strings, quoted where needed
+    const std::vector<std::pair<std::vector<std::string>, std::string>> lists {
+        {{}, ""}, {{""}, "\"\""}, {{"RGB"}, "RGB"},
+        {{"ABC", "DEF", "09182745@!#$*(&"}, "ABC;DEF;09182745@!#$*(&"},
+        {{"ABC", "DEF", "", "09182745@!#$*(&", ""}, "ABC;DEF;;09182745@!#$*(&;"},
+        {{"some \"quoted\" notes", "yet\n some notes", "whatever \n notes", ""},
+            "\"some \\\"quoted\\\" notes\";\"yet\\n some notes\";\"whatever \\n notes\";"}};
+    for (const auto &list : lists) {
+        config.set_deserialize("filament_notes", "");
+        REQUIRE(config.opt<ConfigOptionStrings>("filament_notes")->values.empty());
+        auto* notes {config.opt<ConfigOptionStrings>("filament_notes")};
+        notes->values = list.first;
+        REQUIRE(config.serialize("filament_notes") == list.second);
+        config.set_deserialize("filament_notes", list.second);
+        REQUIRE(config.opt<ConfigOptionStrings>("filament_notes")->values == list.first);
+    }
+}
+
+TEST_CASE("Config normalization fills in extruders") {
+    {
+        DynamicPrintConfig config;
+        config.set_deserialize("extruder", "2");
+        config.set_deserialize("perimeter_extruder", "3");
+        config.normalize();
+        REQUIRE_FALSE(config.has("extruder"));
+        REQUIRE(config.serialize("infill_extruder") == "2");
+        REQUIRE(config.serialize("perimeter_extruder") == "3");
+    }
+    {
+        DynamicPrintConfig config;
+        config.set_deserialize("infill_extruder", "2");
+        config.normalize();
+        REQUIRE(config.serialize("solid_infill_extruder") == "2");
+    }
+    {
+        DynamicPrintConfig config;
+        config.set_deserialize("spiral_vase", "1");
+        config.set_deserialize("retract_layer_change", "1,0");
+        config.normalize();
+        REQUIRE(config.serialize("retract_layer_change") == "0,0");
+    }
+    DynamicPrintConfig bad;
+    REQUIRE_NOTHROW(bad.load(std::string(testfile_dir) + "test_config/bad_config_options.ini"));
+}
+
+TEST_CASE("Config from command line arguments") {
+    auto parse = [](std::vector<std::string> tokens) {
+        std::unique_ptr<DynamicPrintConfig> config {new DynamicPrintConfig()};
+        t_config_option_keys files;
+        config->read_cli(tokens, &files);
+        return config;
+    };
+    auto config = parse({"--extra-perimeters", "--perimeters", "1", "--layer-height", "0.45", "--fill-density", "70%",
+        "--detect-bridging-perimeters", "--notes=foobar"});
+    REQUIRE(config->serialize("extra_perimeters") == "1");
+    REQUIRE(config->serialize("perimeters") == "1");
+    REQUIRE(config->serialize("layer_height") == "0.45");
+    REQUIRE(config->serialize("fill_density") == "70%");
+    REQUIRE(config->serialize("overhangs") == "1");  // an alternative name
+    REQUIRE(config->serialize("notes") == "foobar");
+    REQUIRE(parse({"--extra-perimeters", "--no-extra-perimeters"})->serialize("extra_perimeters") == "0");
+    REQUIRE(parse({"--wipe", "--no-wipe", "--wipe"})->serialize("wipe") == "1,0,1");
+    REQUIRE(parse({"--post-process", "foo", "--post-process", "bar"})->serialize("post_process") == "foo;bar");
+    REQUIRE(parse({"--retract-speed", "0.4", "--retract-speed", "0.5"})->serialize("retract_speed") == "0.4,0.5");
+    REQUIRE(parse({"--extruder-offset", "0,0", "--extruder-offset", "10x5"})->serialize("extruder_offset") == "0x0,10x5");
+}

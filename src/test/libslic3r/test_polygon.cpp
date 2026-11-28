@@ -8,8 +8,7 @@
 using namespace Slic3r;
 
 
-// This test currently only covers remove_collinear_points.
-// All remaining tests are to be ported from xs/t/06_polygon.t
+// remove_collinear_points; the rest of Polygon is in test_primitives.cpp
 
 Points collinear_circle({
     Point::new_scale(0, 0), // 3 collinear points at beginning

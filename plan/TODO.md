@@ -26,8 +26,12 @@ Order: the missing features and the USB controller, then:
 
 ## Removing Perl (only when nothing would be lost)
 
-- [ ] Port the tests only Perl has: no C++ test file for points, lines, polylines,
-      clipper or the motion planner (`xs/t/`), and check `t/` case by case
+- [ ] More of the Perl pipeline tests, if wanted (the files are in git history; `xs/t/`
+      and `t/bridges`, `thin`, `cooling`, `retraction`, `custom_gcode` are ported). Not
+      ported, with only golden G-code or partial C++ cover: `gaps`, `combineinfill`,
+      `adaptive_width`, `multi` (toolchange area, interface shells), `perimeters`
+      (winding, seam, concave start), `shells` (spiral vase), and parts of `fill`,
+      `gcode`, `print`, `support`
 - [ ] Tag the last commit with Perl (`perl-final`)
 - [ ] Move the C++ core out of `xs/` (`LIBDIR` in `src/CMakeLists.txt`, keep
       `xs/src/slic3r/GUI/3DScene.*`), drop the `NO_PERL` conditional

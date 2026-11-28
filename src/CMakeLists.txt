@@ -317,16 +317,19 @@ set(SLIC3R_TEST_SOURCES
     ${TESTDIR}/libslic3r/test_flow.cpp
     ${TESTDIR}/libslic3r/test_gcodewriter.cpp
     ${TESTDIR}/libslic3r/test_gcode.cpp
+    ${TESTDIR}/libslic3r/test_gcode_math.cpp
     ${TESTDIR}/libslic3r/test_geometry.cpp
     ${TESTDIR}/libslic3r/test_log.cpp
     ${TESTDIR}/libslic3r/test_model.cpp
     ${TESTDIR}/libslic3r/test_polygon.cpp
+    ${TESTDIR}/libslic3r/test_primitives.cpp
     ${TESTDIR}/libslic3r/test_print.cpp
     ${TESTDIR}/libslic3r/test_printgcode.cpp
     ${TESTDIR}/libslic3r/test_printobject.cpp
     ${TESTDIR}/libslic3r/test_skirt_brim.cpp
     ${TESTDIR}/libslic3r/test_support_material.cpp
     ${TESTDIR}/libslic3r/test_test_data.cpp
+    ${TESTDIR}/libslic3r/test_toolpaths.cpp
     ${TESTDIR}/libslic3r/test_transformationmatrix.cpp
     ${TESTDIR}/libslic3r/test_trianglemesh.cpp
     ${TESTDIR}/libslic3r/test_extrusion_entity.cpp
