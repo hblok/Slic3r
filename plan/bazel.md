@@ -41,8 +41,8 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 | 3 | `log` | Boost.Locale, Boost.Algorithm | `log_test`: ported from `test_log.cpp` (its 80 checks less 3 repeats) | done |
 | 4 | `conditional_gcode` | `exprtk` | `conditional_gcode_test`: the `apply_math` checks of `test_gcode_math.cpp` | done |
 | 5 | `bspline`, `libslic3r` (common header), `layer_height_spline` | Boost.Thread | `layer_height_spline_test` (new) | done |
-| 6 | `utils` | `log` | new, small | next |
-| 7 | `gcode_sender` | Boost.Asio | new, with a pseudo terminal | |
+| 6 | `utils` | `log` | `utils_test` (new) | done |
+| 7 | `gcode_sender` | Boost.Asio | new, with a pseudo terminal | next |
 | 8 | `miniz`, `miniz_extension` | Boost.Nowide | new, small | |
 | 9 | `geometry` (15 units), after `clipper`, `admesh`, `poly2tri`, `polypartition` | Boost.Polygon | geometry, polygon, matrix tests | |
 | 10 | bridge detector, motion planner, adaptive slicing, surfaces | geometry | per target | |

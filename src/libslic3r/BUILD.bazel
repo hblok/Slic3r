@@ -50,3 +50,15 @@ cc_library(
         "//src/third_party:bspline",
     ],
 )
+
+cc_library(
+    name = "utils",
+    srcs = ["utils.cpp"],
+    hdrs = ["utils.hpp"],
+    includes = ["."],
+    deps = [
+        ":libslic3r_header",
+        ":log",
+        "@boost.system",
+    ],
+)
