@@ -35,8 +35,6 @@ Differences from the Perl GUI, to fix if they matter:
 
 ## Repo and release
 
-- [ ] Look at the first CI run after 2026-11-27 afternoon (new preview checks and the
-      `cpp_gui_plate.sh` step have not run on GitHub)
 - [ ] Upstream version tags are not on GitHub, so `git describe` in a fresh clone only
       finds `perl-final`. A clone with the `upstream` remote gets them with
       `git fetch upstream --tags` (done in the working copy 2026-11-28:
