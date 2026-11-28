@@ -1,0 +1,3 @@
+# links to the results go below build/ (ignored by git) instead of into the root
+common --symlink_prefix=build/bazel/
+test --test_output=errors

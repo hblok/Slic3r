@@ -1,0 +1,3 @@
+# CMake build directories (they hold other projects' files)
+build
+build-gui
