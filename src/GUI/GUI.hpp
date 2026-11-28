@@ -2,7 +2,6 @@
 #define GUI_HPP
 #include <wx/toplevel.h>
 #include "MainFrame.hpp"
-#include "Notifier.hpp"
 #include <string>
 #include <vector>
 #include <array>
@@ -52,7 +51,6 @@ public:
     void load_presets();
 
 private:
-    std::unique_ptr<Notifier> notifier {nullptr};
 
     const std::string LogChannel {"APP"}; //< Which log these messages should go to.
 

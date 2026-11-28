@@ -10,8 +10,10 @@ Perl is gone; the GUI has been checked only under Xvfb.
 - [ ] Try drag and drop (the "Add…" dialog was tried once, 2026-11-28)
 - [ ] Not tried against hardware or real servers: the serial and OctoPrint "Test"
       buttons, "Browse…" (needs `avahi-browse`), the DLP projector
-- [ ] `-DGUI_BUILD_TESTS=ON` (the Catch GUI tests in `src/test/GUI`) not built since the
-      preset and options code changed
+- [ ] The Catch GUI tests left in `src/test/GUI` (presets, preset chooser, number
+      formatting; `-DGUI_BUILD_TESTS=ON`) are not run: `test_harness_gui.cpp` needs
+      `CATCH_CONFIG_NO_POSIX_SIGNALS` to compile and the two preset chooser tests fail.
+      Revive them or remove them
 
 Differences from the Perl GUI, to fix if they matter:
 
@@ -21,6 +23,7 @@ Differences from the Perl GUI, to fix if they matter:
 - Importing a config bundle never overwrites an existing preset
 - The conflict rules of the preset editors run on a change, not when a preset is loaded
 - `--load` does not look beside the program for a file that is not found
+- The Solarized colour scheme keeps the default toolbar icons
 
 ## Needs the printer
 

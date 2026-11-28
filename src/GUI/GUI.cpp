@@ -32,7 +32,6 @@ bool App::OnInit()
                   << cond << " " << msg << std::endl;
     });
     this->SetAppName("Slic3r");
-    this->notifier = std::unique_ptr<Notifier>();
     
     if (datadir.empty())
         datadir = decode_path(wxStandardPaths::Get().GetUserDataDir());

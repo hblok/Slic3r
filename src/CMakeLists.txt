@@ -296,16 +296,6 @@ set(UI_TEST_SOURCES
     slic3r.cpp
     ${GUI_TESTDIR}/testableframe.cpp
     ${GUI_TESTDIR}/test_harness_gui.cpp
-    ${GUI_TESTDIR}/test_field_checkbox.cpp
-    ${GUI_TESTDIR}/test_field_spinctrl.cpp
-    ${GUI_TESTDIR}/test_field_textbox.cpp
-    ${GUI_TESTDIR}/test_field_choice.cpp
-    ${GUI_TESTDIR}/test_field_numchoice.cpp
-    ${GUI_TESTDIR}/test_field_point.cpp
-    ${GUI_TESTDIR}/test_field_point3.cpp
-    ${GUI_TESTDIR}/test_field_colorpicker.cpp
-    ${GUI_TESTDIR}/test_field_slider.cpp
-    ${GUI_TESTDIR}/test_optionsgroup.cpp
     ${GUI_TESTDIR}/test_preset.cpp
     ${GUI_TESTDIR}/test_preset_chooser.cpp
     ${GUI_TESTDIR}/test_misc_ui.cpp
@@ -463,12 +453,6 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
     ${GUI_LIBDIR}/ProgressStatusBar.cpp
     ${GUI_LIBDIR}/Settings.cpp
     ${GUI_LIBDIR}/misc_ui.cpp
-    ${GUI_LIBDIR}/OptionsGroup/UI_NumChoice.cpp
-    ${GUI_LIBDIR}/OptionsGroup/UI_Choice.cpp
-    ${GUI_LIBDIR}/OptionsGroup/UI_Point.cpp
-    ${GUI_LIBDIR}/OptionsGroup/UI_Point3.cpp
-    ${GUI_LIBDIR}/OptionsGroup/UI_Color.cpp
-    ${GUI_LIBDIR}/OptionsGroup/UI_Slider.cpp
     ${GUI_LIBDIR}/3DScene.cpp
     )
     target_compile_features(slic3r_gui PUBLIC cxx_std_14)
