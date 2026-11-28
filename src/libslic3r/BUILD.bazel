@@ -144,3 +144,49 @@ cc_library(
         "@boost.thread",
     ],
 )
+
+cc_library(
+    name = "bridge_detector",
+    srcs = ["BridgeDetector.cpp"],
+    hdrs = ["BridgeDetector.hpp"],
+    includes = ["."],
+    deps = [
+        ":geometry",
+        ":libslic3r_header",
+    ],
+)
+
+cc_library(
+    name = "motion_planner",
+    srcs = ["MotionPlanner.cpp"],
+    hdrs = ["MotionPlanner.hpp"],
+    includes = ["."],
+    deps = [
+        ":geometry",
+        ":libslic3r_header",
+        "@boost.polygon",
+    ],
+)
+
+cc_library(
+    name = "slicing_adaptive",
+    srcs = ["SlicingAdaptive.cpp"],
+    hdrs = ["SlicingAdaptive.hpp"],
+    includes = ["."],
+    deps = [
+        ":geometry",
+        ":libslic3r_header",
+        "//src/third_party:admesh",
+    ],
+)
+
+cc_library(
+    name = "surface_collection",
+    srcs = ["SurfaceCollection.cpp"],
+    hdrs = ["SurfaceCollection.hpp"],
+    includes = ["."],
+    deps = [
+        ":geometry",
+        ":libslic3r_header",
+    ],
+)

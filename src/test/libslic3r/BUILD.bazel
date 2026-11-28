@@ -103,3 +103,64 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "primitives_test",
+    size = "small",
+    srcs = ["primitives_test.cpp"],
+    deps = [
+        "//src/libslic3r:geometry",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "medial_axis_test",
+    size = "small",
+    srcs = ["medial_axis_test.cpp"],
+    deps = [
+        "//src/libslic3r:geometry",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "bridge_detector_test",
+    size = "small",
+    srcs = ["bridge_detector_test.cpp"],
+    deps = [
+        "//src/libslic3r:bridge_detector",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "motion_planner_test",
+    size = "small",
+    srcs = ["motion_planner_test.cpp"],
+    deps = [
+        "//src/libslic3r:motion_planner",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "slicing_adaptive_test",
+    size = "small",
+    srcs = ["slicing_adaptive_test.cpp"],
+    deps = [
+        "//src/libslic3r:geometry",
+        "//src/libslic3r:slicing_adaptive",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "surface_collection_test",
+    size = "small",
+    srcs = ["surface_collection_test.cpp"],
+    deps = [
+        "//src/libslic3r:surface_collection",
+        "@googletest//:gtest_main",
+    ],
+)

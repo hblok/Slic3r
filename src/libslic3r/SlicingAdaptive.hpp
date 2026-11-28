@@ -1,6 +1,7 @@
 #ifndef slic3r_SlicingAdaptive_hpp_
 #define slic3r_SlicingAdaptive_hpp_
 
+#include "libslic3r.h"
 #include "admesh/stl.h"
 
 namespace Slic3r
