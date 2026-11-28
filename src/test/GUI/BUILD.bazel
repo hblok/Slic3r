@@ -1,0 +1,29 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("//bazel:gui_test.bzl", "gui_test")
+
+# Tests of the GUI targets, each under Xvfb. The test_*.cpp files here are the Catch
+# tests of the CMake build; they go as their cases are ported.
+
+cc_library(
+    name = "gui_test_main",
+    testonly = True,
+    srcs = ["gui_test_main.cpp"],
+    tags = ["gui"],
+    deps = [
+        "@googletest//:gtest",
+        "@wxwidgets",
+    ],
+)
+
+gui_test(
+    name = "misc_ui_test",
+    srcs = ["misc_ui_test.cpp"],
+    deps = ["//src/GUI:misc_ui"],
+)
+
+gui_test(
+    name = "preset_test",
+    srcs = ["preset_test.cpp"],
+    data = ["//src/test:inputs"],
+    deps = ["//src/GUI:preset"],
+)
