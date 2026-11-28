@@ -39,6 +39,7 @@ Differences from the Perl GUI, to fix if they matter:
       `git describe --match '[0-9]*'` says 1.3.0-…). Push them to the fork? Owner's call
 - [ ] `.deb` for Debian 13, built by CI, published as a GitHub release
 
-## Later
+## Next: Bazel
 
-- [ ] Build with Bazel
+- [ ] Answer the [questions in the Bazel plan](bazel.md#questions-for-the-owner), then
+      build it step by step (`.deb` comes after it, if question 5 stands)
