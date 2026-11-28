@@ -21,6 +21,12 @@ before proposing a change of direction.
 All C++ since 2026-11-28. The Perl program (GUI, bindings, tests) is in git history; the
 tag `perl-final` is the last commit with all of it.
 
+## Bazel (being introduced)
+
+`bazel test //...` (version in `.bazelversion`; result links in `build/bazel/`). So far
+only an empty test: [plan/bazel.md](plan/bazel.md) says what comes next, one small
+target with its test at a time. CMake below remains the real build.
+
 ## Tests: two labelled sets
 
 | Set | Command | What | Limit |

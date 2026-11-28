@@ -37,9 +37,11 @@ Differences from the Perl GUI, to fix if they matter:
       finds `perl-final`. A clone with the `upstream` remote gets them with
       `git fetch upstream --tags` (done in the working copy 2026-11-28:
       `git describe --match '[0-9]*'` says 1.3.0-…). Push them to the fork? Owner's call
-- [ ] `.deb` for Debian 13, built by CI, published as a GitHub release
+- [ ] `.deb` for Debian 13, built by CI, published as a GitHub release (much later,
+      after the Bazel move)
 
 ## Next: Bazel
 
-- [ ] Answer the [questions in the Bazel plan](bazel.md#questions-for-the-owner), then
-      build it step by step (`.deb` comes after it, if question 5 stands)
+- [x] An empty Google Test builds, runs and passes (`bazel test //...`, 2026-11-28)
+- [ ] Next [step](bazel.md#steps): the `exception` target and its test. Answer the
+      [open questions](bazel.md#open-questions) (`.deb` comes much later)

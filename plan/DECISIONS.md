@@ -29,3 +29,11 @@
   scripts were dropped rather than ported: `wireframe.pl`, `gcode_sectioncut.pl`.
 - The translation files (`translation/`, `share/locale/`) are removed: neither program
   loaded them. For translations later, start from those at the tag `perl-final`.
+- Move to Bazel (9.3.3, the latest): libraries such as Boost come from the Bazel Central
+  Registry; CMake goes once Bazel matches it; two programs, with and without the GUI; a
+  `.deb` much later. Builds run in a container (a build container later); installing
+  build packages in the development container is fine.
+- Bazel step by step: first an empty test, then small isolated targets (down to one
+  file) with a test each, built up one by one, the GUI after the core. See
+  [bazel.md](bazel.md).
+
