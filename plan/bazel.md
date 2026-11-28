@@ -43,8 +43,8 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 | 5 | `bspline`, `libslic3r` (common header), `layer_height_spline` | Boost.Thread | `layer_height_spline_test` (new) | done |
 | 6 | `utils` | `log` | `utils_test` (new) | done |
 | 7 | `gcode_sender` | Boost.Asio | `gcode_sender_test` (new): a pseudo terminal as the printer | done |
-| 8 | `miniz`, `miniz_extension` | Boost.Nowide | new, small | next |
-| 9 | `geometry` (15 units), after `clipper`, `admesh`, `poly2tri`, `polypartition` | Boost.Polygon | geometry, polygon, matrix tests | |
+| 8 | `miniz`, `miniz_extension` | `exception` | `miniz_extension_test` (new): a zip file there and back | done |
+| 9 | `geometry` (15 units), after `clipper`, `admesh`, `poly2tri`, `polypartition` | Boost.Polygon | geometry, polygon, matrix tests | next |
 | 10 | bridge detector, motion planner, adaptive slicing, surfaces | geometry | per target | |
 | 11 | config: base, print config, parser, G-code reader and writer, extruder, filters | geometry | config and G-code tests | |
 | 12 | extrusion entities, flow, perimeters, `fill` (7 units) | config | per target | |

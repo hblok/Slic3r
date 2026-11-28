@@ -19,3 +19,11 @@ cc_library(
     copts = ["-w"],
     includes = ["."],
 )
+
+cc_library(
+    name = "miniz",
+    srcs = ["miniz/miniz.c"],
+    hdrs = ["miniz/miniz.h"],
+    copts = ["-w"],
+    includes = ["."],
+)

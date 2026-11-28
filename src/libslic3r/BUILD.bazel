@@ -79,3 +79,14 @@ cc_library(
         "@boost.thread",
     ],
 )
+
+cc_library(
+    name = "miniz_extension",
+    srcs = ["miniz_extension.cpp"],
+    hdrs = ["miniz_extension.hpp"],
+    includes = ["."],
+    deps = [
+        ":exception",
+        "//src/third_party:miniz",
+    ],
+)
