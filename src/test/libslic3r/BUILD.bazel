@@ -477,3 +477,14 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "tree_obstacles_test",
+    size = "small",
+    srcs = ["tree_obstacles_test.cpp"],
+    deps = [
+        "//src/libslic3r:tree_obstacles",
+        "@googletest//:gtest_main",
+    ],
+)
+

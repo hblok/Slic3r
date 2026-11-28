@@ -514,3 +514,23 @@ cc_library(
         ":slicing_core",
     ],
 )
+
+# Support models: what stands under a support's interface layers (plan/tree-support.md).
+cc_library(
+    name = "support_model",
+    hdrs = ["Support/Model.hpp"],
+    includes = ["."],
+    deps = [":geometry"],
+)
+
+cc_library(
+    name = "tree_obstacles",
+    srcs = ["Support/TreeObstacles.cpp"],
+    hdrs = ["Support/TreeObstacles.hpp"],
+    includes = ["."],
+    deps = [
+        ":geometry",
+        ":support_model",
+    ],
+)
+

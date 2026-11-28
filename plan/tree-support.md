@@ -54,7 +54,7 @@ the header comments.
 
 ## Steps
 
-- [ ] `Model`, `Obstacles`
+- [x] `Model`, `Obstacles`
 - [ ] `GridTips`
 - [ ] `MergingGrowth`
 - [ ] `TreeModel`
