@@ -39,4 +39,5 @@
 - No code restructuring just for tests: files that need each other are one Bazel target.
   Existing C++ tests are ported to Google Test. Boost: whichever version is most
   convenient (1.90, see [bazel.md](bazel.md)). Bazel in CI later.
+- Continue with the Bazel steps without waiting after each; CMake to be phased out soon.
 

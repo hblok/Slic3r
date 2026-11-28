@@ -16,7 +16,7 @@ Goal: build, test and package with Bazel, then remove CMake.
   target.
 - The existing Catch tests are ported to Google Test as their targets arrive, to
   `<name>_test.cpp` beside them; the `test_*.cpp` files stay for CMake until it goes.
-- CMake stays unchanged and authoritative until Bazel matches it.
+- CMake stays authoritative until Bazel matches it, and is then removed soon.
 - We build inside a container (the development one for now; a build container later).
 
 ## What the code allows
@@ -62,11 +62,17 @@ Steps 9 to 15 are split further when we get there: one target (or one test) per 
 Libraries come from the Bazel Central Registry.
 
 - **Google Test** 1.18.0: in use.
-- **Boost** 1.90.0.bcr.1, one module per library as targets need them. Tried
-  2026-11-28: all 63 `libslic3r` files compile with it, after `ConfigBase.cpp` includes
-  `boost/nowide/cstdlib.hpp` for `cenv.hpp` (step 11). 1.83.0, Debian 13's version, is
-  not possible: the registry has no Boost.Nowide that old. CMake keeps using 1.83, so
-  compare the G-code of both (step 14).
+- **Boost** 1.90.0.bcr.1, one module per library as targets need them. Bazel builds it
+  from source and links it into the programs, so the installed Boost is not used. CMake
+  uses Debian's 1.83; 1.83 is no choice for Bazel (the registry has no Boost.Nowide that
+  old). Checked 2026-11-28 with Debian 13's compiler and the CMake flags: the whole
+  program and all tests built against 1.90 give identical golden G-code, pass the command
+  line checks and the 101 test cases. One change is needed: `ConfigBase.cpp` includes
+  `boost/nowide/cstdlib.hpp` instead of `cenv.hpp` (step 11).
+- **Where to build.** A program Bazel builds needs only the C and C++ runtime of the
+  system (and wxWidgets for the GUI), but those must be as new as the build machine's:
+  build releases on Debian 13 (later: the build container). Test programs are linked
+  against files in Bazel's output tree and run through `bazel test`.
 - **wxWidgets** is not in the registry (looked for `wxwidgets` and `wxwidget`). For step
   15 it comes from the system (installing build packages in the container is agreed), or
   Bazel builds it from source with `rules_foreign_cc`. Decided then.
