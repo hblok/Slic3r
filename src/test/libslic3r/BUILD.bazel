@@ -32,3 +32,13 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "layer_height_spline_test",
+    size = "small",
+    srcs = ["layer_height_spline_test.cpp"],
+    deps = [
+        "//src/libslic3r:layer_height_spline",
+        "@googletest//:gtest_main",
+    ],
+)

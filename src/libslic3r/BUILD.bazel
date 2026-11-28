@@ -27,3 +27,26 @@ cc_library(
     includes = ["."],
     deps = ["//src/third_party:exprtk"],
 )
+
+# libslic3r.h: constants, types and thread helpers that nearly everything includes.
+# CONFESS() needs :utils to link.
+cc_library(
+    name = "libslic3r_header",
+    hdrs = ["libslic3r.h"],
+    includes = ["."],
+    deps = [
+        "@boost.function",
+        "@boost.thread",
+    ],
+)
+
+cc_library(
+    name = "layer_height_spline",
+    srcs = ["LayerHeightSpline.cpp"],
+    hdrs = ["LayerHeightSpline.hpp"],
+    includes = ["."],
+    deps = [
+        ":libslic3r_header",
+        "//src/third_party:bspline",
+    ],
+)

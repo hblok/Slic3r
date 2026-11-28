@@ -8,3 +8,14 @@ cc_library(
     hdrs = ["exprtk/exprtk.hpp"],
     includes = ["."],
 )
+
+cc_library(
+    name = "bspline",
+    srcs = ["BSpline/BSpline.cpp"],
+    hdrs = [
+        "BSpline/BSpline.h",
+        "BSpline/BandedMatrix.h",
+    ],
+    copts = ["-w"],
+    includes = ["."],
+)
