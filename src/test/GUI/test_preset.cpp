@@ -193,3 +193,16 @@ SCENARIO( "Preset loading" ) {
         }
     }
 }
+
+// "compatible_printers" is in both the print and the material editor's list: loading
+// either kind of preset dropped it, and saving the preset then wrote it empty
+TEST_CASE("Compatible printers survive loading and saving a preset") {
+    for (const auto group : {preset_t::Print, preset_t::Material}) {
+        Preset item {std::string(testfile_dir) + "test_preset_chooser", "incompat-material-profile.ini"s, group};
+        REQUIRE(item.compatible("printer-profile-2"s));
+        REQUIRE_FALSE(item.compatible("printer-profile"s));
+        item.load_config();
+        REQUIRE_FALSE(item.dirty());
+        REQUIRE(item.config_to_save().config().serialize("compatible_printers") == "printer-profile-2;nothing");
+    }
+}

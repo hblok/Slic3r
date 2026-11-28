@@ -34,13 +34,16 @@ Preset::Preset(std::string load_dir, std::string filename, preset_t p) : group(p
     this->_config = Slic3r::Config::new_from_ini(_file.GetFullPath().ToStdString());
     // a full configuration loaded as a preset holds the other groups' settings too, and
     // would override what is edited there: drop them (keys no editor knows stay)
-    const t_config_option_keys own {this->_group_overrides()};
+    // what this group has itself stays: "compatible_printers" is in two groups' lists,
+    // and a material's overrides of printer settings are its own
+    t_config_option_keys own {this->_group_keys()};
+    const t_config_option_keys overrides {this->_group_overrides()};
+    own.insert(own.end(), overrides.begin(), overrides.end());
     for (const auto& others : {std::make_pair(preset_t::Print, PrintEditor::options()),
             std::make_pair(preset_t::Material, MaterialEditor::options()),
             std::make_pair(preset_t::Printer, PrinterEditor::options())}) {
         if (others.first == this->group) continue;
         for (const auto& key : others.second) {
-            // a material's overrides of printer settings are its own
             if (std::find(own.begin(), own.end(), key) != own.end()) continue;
             this->_config->config().erase(key);
             this->_dirty_config->config().erase(key);

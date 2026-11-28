@@ -1,4 +1,5 @@
 #define CATCH_CONFIG_RUNNER
+#define CATCH_CONFIG_NO_POSIX_SIGNALS  // Catch 2.4.2 and newer glibc
 #include <catch.hpp>
 #include "wx/wx.h"
 
