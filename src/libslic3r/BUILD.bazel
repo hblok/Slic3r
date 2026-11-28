@@ -468,6 +468,8 @@ cc_library(
         ":pressure_regulator",
         ":print_config",
         ":slicing_adaptive",
+        ":support_model",
+        ":support_models",
         ":surface_collection",
         ":utils",
         ":vibration_limit",
@@ -564,6 +566,19 @@ cc_library(
         ":tree_growth",
         ":tree_obstacles",
         ":tree_tips",
+    ],
+)
+
+# the one place that knows every support model
+cc_library(
+    name = "support_models",
+    srcs = ["Support/Models.cpp"],
+    hdrs = ["Support/Models.hpp"],
+    includes = ["."],
+    deps = [
+        ":print_config",
+        ":support_model",
+        ":tree_model",
     ],
 )
 

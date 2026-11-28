@@ -3627,7 +3627,11 @@ M140 S0 ; set bed temperature
 ; support_material_pillar_spacing = 10
 ; support_material_spacing = 2.5
 ; support_material_speed = 60
+; support_material_style = normal
 ; support_material_threshold = 60%
+; support_material_tree_angle = 40
+; support_material_tree_branch_diameter = 5
+; support_material_tree_tip_spacing = 3
 ; xy_size_compensation = 0
 ; bottom_infill_pattern = monotonic
 ; bottom_solid_layers = 3

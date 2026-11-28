@@ -44,6 +44,8 @@ See [slic3r.org](https://slic3r.org/), the original project's homepage, for back
 (Most of these are also available in the command line interface.)
 
 * **G-code generation** for FFF/FDM printers;
+* **support material**: pillars or grids, and tree supports (new in this fork, experimental:
+  not yet tried on a printer);
 * **conversion** between STL, OBJ, AMF, 3MF and POV formats;
 * **auto-repair** of non-manifold meshes (and ability to re-export them);
 * **SVG export** of slices;

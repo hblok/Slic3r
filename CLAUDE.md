@@ -12,6 +12,7 @@ before proposing a change of direction.
 | Path | What |
 |---|---|
 | `src/libslic3r/` | C++ slicing core |
+| `src/libslic3r/Support/` | support models (tree supports), [plan/tree-support.md](plan/tree-support.md) |
 | `src/` | the program (`slic3r.cpp`), tests (`src/test/`) |
 | `src/GUI/` | GUI (wxWidgets 3.2) |
 | `src/third_party/` | libraries from other projects (admesh, Clipper, poly2tri, expat, miniz, ...) |

@@ -72,13 +72,16 @@ void PresetEditor::apply_rules() {
         enable({"brim_ears_max_angle"}, brim && v.on("brim_ears"));
         const bool support {v.on("support_material") || v.on("raft_layers")};
         const bool interface {v.on("support_material_interface_layers")};
-        enable({"support_material_threshold", "support_material_pattern", "support_material_spacing",
+        enable({"support_material_threshold", "support_material_style", "support_material_pattern", "support_material_spacing",
             "support_material_angle", "support_material_interface_layers", "dont_support_bridges",
             "support_material_extrusion_width", "support_material_interface_extrusion_width",
             "support_material_contact_distance"}, support);
         enable({"support_material_max_layers"}, v.on("support_material"));
+        const bool tree {support && v.text("support_material_style") == "tree"};
         enable({"support_material_pillar_size", "support_material_pillar_spacing"},
-            support && v.text("support_material_pattern") == "pillars");
+            support && !tree && v.text("support_material_pattern") == "pillars");
+        enable({"support_material_tree_angle", "support_material_tree_branch_diameter",
+            "support_material_tree_tip_spacing"}, tree);
         enable({"support_material_interface_spacing", "support_material_interface_extruder",
             "support_material_interface_speed"}, support && interface);
         enable({"perimeter_extrusion_width"}, perimeters || skirt || brim);

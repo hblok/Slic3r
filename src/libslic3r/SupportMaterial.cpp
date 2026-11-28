@@ -1,5 +1,6 @@
 #include "SupportMaterial.hpp"
 #include "Log.hpp"
+#include "Support/Models.hpp"
 #include <cstdio>
 #include <cstdlib>
 
@@ -74,7 +75,8 @@ SupportMaterial::generate_toolpaths(PrintObject *object,
         params.angles.push_back(params.angles[0] + 90);
     }
     else if (params.pattern == smpPillars) {
-        params.pattern = smpHoneycomb;
+        // honeycomb fills the pillars; the branches of other styles are filled plainly
+        params.pattern = object_config->support_material_style.value == smsNormal ? smpHoneycomb : smpRectilinear;
     }
     params.interface_angle = object_config->support_material_angle.value + 90;
     params.interface_spacing = object_config->support_material_interface_spacing.value + interface_flow.spacing();
@@ -121,8 +123,10 @@ SupportMaterial::generate(PrintObject *object)
                                                   get_max_layer_height(object));
     // If we wanted to apply some special logic to the first support layers lying on
     // object's top surfaces this is the place to detect them.
+    // A style with a model of its own replaces the pillar shape and the base layers.
+    const std::unique_ptr<Support::Model> model {Support::make_model(*object_config, flow.width)};
     map<int, Polygons> shape;
-    if (object_config->support_material_pattern.value == smpPillars)
+    if (!model && object_config->support_material_pattern.value == smpPillars)
         this->generate_pillars_shape(contact, support_z, shape);
 
     // Propagate contact layers downwards to generate interface layers.
@@ -132,7 +136,9 @@ SupportMaterial::generate(PrintObject *object)
         clip_with_shape(_interface, shape);
     // Propagate contact layers and interface layers downwards to generate
     // the main support layers.
-    map<int, Polygons> base = generate_base_layers(support_z, contact, _interface, top);
+    map<int, Polygons> base = model
+        ? model_base_layers(*model, support_z, contact, _interface, *object)
+        : generate_base_layers(support_z, contact, _interface, top);
     clip_with_object(base, support_z, *object);
     if (!shape.empty())
         clip_with_shape(base, shape);
@@ -153,6 +159,8 @@ SupportMaterial::generate(PrintObject *object)
             object->support_layers.end()[-1]->lower_layer = object->support_layers.end()[-2];
         }
     }
+    // Without interface layers the contact areas are printed as base, which then needs filling.
+    this->base_infill = !model || model->infill() || object_config->support_material_interface_layers.value == 0;
     // Generate the actual toolpaths and save them into each layer.
     generate_toolpaths(object, overhang, contact, _interface, base);
 }
@@ -746,6 +754,49 @@ SupportMaterial::generate_base_layers(vector<coordf_t> support_z,
 }
 
 map<int, Polygons>
+SupportMaterial::model_base_layers(const Support::Model &model,
+                                   const vector<coordf_t> &support_z,
+                                   const map<coordf_t, Polygons> &contact,
+                                   const map<int, Polygons> &_interface,
+                                   const PrintObject &object)
+{
+    // With a raft, the lowest contact is the object's own footprint: everything under it is
+    // solid raft, and the model builds only what is above.
+    const bool raft {object_config->raft_layers > 0 && !contact.empty()};
+
+    vector<Support::Slab> slabs(support_z.size());
+    for (size_t i = 0; i < support_z.size(); ++i) {
+        Support::Slab &slab = slabs[i];
+        slab.z = support_z[i];
+        slab.height = support_z[i] - (i == 0 ? 0 : support_z[i - 1]);
+        for (const Layer *layer : object.layers)
+            if (layer->print_z > slab.z - slab.height && (layer->print_z - layer->height) < slab.z)
+                append_to(slab.object, Polygons(layer->slices));
+        if (raft && slab.z <= contact.begin()->first) continue;
+        if (contact.count(slab.z) > 0)
+            append_to(slab.roof, contact.at(slab.z));
+        if (_interface.count(i) > 0)
+            append_to(slab.roof, _interface.at(i));
+    }
+
+    const vector<Polygons> areas {model.base(slabs)};
+    map<int, Polygons> base;
+    for (size_t i = 0; i < support_z.size(); ++i) {
+        Polygons ps {areas.at(i)};
+        if (raft && support_z[i] < contact.begin()->first)
+            append_to(ps, contact.begin()->second);
+        // what is contact or interface on this layer is printed as that
+        Polygons roof;
+        if (contact.count(support_z[i]) > 0)
+            append_to(roof, contact.at(support_z[i]));
+        if (_interface.count(i) > 0)
+            append_to(roof, _interface.at(i));
+        base[i] = diff(ps, roof, true);
+    }
+    return base;
+}
+
+map<int, Polygons>
 SupportMaterial::generate_interface_layers(vector<coordf_t> support_z,
                                            map<coordf_t, Polygons> contact,
                                            map<coordf_t, Polygons> top)
@@ -1174,7 +1225,8 @@ SupportMaterial::process_layer(int layer_id, toolpaths_params params)
             }
 
             // TODO: use offset2_ex()
-            new_to_infill = offset_ex(to_infill, -_flow.scaled_spacing());
+            if (this->base_infill || layer_id < object_config->raft_layers)
+                new_to_infill = offset_ex(to_infill, -_flow.scaled_spacing());
         }
 
         auto mm3_per_mm = base_flow->mm3_per_mm();

@@ -23,6 +23,9 @@ public:
     /// The areas to print as support base: one entry per slab, in the same order (bottom
     /// first). Areas reaching into the model are cut away afterwards.
     virtual std::vector<Polygons> base(const std::vector<Slab> &slabs) const = 0;
+    /// Whether the base areas get infill, or only their wall. (The first layer, rafts and
+    /// contact areas are filled either way.)
+    virtual bool infill() const { return true; }
 };
 
 }}

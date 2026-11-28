@@ -69,11 +69,15 @@ void PrintEditor::_build() {
         auto raft {this->add_group(page, _("Raft"))};
         this->add_option(raft, "raft_layers");
         auto options {this->add_group(page, _("Options for support material and raft"))};
-        for (const char* key : {"support_material_contact_distance", "support_material_pattern",
+        for (const char* key : {"support_material_style", "support_material_contact_distance", "support_material_pattern",
                 "support_material_spacing", "support_material_angle", "support_material_pillar_size",
                 "support_material_pillar_spacing", "support_material_interface_layers",
                 "support_material_interface_spacing", "support_material_buildplate_only", "dont_support_bridges"})
             this->add_option(options, key);
+        auto tree {this->add_group(page, _("Tree support"))};
+        for (const char* key : {"support_material_tree_angle", "support_material_tree_branch_diameter",
+                "support_material_tree_tip_spacing"})
+            this->add_option(tree, key);
     }
     {
         auto* page {this->add_options_page(_("Speed"), "time.png")};

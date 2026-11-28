@@ -518,3 +518,13 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "support_models_test",
+    size = "small",
+    srcs = ["support_models_test.cpp"],
+    deps = [
+        "//src/libslic3r:support_models",
+        "@googletest//:gtest_main",
+    ],
+)
+

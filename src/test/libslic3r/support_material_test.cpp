@@ -307,3 +307,90 @@ TEST(SupportMaterial, BridgesOverSupportOnlyAtAContactDistance) {
         EXPECT_FALSE(has_bridge_speed(raft_layers, 0)) << raft_layers << " raft layers";
     }
 }
+
+namespace {
+
+/// The table model sliced with support in this style.
+struct Supported {
+    Slic3r::config_ptr config {Slic3r::Config::new_from_defaults()};
+    Slic3r::Model model;
+    shared_Print print;
+    explicit Supported(const std::string &style, int raft_layers = 0) {
+        config->set("support_material", true);
+        config->set("support_material_style", style);
+        config->set("raft_layers", raft_layers);
+        print = Slic3r::Test::init_print({Slic3r::Test::TestMesh::overhang}, model, config);
+        print->objects.front()->generate_support_material();
+    }
+    const PrintObject &object() const { return *print->objects.front(); }
+};
+
+double total_length(const ExtrusionEntityCollection &entities) {
+    double sum {0};
+    for (const ExtrusionEntity *entity : entities.flatten().entities) sum += entity->length();
+    return sum * SCALING_FACTOR;
+}
+
+Polylines paths(const ExtrusionEntityCollection &entities) {
+    Polylines lines;
+    for (const ExtrusionEntity *entity : entities.flatten().entities) lines.push_back(entity->as_polyline());
+    return lines;
+}
+
+double length_mm(const Polylines &lines) {
+    double sum {0};
+    for (const Polyline &line : lines) sum += line.length();
+    return sum * SCALING_FACTOR;
+}
+
+} // namespace
+
+TEST(SupportMaterial, TreeBranchesStandOnWhatIsBelowThem) {
+    const Supported tree("tree");
+    const auto &layers {tree.object().support_layers};
+    ASSERT_GT(layers.size(), 5u);
+    double all {0}, hanging {0};
+    for (size_t i = 1; i < layers.size(); ++i) {
+        // the support below, and the model where a branch comes down on it
+        Polygons below {to_polygons(layers[i - 1]->support_islands.expolygons)};
+        for (const Layer *layer : tree.object().layers)
+            if (layer->print_z <= layers[i - 1]->print_z + EPSILON
+                    && layer->print_z > layers[i - 1]->print_z - 1)
+                append_to(below, Polygons(layer->slices));
+        const Polylines base {paths(layers[i]->support_fills)};
+        all += length_mm(base);
+        hanging += length_mm(diff_pl(base, offset(below, scale_(1.0))));
+    }
+    EXPECT_GT(all, 100);
+    EXPECT_LT(hanging, all / 100);
+}
+
+TEST(SupportMaterial, TreeBranchesStayOutOfTheModel) {
+    const Supported tree("tree");
+    for (const SupportLayer *support : tree.object().support_layers)
+        for (const Layer *layer : tree.object().layers) {
+            if (std::abs(layer->print_z - support->print_z) > EPSILON) continue;
+            EXPECT_LT(length_mm(intersection_pl(paths(support->support_fills), Polygons(layer->slices))), 0.01)
+                << "at " << support->print_z;
+        }
+}
+
+TEST(SupportMaterial, TreeHasTheSameLayersAsNormalSupportAndItsInterface) {
+    const Supported normal("normal"), tree("tree");
+    ASSERT_EQ(tree.object().support_layers.size(), normal.object().support_layers.size());
+    double base {0};
+    for (const SupportLayer *layer : tree.object().support_layers) base += total_length(layer->support_fills);
+    EXPECT_GT(base, 0);
+    EXPECT_FALSE(tree.object().support_layers.back()->support_interface_fills.entities.empty());
+}
+
+TEST(SupportMaterial, TreeKeepsTheRaftSolid) {
+    const Supported normal("normal", 3), tree("tree", 3);
+    for (size_t i = 0; i < 3; ++i) {
+        const SupportLayer *a {normal.object().support_layers.at(i)}, *b {tree.object().support_layers.at(i)};
+        const double solid {total_length(a->support_fills) + total_length(a->support_interface_fills)};
+        const double of_tree {total_length(b->support_fills) + total_length(b->support_interface_fills)};
+        // at least as much as the raft under the model itself needs
+        EXPECT_GT(of_tree, solid / 3) << "raft layer " << i;
+    }
+}

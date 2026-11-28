@@ -18,6 +18,7 @@
 #include "Polygon.hpp"
 #include "Print.hpp"
 #include "PrintConfig.hpp"
+#include "Support/Model.hpp"
 #include "SVG.hpp"
 
 using namespace std;
@@ -103,6 +104,13 @@ public:
                                             map<int, Polygons> _interface,
                                             map<coordf_t, Polygons> top);
 
+    /// The base layers of a support style that has a model of its own.
+    map<int, Polygons> model_base_layers(const Support::Model &model,
+                                         const vector<coordf_t> &support_z,
+                                         const map<coordf_t, Polygons> &contact,
+                                         const map<int, Polygons> &_interface,
+                                         const PrintObject &object);
+
     map<int, Polygons> generate_interface_layers(vector<coordf_t> support_z,
                                                  map<coordf_t, Polygons> contact,
                                                  map<coordf_t, Polygons> top);
@@ -155,6 +163,7 @@ private:
     Polygon create_circle(coordf_t radius);
 
     // Used during generate_toolpaths function.
+    bool base_infill {true};  ///< else base areas are only walled (a Support::Model's choice)
     PrintObject *object;
     map<coordf_t, Polygons> overhang;
     map<coordf_t, Polygons> contact;

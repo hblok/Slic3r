@@ -105,6 +105,10 @@ TEST(TreeModel, AWideModelUnderTheRoofCarriesTheTree) {
     for (size_t i = 0; i < 20; ++i) EXPECT_TRUE(base[i].empty()) << "slab " << i;
 }
 
+TEST(TreeModel, PrintsBranchesAsTubes) {
+    EXPECT_FALSE(tree().infill());
+}
+
 TEST(TreeModel, TakesAnotherTipPlacer) {
     struct OneTip : TipPlacer {
         Points place(const Polygons &underside) const override {

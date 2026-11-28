@@ -45,6 +45,11 @@ enum SupportMaterialPattern {
     smpRectilinear, smpRectilinearGrid, smpHoneycomb, smpPillars,
 };
 
+// how support is built under the interface layers; each but normal is a Support::Model
+enum SupportMaterialStyle {
+    smsNormal, smsTree,
+};
+
 enum SeamPosition {
     spRandom, spNearest, spAligned, spRear
 };
@@ -86,6 +91,13 @@ template<> inline t_config_enum_values ConfigOptionEnum<InfillPattern>::get_enum
     keys_map["archimedeanchords"]   = ipArchimedeanChords;
     keys_map["octagramspiral"]      = ipOctagramSpiral;
     keys_map["monotonic"]           = ipMonotonic;
+    return keys_map;
+}
+
+template<> inline t_config_enum_values ConfigOptionEnum<SupportMaterialStyle>::get_enum_values() {
+    t_config_enum_values keys_map;
+    keys_map["normal"]              = smsNormal;
+    keys_map["tree"]                = smsTree;
     return keys_map;
 }
 
@@ -187,7 +199,11 @@ class PrintObjectConfig : public virtual StaticPrintConfig
     ConfigOptionFloat               support_material_pillar_spacing;
     ConfigOptionFloat               support_material_spacing;
     ConfigOptionFloat               support_material_speed;
+    ConfigOptionEnum<SupportMaterialStyle> support_material_style;
     ConfigOptionFloatOrPercent      support_material_threshold;
+    ConfigOptionFloat               support_material_tree_angle;
+    ConfigOptionFloat               support_material_tree_branch_diameter;
+    ConfigOptionFloat               support_material_tree_tip_spacing;
     ConfigOptionFloat               xy_size_compensation;
     ConfigOptionInt                 sequential_print_priority;
     
@@ -227,7 +243,11 @@ class PrintObjectConfig : public virtual StaticPrintConfig
         OPT_PTR(support_material_pillar_spacing);
         OPT_PTR(support_material_spacing);
         OPT_PTR(support_material_speed);
+        OPT_PTR(support_material_style);
         OPT_PTR(support_material_threshold);
+        OPT_PTR(support_material_tree_angle);
+        OPT_PTR(support_material_tree_branch_diameter);
+        OPT_PTR(support_material_tree_tip_spacing);
         OPT_PTR(xy_size_compensation);
         OPT_PTR(sequential_print_priority);
         

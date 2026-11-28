@@ -24,6 +24,7 @@ public:
     };
     TreeModel(const Settings &settings, std::unique_ptr<TipPlacer> tips, std::unique_ptr<Growth> growth);
     std::vector<Polygons> base(const std::vector<Slab> &slabs) const override;
+    bool infill() const override { return false; }  // branches are tubes
 
 private:
     Settings settings;

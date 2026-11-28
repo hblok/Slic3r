@@ -15,6 +15,12 @@ Differences from the Perl GUI, to fix if they matter:
 - "Layer heights…" shows layer lines in its 3D view, not toolpaths
 - The Solarized colour scheme keeps the default toolbar icons
 
+To check:
+
+- Started with `--load file.ini`, the plater shows the file as the preset but the Print
+  Settings tab showed "- default -" and its values (seen 2026-11-28; not compared with
+  the Perl program)
+
 ## Bugs
 
 - [ ] `Config::set` with text that is not a number throws, but leaves 0 in the option
@@ -29,6 +35,8 @@ Differences from the Perl GUI, to fix if they matter:
 - [ ] Print one reference part
 - [ ] Print the [temperature tower and flow test](../profiles/calibration/README.md)
 - [ ] Test prints: time estimate, fuzzy skin, monotonic infill, ironing, pressure advance
+- [ ] Print a tree-supported part and compare with normal support
+      ([tree-support.md](tree-support.md#known-limits))
 
 ## Needs a real desktop
 

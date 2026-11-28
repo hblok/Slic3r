@@ -256,6 +256,10 @@ PrintObject::invalidate_state_by_config(const PrintConfigBase &config)
             || opt_key == "support_material_pattern"
             || opt_key == "support_material_spacing"
             || opt_key == "support_material_threshold"
+            || opt_key == "support_material_style"
+            || opt_key == "support_material_tree_angle"
+            || opt_key == "support_material_tree_branch_diameter"
+            || opt_key == "support_material_tree_tip_spacing"
             || opt_key == "support_material_pillar_size"
             || opt_key == "support_material_pillar_spacing"
             || opt_key == "dont_support_bridges") {

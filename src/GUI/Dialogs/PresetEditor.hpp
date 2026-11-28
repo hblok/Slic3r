@@ -213,6 +213,8 @@ public:
             "fuzzy_skin"s, "fuzzy_skin_thickness"s, "fuzzy_skin_point_dist"s,
             "ironing"s, "ironing_flowrate"s, "ironing_spacing"s,
             "support_material_pillar_size"s, "support_material_pillar_spacing"s, "label_printed_objects"s,
+            "support_material_style"s, "support_material_tree_angle"s, "support_material_tree_branch_diameter"s,
+            "support_material_tree_tip_spacing"s,
             "top_solid_layers"s, "bottom_solid_layers"s,
             "extra_perimeters"s, "avoid_crossing_perimeters"s, "thin_walls"s, "overhangs"s,
             "seam_position"s, "external_perimeters_first"s,

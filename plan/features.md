@@ -52,7 +52,7 @@ Sources: OrcaSlicer wiki (adaptive pressure advance calibration), Prusa help cen
 |---|---|---|
 | Variable-width perimeters (Arachne) | Thin walls and fine detail | Touches the perimeter core and geometry libraries |
 | ~~Working C++ support generation~~ done 2026-11-26 | Prerequisite for retiring Perl, see baseline | |
-| Tree / organic supports | Less material, cleaner removal | Big module; two support pipelines today |
+| Tree supports: first version done 2026-11-28 ([tree-support.md](tree-support.md)), needs a test print. Organic supports | Less material, cleaner removal | Organic: big port; would be another support model |
 | STEP import | Common CAD exchange format | Heavy dependency (OpenCASCADE) |
 | Paint-on supports and seams | Precise control | Mostly GUI work |
 

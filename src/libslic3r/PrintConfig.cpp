@@ -1659,6 +1659,48 @@ PrintConfigDef::PrintConfigDef()
     def->enum_labels.push_back("auto");
     def->default_value = new ConfigOptionFloat(60);
 
+    def = this->add("support_material_style", coEnum);
+    def->label = __TRANS("Style");
+    def->category = __TRANS("Support material");
+    def->tooltip = __TRANS("How support is built under overhangs. Normal: pillars or a grid, by the pattern. Tree: branches that merge on the way down and go around the model where they can (experimental, not yet tried on a printer).");
+    def->cli = "support-material-style=s";
+    def->enum_keys_map = ConfigOptionEnum<SupportMaterialStyle>::get_enum_values();
+    def->enum_values.push_back(__TRANS("normal"));
+    def->enum_values.push_back(__TRANS("tree"));
+    def->enum_labels.push_back(__TRANS("normal"));
+    def->enum_labels.push_back(__TRANS("tree"));
+    def->default_value = new ConfigOptionEnum<SupportMaterialStyle>(smsNormal);
+
+    def = this->add("support_material_tree_angle", coFloat);
+    def->label = __TRANS("Branch angle");
+    def->category = __TRANS("Support material");
+    def->tooltip = __TRANS("How far from vertical a branch of a tree support may lean.");
+    def->sidetext = "°";
+    def->cli = "support-material-tree-angle=f";
+    def->min = 0;
+    def->max = 60;
+    def->default_value = new ConfigOptionFloat(40);
+
+    def = this->add("support_material_tree_branch_diameter", coFloat);
+    def->label = __TRANS("Branch diameter");
+    def->category = __TRANS("Support material");
+    def->tooltip = __TRANS("Branches of a tree support thicken on the way down up to this diameter.");
+    def->sidetext = "mm";
+    def->cli = "support-material-tree-branch-diameter=f";
+    def->min = 2;
+    def->max = 20;
+    def->default_value = new ConfigOptionFloat(5);
+
+    def = this->add("support_material_tree_tip_spacing", coFloat);
+    def->label = __TRANS("Tip spacing");
+    def->category = __TRANS("Support material");
+    def->tooltip = __TRANS("Distance between the branch tips of a tree support under an overhang. Closer holds better and takes more material.");
+    def->sidetext = "mm";
+    def->cli = "support-material-tree-tip-spacing=f";
+    def->min = 1;
+    def->max = 20;
+    def->default_value = new ConfigOptionFloat(3);
+
     def = this->add("support_material_threshold", coFloatOrPercent);
     def->label = __TRANS("Overhang threshold");
     def->category = __TRANS("Support material");

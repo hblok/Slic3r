@@ -48,6 +48,8 @@ check ender5pro_table_raft table.stl --load $profiles/printer/Ender-5-Pro.ini \
 # Overhang with the default (pillars) support; matches the Perl pipeline in
 # filament per role (plan/baseline.md).
 check table_support table.stl --support-material --gcode-comments
+# the same model with tree supports
+check tree_table table.stl --support-material --support-material-style tree --gcode-comments
 # CLI transforms run before the objects have instances (they crashed until 2026-11-27)
 check box_transforms $box --scale 1.5 --rotate 30 --rotate-x 90 --scale-to-fit 25,25,25
 check box_duplicate_grid $box --duplicate-grid 2,2
