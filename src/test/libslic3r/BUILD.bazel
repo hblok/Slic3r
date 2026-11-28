@@ -508,3 +508,13 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "tree_model_test",
+    size = "small",
+    srcs = ["tree_model_test.cpp"],
+    deps = [
+        "//src/libslic3r:tree_model",
+        "@googletest//:gtest_main",
+    ],
+)
+

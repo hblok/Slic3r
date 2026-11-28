@@ -553,3 +553,17 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "tree_model",
+    srcs = ["Support/TreeModel.cpp"],
+    hdrs = ["Support/TreeModel.hpp"],
+    includes = ["."],
+    deps = [
+        ":geometry",
+        ":support_model",
+        ":tree_growth",
+        ":tree_obstacles",
+        ":tree_tips",
+    ],
+)
+

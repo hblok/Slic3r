@@ -31,8 +31,12 @@ MergingGrowth::steer(const Point &from, Point &to, double radius, double move, s
         if (from.distance_to(out) <= 2 * move) to = towards(from, out, move);
     }
     const ExPolygons &collision {obstacles.collision(i, radius)};
-    if (inside(collision, to)) {
-        const Point out {nearest_outside(collision, from)};  // `from` itself if it is free
+    if (inside(collision, to))  // out, or a step towards room for all of it
+        to = towards(from, nearest_outside(collision, from), move);
+    // where there is no room yet, the model trims the branch; a thin one must fit
+    const ExPolygons &thin {obstacles.collision(i, this->settings.tip_radius)};
+    if (inside(thin, to)) {
+        const Point out {nearest_outside(thin, from)};  // `from` itself if it is free
         if (from.distance_to(out) > move) return false;
         to = out;
     }
@@ -63,14 +67,8 @@ MergingGrowth::step(const std::vector<Node> &above, size_t i, double drop, Obsta
 
         node.length += drop;
         node.radius = std::max(node.radius, std::min(s.max_radius, s.tip_radius + node.length * s.thickening));
-        // where there is no room for all of it, the model trims it (a thin one must fit)
-        Point thin {to};
-        if (this->steer(node.at, to, node.radius, move, i, obstacles))
-            node.at = to;
-        else if (this->steer(node.at, thin, s.tip_radius, move, i, obstacles))
-            node.at = thin;
-        else
-            continue;
+        if (!this->steer(node.at, to, node.radius, move, i, obstacles)) continue;
+        node.at = to;
         moved.push_back(node);
     }
 
