@@ -1,0 +1,13 @@
+G28 ; home
+G1 Z0.3 F300
+G1 X1 Y1 E1
+G1 X2 Y2 E2 ; comment (x)
+G1 F900
+T1
+G1 X3 Y3 T1 E3
+G92 E0
+G1 X-4 Y5 E.5 F1200
+G1 X10 Y5 E1.5
+; filament used = 12.3mm (4.5cm3)
+M106 S128
+M106 S0

@@ -177,6 +177,14 @@ The Perl GUI is the reference for behaviour and layout.
       sequence and SVG export (`cpp_gui_projector.sh`; the print part needs pseudo
       terminals). Not tried with a projector. Custom G-code now has its placeholders filled
 - [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md)
+- [x] The Perl utility scripts (2026-11-28): post-processing, config bundle and PDF slices
+      are Python now (same output, checked against Perl; `src/test/cli/check.sh`); the
+      command line got what only Perl had (`--version`, `--save` of the defaults,
+      `--layer_height` spelling, `-j`, `--print-center`, G-code options from files,
+      `--ascii`, `--estimate-gcode-time`, `--no-gui`, `--debug`). Dropped: `wireframe.pl`,
+      `gcode_sectioncut.pl`, `split_stl.pl`, `stl-to-amf.pl` (already broken; `--split` and
+      `--export-amf` cover the last two), the two viewers (the GUI), `dump-stl.pl` (for the
+      Perl tests)
 - [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps
 
 If phase 2 turns out to be hopeless, go to B. (It did not: see phase 2.)

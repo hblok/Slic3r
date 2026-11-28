@@ -74,6 +74,22 @@ int CLI::run(int argc, char **argv) {
         if (cli_actions_config_def.has(opt_key)) this->actions.push_back(opt_key);
         if (cli_transform_config_def.has(opt_key)) this->transforms.push_back(opt_key);
     }
+    if (config.getBool("debug", false)) slic3r_log->set_level(log_t::DEBUG);
+    // the custom G-code options may name a file holding the G-code
+    for (const char* key : {"start_gcode", "end_gcode", "layer_gcode", "toolchange_gcode"}) {
+        if (!config.has(key)) continue;
+        std::string &value = config.opt<ConfigOptionString>(key)->value;
+        boost::system::error_code not_a_path;
+        if (!boost::filesystem::is_regular_file(value, not_a_path)) continue;
+        boost::nowide::ifstream file(value, std::ios::binary);
+        std::stringstream content;
+        content << file.rdbuf();
+        if (!file) {
+            Slic3r::Log::error("CLI") << "Cannot read " << value << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        value = content.str();
+    }
     // load config files supplied via --load
     for (auto const &file : config.getStrings("load", {})) {
         try{
@@ -315,9 +331,24 @@ int CLI::run(int argc, char **argv) {
             this->print_help();
         } else if (opt_key == "help_options") {
             this->print_help(true);
+        } else if (opt_key == "version") {
+            boost::nowide::cout << SLIC3R_VERSION << std::endl;
+        } else if (opt_key == "estimate_gcode_time") {
+            const std::string file = config.getString("estimate_gcode_time");
+            if (!boost::filesystem::is_regular_file(file)) {
+                Slic3r::Log::error("CLI") << "No such file: " << file << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            GCodeTimeEstimator estimator(this->print_config.has("machine_acceleration")
+                ? this->full_print_config.machine_acceleration.value : 0);
+            estimator.parse_file(file);
+            boost::nowide::cout << "Time: " << GCodeTimeEstimator::format_time(estimator.time) << std::endl;
         } else if (opt_key == "save") {
             try {
-                this->print_config.save(config.getString("save"));
+                // without any option: the defaults, as a template (as the Perl command line)
+                DynamicPrintConfig saved(this->print_config);
+                if (saved.empty()) saved.apply(FullPrintConfig());
+                saved.save(config.getString("save"));
             } catch (std::exception &e) {
                 Slic3r::Log::error("CLI") << e.what() << std::endl;
                 exit(EXIT_FAILURE);
@@ -458,7 +489,7 @@ int CLI::run(int argc, char **argv) {
         }
     }
     
-    if (actions.empty()) {
+    if (actions.empty() && config.getBool("gui", true)) {
 #ifdef USE_WX
         GUI::App *gui = new GUI::App();
         gui->autosave = this->config.getString("autosave", "");
@@ -520,7 +551,10 @@ CLI::export_models(IO::ExportFormat format) {
     for (const Model& model : this->models) {
         const std::string outfile = this->output_filepath(model, format);
         
-        IO::write_model.at(format)(model, outfile);
+        if (format == IO::STL && this->config.getBool("ascii", false))
+            IO::STL::write(model, outfile, false);
+        else
+            IO::write_model.at(format)(model, outfile);
         std::cout << "File exported to " << outfile << std::endl;
     }
 }

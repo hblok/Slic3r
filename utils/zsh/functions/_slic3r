@@ -1,4 +1,4 @@
-#compdef -P slic3r(|.pl|.exe)
+#compdef -P slic3r(|.exe)
 #
 # Slic3r completions configuration for zsh(1).
 
@@ -20,7 +20,7 @@ _arguments -S \
     '(--merge -m)'{--merge,-m}'[merge multiple input files into a single print]' \
     \
     '*--nozzle-diameter[specify nozzle diameter]:nozzle diameter in mm' \
-    '--print-center[specify print center coordinates]:print center coordinates in mm,mm' \
+    '--center[specify print center coordinates]:print center coordinates in mm,mm' \
     '--z-offset[specify Z-axis offset]:Z-axis offset in mm' \
     '--gcode-flavor[specify the type of G-code to generate]:G-code flavor:(reprap teacup repetier makerware sailfish mach3 machinekit no-extrusion)' \
     '(--use-relative-e-distances --no-use-relative-e-distances)'--{no-,}use-relative-e-distances'[disable/enable relative E values]' \

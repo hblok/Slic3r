@@ -26,8 +26,6 @@ Order: the missing features and the USB controller, then:
 
 ## Removing Perl (only when nothing would be lost)
 
-- [ ] Port what only the Perl scripts do (`utils/*.pl`, `utils/post-processing/`) and the
-      C++ command line lacks
 - [ ] Port the tests only Perl has: no C++ test file for points, lines, polylines,
       clipper or the motion planner (`xs/t/`), and check `t/` case by case
 - [ ] Tag the last commit with Perl (`perl-final`)
@@ -35,6 +33,13 @@ Order: the missing features and the USB controller, then:
       `xs/src/slic3r/GUI/3DScene.*`), drop the `NO_PERL` conditional
 - [ ] Delete `lib/`, `t/`, the bindings, `slic3r.pl`, `Build.PL`, `utils/gui_smoke.sh`,
       the CI `perl` job; update docs and packaging dependencies
+
+## Found while removing Perl
+
+- [ ] The G-code's material summary is garbled: `; material used = 142.52mm (1.01142.52cm3)`
+      (the length is appended to the volume), and `material cost` prints the weight
+      (`PrintGCode.cpp`, around "material used"). `filament-weight.py` looks for the old
+      `filament used` line, so it adds nothing. Fixing it changes the golden files
 
 ## Needs the printer
 

@@ -1,13 +1,12 @@
-#!/usr/bin/python
-import sys
-import re
+#!/usr/bin/env python3
+"""Run the fan at full power for a moment before each slower speed, so that it starts.
 
-sea = re.compile("M106 S[1-9]+[0-9]*")
-rep = re.compile("M106 S255\n\g<0>")
-out = open(sys.argv[1]+"_fixed", 'w')
-  with open(sys.argv[1]) as f:
-    for r in f:
-      if re.search(sea, r) is not None:
-        out.write(re.sub(sea,"M106 S255\n\g<0>",r))
-      else:
-        out.write(r)
+Writes the result beside the input, as FILE_fixed.
+"""
+import re
+import sys
+
+with open(sys.argv[1], errors="surrogateescape") as source, \
+        open(sys.argv[1] + "_fixed", "w", errors="surrogateescape") as out:
+    for line in source:
+        out.write(re.sub(r"M106 S[1-9]+[0-9]*", r"M106 S255\n\g<0>", line))

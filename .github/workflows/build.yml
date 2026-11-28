@@ -19,7 +19,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends ca-certificates git cmake make g++ \
-            libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev
+            libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev python3
       - uses: actions/checkout@v7
       - name: Configure
         run: |
@@ -31,6 +31,8 @@ jobs:
         run: ./build/slic3r_test
       - name: Golden G-code check
         run: src/test/golden/check.sh build/slic3r
+      - name: Command line and script check
+        run: src/test/cli/check.sh build/slic3r
 
   # C++ GUI (wxWidgets): build it and check that it starts under Xvfb.
   cpp-gui:

@@ -827,6 +827,9 @@ DynamicConfig::read_cli(int argc, char** argv, t_config_option_keys* extra, t_co
     for (const auto &oit : this->def->options)
         for (auto t : this->def->get(oit.first).cli_args())
             opts[t] = oit.first;
+    // the option's own name works too (--layer_height), as with the Perl command line
+    for (const auto &oit : this->def->options)
+        if (!oit.second.cli.empty()) opts.emplace(oit.first, oit.first);
     
     bool parse_options = true;
     for (int i = 1; i < argc; ++i) {

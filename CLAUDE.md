@@ -26,7 +26,7 @@ GUI, then not at all (plan/README.md, "Perl and the GUI path").
 
 | Set | Command | What | Limit |
 |---|---|---|---|
-| `quick` | `ctest --test-dir build -L quick -j8 --output-on-failure` | unit and functional tests, golden G-code (about 6 s) | 2 min each |
+| `quick` | `ctest --test-dir build -L quick -j8 --output-on-failure` | unit and functional tests, golden G-code, command line (about 6 s) | 2 min each |
 | `gui` | `ctest --test-dir build-gui -L gui -j5 --output-on-failure` | full C++ GUI under Xvfb (about 3 min) | 5 min each |
 
 Build first (below). Run `quick` while working, `gui` after GUI changes. A new test gets
@@ -45,7 +45,7 @@ sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-
 ```sh
 cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
-ctest --test-dir build -L quick -j8 --output-on-failure   # slic3r_test and golden/check.sh
+ctest --test-dir build -L quick -j8 --output-on-failure   # slic3r_test, golden/check.sh, cli/check.sh
 ```
 
 Run the quick set before committing C++ changes. If the golden

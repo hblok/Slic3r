@@ -1693,7 +1693,7 @@ PrintConfigDef::PrintConfigDef()
     def->label = __TRANS("Threads");
     def->tooltip = __TRANS("Threads are used to parallelize long-running tasks. Optimal threads number is slightly above the number of available cores/processors.");
     def->readonly = true;
-    def->cli = "threads=i";
+    def->cli = "threads|j=i";
     def->min = 1;
     {
         unsigned int threads = boost::thread::hardware_concurrency();
@@ -2045,6 +2045,18 @@ CLIActionsConfigDef::CLIActionsConfigDef()
     def->cli = "help-options";
     def->default_value = new ConfigOptionBool(false);
     
+    def = this->add("version", coBool);
+    def->label = __TRANS("Version");
+    def->tooltip = __TRANS("Show the version of Slic3r.");
+    def->cli = "version";
+    def->default_value = new ConfigOptionBool(false);
+    
+    def = this->add("estimate_gcode_time", coString);
+    def->label = __TRANS("Estimate G-code time");
+    def->tooltip = __TRANS("Estimate the time to print the given G-code file.");
+    def->cli = "estimate-gcode-time";
+    def->default_value = new ConfigOptionString();
+    
     def = this->add("info", coBool);
     def->label = __TRANS("Output Model Info");
     def->tooltip = __TRANS("Write information about the model to the console.");
@@ -2102,7 +2114,7 @@ CLITransformConfigDef::CLITransformConfigDef()
     def = this->add("center", coPoint);
     def->label = __TRANS("Center");
     def->tooltip = __TRANS("Center the print around the given center.");
-    def->cli = "center";
+    def->cli = "center|print-center";
     def->default_value = new ConfigOptionPoint(Pointf(100,100));
 
     def = this->add("dont_arrange", coBool);
@@ -2187,6 +2199,24 @@ CLIMiscConfigDef::CLIMiscConfigDef()
     def->tooltip = __TRANS("The file where the output will be written (if not specified, it will be based on the input file).");
     def->cli = "output|o";
 
+    def = this->add("ascii", coBool);
+    def->label = __TRANS("ASCII STL");
+    def->tooltip = __TRANS("Export STL files as ASCII text instead of binary.");
+    def->cli = "ascii";
+    def->default_value = new ConfigOptionBool(false);
+    
+    def = this->add("gui", coBool);
+    def->label = __TRANS("GUI");
+    def->tooltip = __TRANS("Start the graphical interface when there is nothing else to do (default; --no-gui: do not).");
+    def->cli = "gui";
+    def->default_value = new ConfigOptionBool(true);
+    
+    def = this->add("debug", coBool);
+    def->label = __TRANS("Debug messages");
+    def->tooltip = __TRANS("Print debug messages.");
+    def->cli = "debug";
+    def->default_value = new ConfigOptionBool(false);
+    
     def = this->add("gcode_file", coString);
     def->label = __TRANS("G-code file");
     def->tooltip = __TRANS("The G-code file to send to the printer.");
