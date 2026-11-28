@@ -13,7 +13,6 @@ Perl is gone; the GUI has been checked only under Xvfb.
 
 Differences from the Perl GUI, to fix if they matter:
 
-- Menu entries that cannot be used are not greyed out
 - "Layer heights…" shows layer lines in its 3D view, not toolpaths
 - No Growl notification when slicing is done (it needed an optional Perl module)
 - Importing a config bundle never overwrites an existing preset

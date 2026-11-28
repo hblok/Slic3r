@@ -597,7 +597,7 @@ void Plater::run_job(std::shared_ptr<SliceJob> job) {
     if (this->slicing_thread.joinable()) this->slicing_thread.join();  // the last one has ended
     this->running = job;
     this->cancel_slicing = false;
-    if (!job->output_file.empty()) this->btn_export_gcode->Disable();
+    this->update_enabled();
     auto* statusbar {GetFrame()->statusbar};
     statusbar->SetStatusText(job->output_file.empty() ? _(L"Slicing…") : _(L"Exporting G-code…"));
     statusbar->SetProgress(1);
@@ -630,7 +630,7 @@ void Plater::run_job(std::shared_ptr<SliceJob> job) {
 
 void Plater::on_job_done(std::shared_ptr<SliceJob> job, const std::string& error, bool cancelled) {
     this->running.reset();
-    this->btn_export_gcode->Enable();
+    this->update_enabled();
     auto* statusbar {GetFrame()->statusbar};
     statusbar->SetCancelCallback(nullptr);
     statusbar->StopBusy();  // hides and resets the progress gauge
@@ -932,7 +932,33 @@ void Plater::selection_changed() {
         info.manifold->UnsetToolTip();
         info.manifold_warning_icon->Hide();
     }
+    this->update_enabled();
     this->Layout();
+}
+
+void Plater::update_enabled() {
+    const bool have_objects {!this->objects.empty()};
+    const bool have_sel {this->selected_object() != this->objects.end()};
+    const bool exporting {this->running != nullptr && !this->running->output_file.empty()};
+    // the buttons and the toolbar do not exist yet while the constructor selects nothing
+    if (this->btn_export_gcode != nullptr) {
+        this->btn_export_gcode->Enable(have_objects && !exporting);
+        for (auto* button : {this->btn_export_stl, this->btn_print, this->btn_send}) button->Enable(have_objects);
+    }
+    if (this->htoolbar != nullptr)
+        for (auto tb : {TB_RESET, TB_ARRANGE}) this->htoolbar->EnableTool(tb, have_objects);
+
+    // menu entries, as the Perl GUI greys them
+    auto* frame {this->GetFrame()};
+    if (frame->object_menu == nullptr || frame->GetMenuBar() == nullptr) return;
+    for (auto* item : frame->plater_menu->GetMenuItems())
+        if (!item->IsSeparator()) item->Enable(have_objects);
+    for (auto* item : frame->object_menu->GetMenuItems())
+        if (!item->IsSeparator()) item->Enable(have_sel);
+    // undo can bring back a deleted plate, so it does not depend on the objects
+    frame->undo_item->Enable(this->history_pos > 0);
+    frame->redo_item->Enable(this->history_pos + 1 < this->history.size());
+    frame->repeat_item->Enable(!this->quick_slice_input.empty());
 }
 
 void Plater::build_toolbar() {

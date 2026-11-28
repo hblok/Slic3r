@@ -33,6 +33,12 @@ public:
 
     bool has_plater_menu() { return this->plater_menu != nullptr; }
     wxMenu* plater_select_menu {nullptr};
+    // greyed out by Plater::update_enabled(); null until the menu bar is built
+    wxMenu* plater_menu {nullptr};
+    wxMenu* object_menu {nullptr};
+    wxMenuItem* undo_item {nullptr};
+    wxMenuItem* redo_item {nullptr};
+    wxMenuItem* repeat_item {nullptr};  ///< "Repeat Last Quick Slice"
     wxNotebook* tabs() { return tabpanel; }
     /// Queue a G-code file for the selected printer and show the Controller tab.
     void print_with_controller(const wxString& printer, const std::string& gcode_file,
@@ -53,13 +59,6 @@ private:
     wxNotebook* tabpanel;
     Controller* controller;
     Plater* plater;
-
-    wxMenu* plater_menu {nullptr};
-
-
-    void on_plater_object_list_changed(bool force) {};
-    void on_plater_selection_changed(bool force) {};
-
 
 };
 

@@ -398,6 +398,7 @@ void Plater::quick_slice(bool save_as, bool again, bool svg) {
     if (!svg) {
         this->quick_slice_input = input;
         this->quick_slice_output = save_as ? output : wxString();
+        this->update_enabled();
     }
     job->output_file = output.ToUTF8().data();
     job->svg = svg;

@@ -171,6 +171,7 @@ void Plater::commit() {
     this->history.push_back({std::make_shared<Slic3r::Model>(*this->model), this->objects});
     if (this->history.size() > HISTORY_LIMIT) this->history.erase(this->history.begin());
     this->history_pos = this->history.size() - 1;
+    this->update_enabled();
 }
 
 void Plater::restore(size_t position) {

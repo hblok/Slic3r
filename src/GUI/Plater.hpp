@@ -119,6 +119,8 @@ public:
     void reload_from_disk();
     void export_plate(IO::ExportFormat format);
     void export_object(IO::ExportFormat format);
+    /// Grey out the menu entries, buttons and tools that have nothing to work on.
+    void update_enabled();
     void undo();
     void redo();
     void select_next();

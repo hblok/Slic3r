@@ -117,7 +117,7 @@ void MainFrame::init_menubar()
     {
         auto item = [menuFile](const wxString& name, const wxString& help, std::function<void()> action,
                 const wxString& icon = "", const wxString& accelerator = "") {
-            append_menu_item(menuFile, name, help, [action](wxCommandEvent&) { action(); }, wxID_ANY, icon, accelerator);
+            return append_menu_item(menuFile, name, help, [action](wxCommandEvent&) { action(); }, wxID_ANY, icon, accelerator);
         };
         item(_(L"Open STL/OBJ/AMF/3MF…"), _("Open a model"), [this]() { this->plater->add(); }, "brick_add.png", "Ctrl+O");
         item(_(L"Open 2.5D TIN mesh…"), _("Import a 2.5D TIN mesh"), [this]() { this->plater->add_tin(); }, "map_add.png");
@@ -130,7 +130,7 @@ void MainFrame::init_menubar()
         menuFile->AppendSeparator();
         item(_(L"Q&uick Slice…"), _("Slice file"), [this]() { this->plater->quick_slice(false); }, "cog_go.png", "Ctrl+U");
         item(_(L"Quick Slice and Save &As…"), _("Slice file and save as"), [this]() { this->plater->quick_slice(true); }, "cog_go.png", "Ctrl+Alt+U");
-        item(_("&Repeat Last Quick Slice"), _("Repeat last quick slice"), [this]() { this->plater->quick_slice(false, true); }, "cog_go.png", "Ctrl+Shift+U");
+        this->repeat_item = item(_("&Repeat Last Quick Slice"), _("Repeat last quick slice"), [this]() { this->plater->quick_slice(false, true); }, "cog_go.png", "Ctrl+Shift+U");
         item(_(L"Slice to SV&G…"), _("Slice file to SVG"), [this]() { this->plater->quick_slice(true, false, true); }, "shape_handles.png", "Ctrl+G");
         item(_(L"Repair STL file…"), _("Automatically repair an STL file"), [this]() { this->plater->repair_stl(); }, "wrench.png");
         menuFile->AppendSeparator();
@@ -144,8 +144,8 @@ void MainFrame::init_menubar()
     {
         wxMenu* selectMenu = this->plater_select_menu = new wxMenu();
         append_submenu(menuPlater, _("Select"), _("Select an object in the plater"), selectMenu, wxID_ANY, "brick.png"); 
-        append_menu_item(menuPlater, _("Undo"), _("Undo"), [this](wxCommandEvent& e) { this->plater->undo(); }, wxID_ANY, "arrow_undo.png", "Ctrl+Z");
-        append_menu_item(menuPlater, _("Redo"), _("Redo"), [this](wxCommandEvent& e) { this->plater->redo(); }, wxID_ANY, "arrow_redo.png", "Ctrl+Shift+Z");
+        this->undo_item = append_menu_item(menuPlater, _("Undo"), _("Undo"), [this](wxCommandEvent& e) { this->plater->undo(); }, wxID_ANY, "arrow_undo.png", "Ctrl+Z");
+        this->redo_item = append_menu_item(menuPlater, _("Redo"), _("Redo"), [this](wxCommandEvent& e) { this->plater->redo(); }, wxID_ANY, "arrow_redo.png", "Ctrl+Shift+Z");
         append_menu_item(menuPlater, _("Select Next Object"), _("Select Next Object in the plater"), 
                 [this](wxCommandEvent& e) { this->plater->select_next(); }, wxID_ANY, "arrow_right.png", "Ctrl+Right");
         append_menu_item(menuPlater, _("Select Prev Object"), _("Select Previous Object in the plater"), 
@@ -167,9 +167,7 @@ void MainFrame::init_menubar()
 
 
     }
-    wxMenu* menuObject = this->plater->object_menu();
-    this->on_plater_object_list_changed(false);
-    this->on_plater_selection_changed(false);
+    wxMenu* menuObject = this->object_menu = this->plater->object_menu();
 
     wxMenu* menuSettings = new wxMenu();
     {
@@ -253,6 +251,7 @@ void MainFrame::init_menubar()
     menubar->Append(menuHelp, _("&Help"));
 
     this->SetMenuBar(menubar);
+    this->plater->update_enabled();
 
 }
 

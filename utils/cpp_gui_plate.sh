@@ -59,10 +59,14 @@ click() { xdotool mousemove --window "$main" "$1" "$2" click 1; sleep 1; }
 key() { xdotool key "$@"; sleep 1; }
 presses() { i=0; while [ "$i" -lt "$2" ]; do xdotool key "$1"; sleep 0.1; i=$((i + 1)); done; }
 # menu X N [M]: the Nth entry of the menu at X in the menu bar; with M, the Mth entry of
-# its submenu (separators do not count)
+# its submenu (separators do not count). A negative N counts from the bottom: greyed
+# entries are skipped, so a count that passes some depends on what can be used just then.
 menu() {
     click "$1" 12
-    presses Down "$2"
+    case $2 in
+        -*) presses Up "${2#-}" ;;
+        *) presses Down "$2" ;;
+    esac
     if [ -n "${3:-}" ]; then xdotool key Right; sleep 0.3; presses Down $(($3 - 1)); fi
     key Return
     sleep 1
@@ -83,7 +87,7 @@ near() { # name key value
         || fail "$1: $2 is '$got', expected $3"
 }
 export_plate() { # name: "Export plate as STL"
-    plater_menu 9
+    plater_menu -3
     answer "$out/$1.stl"
     alive "$1"
     [ -s "$out/$1.stl" ] || fail "$1: no STL exported"
@@ -103,7 +107,7 @@ shortcut() {
     sleep 0.3
     key "$@"
 }
-select_first() { plater_menu 4; }                    # "Select Next Object"
+select_first() { plater_menu -8; }                   # "Select Next Object"
 # the menu works wherever the keyboard focus went
 undo() { plater_menu 2; }
 
@@ -209,7 +213,7 @@ object_menu 19; answer "$out/unmodified.amf"
 ! grep -q 'slic3r.modifier' "$out/unmodified.amf" || fail "undo kept the modifier"
 ok "object settings: modifier with a setting, undo"
 
-file_menu 13                                            # Preferences
+file_menu -2                                            # Preferences
 xdotool mousemove 388 137 click 1; sleep 1              # "Background processing"
 shot preferences
 xdotool mousemove 552 500 click 1; sleep 1              # "OK"
@@ -258,7 +262,7 @@ ok "cut by grid"
 
 # the number of layers in an export of the plate
 export_layers() { # name
-    plater_menu 8; answer "$out/$1.gcode"                  # "Export G-code..."
+    plater_menu -4; answer "$out/$1.gcode"                 # "Export G-code..."
     for i in $(seq 1 30); do [ -s "$out/$1.gcode" ] && break; sleep 1; done
     grep -c '^G1 Z' "$out/$1.gcode"
 }
