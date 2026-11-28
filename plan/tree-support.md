@@ -55,7 +55,7 @@ the header comments.
 ## Steps
 
 - [x] `Model`, `Obstacles`
-- [ ] `GridTips`
+- [x] `GridTips`
 - [ ] `MergingGrowth`
 - [ ] `TreeModel`
 - [ ] Settings, `Models`, use in `SupportMaterial`, GUI, golden G-code

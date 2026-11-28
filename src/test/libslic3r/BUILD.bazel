@@ -488,3 +488,13 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "tree_tips_test",
+    size = "small",
+    srcs = ["tree_tips_test.cpp"],
+    deps = [
+        "//src/libslic3r:tree_tips",
+        "@googletest//:gtest_main",
+    ],
+)
+
