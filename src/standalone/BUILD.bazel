@@ -1,0 +1,9 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+# admesh includes it
+cc_library(
+    name = "config",
+    hdrs = ["config.h"],
+    includes = ["."],
+    visibility = ["//src:__subpackages__"],
+)

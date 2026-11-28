@@ -27,3 +27,59 @@ cc_library(
     copts = ["-w"],
     includes = ["."],
 )
+
+cc_library(
+    name = "admesh",
+    srcs = [
+        "admesh/connect.c",
+        "admesh/normals.c",
+        "admesh/shared.c",
+        "admesh/stl_io.c",
+        "admesh/stlinit.c",
+        "admesh/util.c",
+    ],
+    hdrs = [
+        "admesh/portable_endian.h",
+        "admesh/stl.h",
+    ],
+    copts = [
+        "-std=gnu99",
+        "-w",
+    ],
+    includes = [
+        ".",
+        "admesh",
+    ],
+    deps = ["//src/standalone:config"],
+)
+
+cc_library(
+    name = "clipper",
+    srcs = ["clipper.cpp"],
+    hdrs = ["clipper.hpp"],
+    copts = ["-w"],
+    includes = ["."],
+)
+
+cc_library(
+    name = "polypartition",
+    srcs = ["polypartition.cpp"],
+    hdrs = ["polypartition.h"],
+    copts = ["-w"],
+    includes = ["."],
+)
+
+cc_library(
+    name = "poly2tri",
+    srcs = glob([
+        "poly2tri/common/*.cc",
+        "poly2tri/sweep/*.cc",
+    ]),
+    hdrs = glob([
+        "poly2tri/*.h",
+        "poly2tri/common/*.h",
+        "poly2tri/sweep/*.h",
+    ]),
+    copts = ["-w"],
+    includes = ["."],
+)

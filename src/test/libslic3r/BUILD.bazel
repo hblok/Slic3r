@@ -73,3 +73,33 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "geometry_test",
+    size = "small",
+    srcs = ["geometry_test.cpp"],
+    deps = [
+        "//src/libslic3r:geometry",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "polygon_test",
+    size = "small",
+    srcs = ["polygon_test.cpp"],
+    deps = [
+        "//src/libslic3r:geometry",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "transformation_matrix_test",
+    size = "small",
+    srcs = ["transformation_matrix_test.cpp"],
+    deps = [
+        "//src/libslic3r:geometry",
+        "@googletest//:gtest_main",
+    ],
+)
