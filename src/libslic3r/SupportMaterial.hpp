@@ -164,6 +164,7 @@ private:
 
     // Used during generate_toolpaths function.
     bool base_infill {true};  ///< else base areas are only walled (a Support::Model's choice)
+    bool own_model {false};   ///< the base comes from a Support::Model
     PrintObject *object;
     map<coordf_t, Polygons> overhang;
     map<coordf_t, Polygons> contact;

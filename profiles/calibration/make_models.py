@@ -4,6 +4,8 @@
 temperature-tower.stl  8 sections of 5 mm, 20 x 10 mm, with a 0.6 mm deep groove
                        between them so the sections are easy to tell apart.
 flow-cube.stl          20 mm cube for the single-wall flow test.
+support-test.stl       a 30 x 30 mm cap on a post, 24 mm up, with a ledge under one
+                       side: overhangs to support down to the bed and down to the model.
 """
 import os
 import struct
@@ -39,3 +41,7 @@ for i in range(8):
     tower += box(0.6, 0.6, z + 4.4, 19.4, 9.4, top)                # groove
 write_stl("temperature-tower.stl", tower)
 write_stl("flow-cube.stl", box(0, 0, 0, 20, 20, 20))
+write_stl("support-test.stl",
+          box(-5, -5, 0, 5, 5, 24.01)                              # post
+          + box(4.99, -5, 0, 15, 5, 8)                             # ledge, towards +X
+          + box(-15, -15, 24, 15, 15, 26))                         # cap

@@ -35,6 +35,17 @@ The G-code header gives the expected wall (`; external perimeters extrusion widt
 Measure the wall with calipers in a few places and set
 `extrusion_multiplier = old value * expected / measured` in the filament preset.
 
+## Support (normal against tree)
+
+A 30 x 30 mm cap on a post, 24 mm up, with a ledge under one side (about 46 minutes
+each). Print both and compare how the underside looks, how the support comes off, and
+whether any branch broke or came loose while printing.
+
+```sh
+slic3r -g $E --support-material --support-material-style normal -o norm_support.gcode $P/calibration/support-test.stl
+slic3r -g $E --support-material --support-material-style tree -o tree_support.gcode $P/calibration/support-test.stl
+```
+
 ## Retraction
 
 Not here yet: it needs a different retraction length per height. The slicer has one

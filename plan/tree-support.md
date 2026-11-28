@@ -80,6 +80,9 @@ default pillar pattern.
 * Tip spacing is the strongest knob: 5 mm instead of 3 mm took a third off the base in
   the first model. The default stays at 3 mm until a print shows what bridges well.
 
+The part for the first print is
+[support-test.stl](../profiles/calibration/README.md#support-normal-against-tree).
+
 ## Known limits
 
 * Never printed: tip size, tip spacing, tube strength and removal are guesses.

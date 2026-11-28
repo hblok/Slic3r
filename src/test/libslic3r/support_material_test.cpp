@@ -384,6 +384,35 @@ TEST(SupportMaterial, TreeHasTheSameLayersAsNormalSupportAndItsInterface) {
     EXPECT_FALSE(tree.object().support_layers.back()->support_interface_fills.entities.empty());
 }
 
+TEST(SupportMaterial, WithABrimNoTreeBranchStartsInTheAir) {
+    // a cap on a post: trunks come down close to the post
+    TriangleMesh post {TriangleMesh::make_cube(10, 10, 24)};
+    post.translate(10, 10, 0);
+    TriangleMesh mushroom {TriangleMesh::make_cube(30, 30, 2)};
+    mushroom.translate(0, 0, 24);
+    mushroom.merge(post);
+    mushroom.repair();
+
+    const double brim {5};
+    auto config {Slic3r::Config::new_from_defaults()};
+    config->set("support_material", true);
+    config->set("support_material_style", "tree");
+    config->set("brim_width", brim);
+    Slic3r::Model model;
+    auto print {Slic3r::Test::init_print({mushroom}, model, config)};
+    PrintObject &object {*print->objects.front()};
+    object.generate_support_material();
+    const auto &layers {object.support_layers};
+
+    // under the second support layer: what the first one prints (not just its outline), or
+    // the brim around the model
+    Polygons below {offset(paths(layers.at(0)->support_fills), scale_(1.6))};
+    append_to(below, offset(Polygons(object.layers.front()->slices), scale_(brim + 0.5)));
+    const Polylines second {paths(layers.at(1)->support_fills)};
+    EXPECT_GT(length_mm(second), 10);
+    EXPECT_LT(length_mm(diff_pl(second, union_(below))), 0.5);
+}
+
 TEST(SupportMaterial, TreeKeepsTheRaftSolid) {
     const Supported normal("normal", 3), tree("tree", 3);
     for (size_t i = 0; i < 3; ++i) {

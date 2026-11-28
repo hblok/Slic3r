@@ -160,6 +160,7 @@ SupportMaterial::generate(PrintObject *object)
         }
     }
     // Without interface layers the contact areas are printed as base, which then needs filling.
+    this->own_model = model != nullptr;
     this->base_infill = !model || model->infill() || object_config->support_material_interface_layers.value == 0;
     // Generate the actual toolpaths and save them into each layer.
     generate_toolpaths(object, overhang, contact, _interface, base);
@@ -1200,6 +1201,10 @@ SupportMaterial::process_layer(int layer_id, toolpaths_params params)
             // Subtract brim so that it goes around the object fully (and support gets its own brim).
             if (config->brim_width.value > 0) {
                 float d = +scaled(config->brim_width.value) * 2; // as Perl: scale($brim_width) * 2
+                // A model's branches stand on small feet: take away only what the brim
+                // itself covers, or those next to it would start in the air.
+                if (this->own_model)
+                    d = scaled(config->brim_width.value) + base_flow->scaled_width() / 2;
 
                 new_to_infill = diff_ex(
                     to_infill,
