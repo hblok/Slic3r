@@ -5,6 +5,7 @@
 #include <climits>
 #include <cmath>
 
+#include <wx/notifmsg.h>
 #include <wx/progdlg.h>
 #include <wx/window.h> 
 #include <wx/numdlg.h> 
@@ -660,9 +661,10 @@ void Plater::on_job_done(std::shared_ptr<SliceJob> job, const std::string& error
                     wxString(GCodeTimeEstimator::format_time(job->print.estimated_print_time)));
         }
         statusbar->SetStatusText(message);
-        if (exporting && !job->svg) {
-            if (job->for_plate && current) this->show_print_summary(&job->print);
-            if (!GetFrame()->IsActive()) GetFrame()->RequestUserAttention();
+        if (exporting && !job->svg && job->for_plate && current) this->show_print_summary(&job->print);
+        if (exporting && !GetFrame()->IsActive()) {  // the user is elsewhere: tell the desktop
+            GetFrame()->RequestUserAttention();
+            wxNotificationMessage(_("Slicing Done!"), message, GetFrame()).Show();
         }
         if (current) {
             this->sliced = job;
