@@ -120,15 +120,20 @@ void PresetEditor::apply_rules() {
     }
 }
 
-void PresetEditor::resolve_conflicts(const std::string& changed) {
+bool PresetEditor::resolve_conflicts(const std::string& changed) {
     const Values v {this->config->config()};
     auto ask = [this](const wxString& question, const wxString& title) {
         return wxMessageBox(question, title, wxYES_NO | wxICON_WARNING, this) == wxYES;
     };
-    auto set = [this](const std::string& key, const std::string& value) {
-        if (this->config->has(key)) this->config->set(key, value);
+    bool adjusted {false};
+    auto set = [this, &adjusted](const std::string& key, const std::string& value) {
+        if (!this->config->has(key)) return;
+        this->config->set(key, value);
+        adjusted = true;
     };
+    // "": a preset was loaded, so every rule applies
     auto among = [&changed](std::initializer_list<const char*> keys) {
+        if (changed.empty()) return true;
         for (const char* key : keys)
             if (changed == key) return true;
         return false;
@@ -147,9 +152,22 @@ void PresetEditor::resolve_conflicts(const std::string& changed) {
                 set("spiral_vase", "0");
             }
         }
-        if (changed == "support_material" && v.on("support_material") && !v.on("overhangs")) {
-            if (ask(_("Supports work better, if the following feature is enabled:\n- Detect bridging perimeters\n\nShall I adjust those settings for supports?"), _("Support Generator")))
-                set("overhangs", "1");
+        if (among({"support_material"})) {
+            if (!v.on("support_material")) {
+                this->_support_asked = false;
+            } else if (!this->_support_asked) {  // once, until supports are switched off again
+                this->_support_asked = true;
+                if (!v.on("overhangs")) {
+                    const int answer {wxMessageBox(_("Supports work better, if the following feature is enabled:\n- Detect bridging perimeters\n\nShall I adjust those settings for supports?"),
+                        _("Support Generator"), wxYES_NO | wxCANCEL | wxICON_WARNING, this)};
+                    if (answer == wxYES) {
+                        set("overhangs", "1");
+                    } else if (answer == wxCANCEL) {  // no supports after all
+                        set("support_material", "0");
+                        this->_support_asked = false;
+                    }
+                }
+            }
         }
         if (among({"fill_density", "fill_pattern", "top_infill_pattern"}) && v.number("fill_density") == 100) {
             // at full density only the patterns of solid layers work
@@ -201,6 +219,7 @@ void PresetEditor::resolve_conflicts(const std::string& changed) {
                 set("use_firmware_retraction", "0");
         }
     }
+    return adjusted;
 }
 
 }} // namespace Slic3r::GUI

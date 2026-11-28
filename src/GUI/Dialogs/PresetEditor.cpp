@@ -347,6 +347,11 @@ void PresetEditor::_on_select_preset(bool force) {
     this->_on_preset_loaded();
     this->refresh_all();
     if (this->on_select_preset != nullptr) this->on_select_preset(this->_preset->name, this->type());
+    // a preset can come with combinations that do not work: ask now, as the Perl GUI did
+    this->_resolving = true;
+    const bool adjusted {this->resolve_conflicts("")};
+    this->_resolving = false;
+    if (adjusted) this->_changed("");
 }
 void PresetEditor::select_preset(int id, bool force) {
     this->_presets_choice->SetSelection(id);

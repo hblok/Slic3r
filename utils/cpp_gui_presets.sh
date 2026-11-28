@@ -2,7 +2,8 @@
 # Third smoke test for the C++ GUI, under Xvfb: the preset editors and the plater's
 # preset panel. A shortcut changed on the plater is saved; a second extruder gets its own
 # material and its values reach the G-code; the bed shape dialog and a material's override
-# of a printer setting end up in the saved presets; leaving a modified preset asks.
+# of a printer setting end up in the saved presets; leaving a modified preset asks, and so
+# does loading one with settings that do not work together.
 #
 # No window manager: clicks are at fixed positions; see the screenshots when a layout
 # changes.
@@ -151,6 +152,26 @@ if command -v python3 >/dev/null; then
 else
     echo "skip send to a print server: no python3 for the stand-in server"
 fi
+
+# a preset that cannot work as it is: loading it asks (spiral vase with three perimeters)
+kill "$gui" 2>/dev/null || :
+wait "$gui" 2>/dev/null || :
+mkdir -p "$out/data-vase"
+cp -r "$root/profiles/print" "$root/profiles/filament" "$root/profiles/printer" "$out/data-vase/"
+echo "spiral_vase = 1" >>"$out/data-vase/print/Ender-5-Pro-0.20mm.ini"
+cp "$out/data-send/slic3r.ini" "$out/data-vase/slic3r.ini" 2>/dev/null || cp "$data/slic3r.ini" "$out/data-vase/slic3r.ini"
+printf '[presets]\nprint = Ender-5-Pro-0.20mm\nfilament = Ender-5-Pro-PLA\nprinter = Ender-5-Pro\n' \
+    >"$out/data-vase/slic3r.ini"
+"$gui_bin" --datadir "$out/data-vase" >"$out/vase.log" 2>&1 & gui=$!
+sleep 7
+shot vase-question
+xdotool search --onlyvisible --name '^Spiral Vase$' >/dev/null || fail "no question about the loaded preset"
+click 338 182; sleep 3                                   # "Yes": adjust the settings
+! xdotool search --onlyvisible --name '^Spiral Vase$' >/dev/null || fail "the question stays"
+kill -0 "$gui" 2>/dev/null || fail "the GUI exited after the question (see $out/vase.log)"
+tab_print
+shot vase-adjusted
+ok "loading a preset that cannot work asks"
 
 # the first start, with an empty data directory: the configuration wizard
 kill "$gui" 2>/dev/null || :

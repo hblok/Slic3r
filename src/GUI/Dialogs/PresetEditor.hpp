@@ -153,8 +153,10 @@ protected:
     bool _resolving {false};
     /// Enable the options that matter with the current values (Dialogs/PresetRules.cpp).
     void apply_rules();
-    /// Ask about combinations that do not work and change this->config accordingly.
-    void resolve_conflicts(const std::string& changed);
+    /// Ask about combinations that do not work after `changed` ("": a preset was loaded)
+    /// and change this->config accordingly. True when it did.
+    bool resolve_conflicts(const std::string& changed);
+    bool _support_asked {false};  ///< the support question has had its answer
 
     virtual void _build() = 0;
     /// Called after every load and change, for the widgets that are not options.
