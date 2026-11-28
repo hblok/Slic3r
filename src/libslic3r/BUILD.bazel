@@ -486,3 +486,31 @@ cc_library(
         "@boost.thread",
     ],
 )
+
+cc_library(
+    name = "sla_print",
+    srcs = ["SLAPrint.cpp"],
+    hdrs = ["SLAPrint.hpp"],
+    includes = ["."],
+    deps = [
+        ":fill",
+        ":geometry",
+        ":libslic3r_header",
+        ":print_config",
+        ":slicing_core",
+        "@boost.bind",
+        "@boost.config",
+    ],
+)
+
+cc_library(
+    name = "simple_print",
+    srcs = ["SimplePrint.cpp"],
+    hdrs = ["SimplePrint.hpp"],
+    includes = ["."],
+    deps = [
+        ":geometry",
+        ":libslic3r_header",
+        ":slicing_core",
+    ],
+)

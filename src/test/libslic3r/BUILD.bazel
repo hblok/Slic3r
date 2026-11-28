@@ -458,3 +458,23 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "sla_print_test",
+    size = "small",
+    srcs = ["sla_print_test.cpp"],
+    deps = [
+        "//src/libslic3r:sla_print",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "simple_print_test",
+    size = "small",
+    srcs = ["simple_print_test.cpp"],
+    deps = [
+        "//src/libslic3r:simple_print",
+        "@googletest//:gtest_main",
+    ],
+)

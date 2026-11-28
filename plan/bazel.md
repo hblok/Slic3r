@@ -48,8 +48,8 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 | 10 | bridge detector, motion planner, adaptive slicing, surfaces | geometry | `primitives`, `medial_axis`, `bridge_detector`, `motion_planner`, `surface_collection`, `slicing_adaptive` tests | done |
 | 11 | `config_base`, `print_config`, `config`, `placeholder_parser`, `extruder`, `gcode_reader`, `gcode_writer`, `gcode_time_estimator`, `pressure_regulator`, `vibration_limit` | geometry | 11 new and ported tests, one per target (`config_base` ... `vibration_limit`) | done |
 | 12 | `extrusion_entity` (2 units), `flow`, `perimeter_generator`, `fill` (7 units) | config | `extrusion_entity`, `flow`, `perimeter_generator`, `fill` tests | done |
-| 13 | slicing core, then SLA and simple print | all above, `expat`, `Zip` | the tests that need whole prints | next |
-| 14 | `slic3r-cli`, a program without wxWidgets | core | golden G-code and command line checks | |
+| 13 | `slicing_core` (15 units), `sla_print`, `simple_print` | all above, `expat`, `Zip` | `print`, `model`, G-code, support, mesh and file format tests, ported; `sla_print`, `simple_print` (new) | done |
+| 14 | `slic3r-cli`, a program without wxWidgets | core | golden G-code and command line checks | next |
 | 15 | GUI parts, bottom up, then `slic3r` | wxWidgets, OpenGL | unit tests per part, then the GUI scripts | |
 | 16 | `utils/make_dist.sh` on Bazel, a Bazel job in CI | | CI green; the owner tries the program | |
 | 17 | remove CMake, update `CLAUDE.md` and README | | CI green | |
