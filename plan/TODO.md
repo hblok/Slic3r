@@ -42,12 +42,6 @@ Differences from the Perl GUI, to fix if they matter:
       finds `perl-final`. A clone with the `upstream` remote gets them with
       `git fetch upstream --tags` (done in the working copy 2026-11-28:
       `git describe --match '[0-9]*'` says 1.3.0-…). Push them to the fork? Owner's call
-- [ ] `.deb` for Debian 13, built by CI, published as a GitHub release (much later,
-      after the Bazel move)
+- [ ] Publish a first release: `gh workflow run release.yml -f publish=true` (builds and
+      checks the `.deb` first; the owner says when)
 
-## Next: Bazel
-
-- [x] An empty Google Test builds, runs and passes (`bazel test //...`, 2026-11-28)
-- [x] The library and the program without a GUI, with all their tests (steps 1 to 14)
-- [ ] The GUI (step 15): answer the [open questions](bazel.md#open-questions) first; then
-      CI, removing CMake, and much later the `.deb`

@@ -50,3 +50,15 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = COMMAND_LINE_DEPS + ["//src/GUI:application"],
 )
+
+# a standalone tool: a surface mesh (such as a terrain) made into a solid
+cc_binary(
+    name = "extrude-tin",
+    srcs = ["utils/extrude-tin.cpp"],
+    deps = [
+        "//src/libslic3r:config",
+        "//src/libslic3r:libslic3r_header",
+        "//src/libslic3r:slicing_core",
+        "@boost.nowide",
+    ],
+)

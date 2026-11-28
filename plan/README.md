@@ -8,7 +8,7 @@ Target: Debian 13, unmodified Creality Ender 5 Pro.
 | [TODO.md](TODO.md) | Open items |
 | [baseline.md](baseline.md) | What we found in the repo and what works today |
 | [features.md](features.md) | Candidate features, ranked for the Ender 5 Pro |
-| [bazel.md](bazel.md) | The move to Bazel: steps, dependency findings, open questions |
+| [bazel.md](bazel.md) | The Bazel build: target rules, dependency findings, packages |
 | [DECISIONS.md](DECISIONS.md) | Settled decisions |
 
 ## Phases
@@ -54,7 +54,8 @@ Each phase ends with something that can be checked.
 One at a time from [features.md](features.md), each with a test and a test print.
 
 ### 5. Packaging
-- [ ] `.deb` for Debian 13, built by CI, published as a GitHub release
+- [x] `.deb` for Debian 13, built and checked by the release workflow (2026-11-28)
+- [ ] Publish it as a GitHub release (owner says when)
 
 ## Perl and the GUI path
 

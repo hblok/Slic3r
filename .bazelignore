@@ -1,3 +1,3 @@
-# CMake build directories (they hold other projects' files)
+# build output (and what old CMake builds left in a working copy)
 build
 build-gui

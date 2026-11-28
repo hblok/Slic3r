@@ -10,31 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  debian13:
-    runs-on: ubuntu-latest
-    container: debian:13
-    timeout-minutes: 30
-    steps:
-      - name: Install build dependencies
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends ca-certificates git cmake make g++ \
-            libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev python3
-      - uses: actions/checkout@v7
-      - name: Configure
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
-      - name: Build
-        run: cmake --build build -j"$(nproc)"
-      - name: Test
-        run: ./build/slic3r_test
-      - name: Golden G-code check
-        run: src/test/golden/check.sh build/slic3r
-      - name: Command line and script check
-        run: src/test/cli/check.sh build/slic3r
-
-  # The Bazel build that is to replace CMake (plan/bazel.md), on the target system.
+  # on the target system
   bazel:
     runs-on: ubuntu-latest
     container: debian:13
@@ -66,63 +42,9 @@ jobs:
           # the GUI tests wait fixed times for the program: no more of them than cores
           bazel test --disk_cache="$HOME/.cache/bazel-disk" \
             --repository_cache="$HOME/.cache/bazel-repository" --local_test_jobs=4 //...
-      - name: Keep the test logs
-        if: failure()
+      - name: Keep the test logs and GUI screenshots
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: bazel-testlogs
           path: build/bazel/testlogs/
-
-  # C++ GUI (wxWidgets): build it and check that it starts under Xvfb.
-  cpp-gui:
-    runs-on: ubuntu-latest
-    container: debian:13
-    timeout-minutes: 45
-    steps:
-      - name: Install build dependencies
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends ca-certificates git cmake make g++ \
-            libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev \
-            libwxgtk3.2-dev libgl-dev libglu1-mesa-dev \
-            xvfb xauth xdotool imagemagick libgl1-mesa-dri python3
-      - uses: actions/checkout@v7
-      - name: Build
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
-          cmake --build build-gui -j"$(nproc)" --target slic3r gui_test
-          cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build -j"$(nproc)" --target slic3r
-      - name: C++ GUI unit tests
-        run: ctest --test-dir build-gui -R gui_unit --output-on-failure
-      - name: C++ GUI smoke test
-        run: utils/cpp_gui_smoke.sh build-gui/slic3r build/slic3r cpp-gui-smoke
-      - name: C++ GUI plater test
-        run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-plate plate
-      - name: C++ GUI object operations test
-        run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-objects objects
-      - name: C++ GUI face rotation and cut test
-        run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-tools tools
-      - name: C++ GUI File menu test
-        run: utils/cpp_gui_plate.sh build-gui/slic3r build/slic3r cpp-gui-files files
-      - name: C++ GUI preset editor test
-        run: utils/cpp_gui_presets.sh build-gui/slic3r build/slic3r cpp-gui-presets
-      - name: C++ GUI controller test
-        run: utils/cpp_gui_controller.sh build-gui/slic3r build/slic3r cpp-gui-controller
-      - name: C++ GUI projector test
-        run: utils/cpp_gui_projector.sh build-gui/slic3r build/slic3r cpp-gui-projector
-      - name: Keep the screenshot
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: cpp-gui-smoke
-          path: |
-            cpp-gui-smoke/*.png
-            cpp-gui-plate/*.png
-            cpp-gui-objects/*.png
-            cpp-gui-tools/*.png
-            cpp-gui-files/*.png
-            cpp-gui-presets/*.png
-            cpp-gui-controller/*.png
-            cpp-gui-projector/*.png

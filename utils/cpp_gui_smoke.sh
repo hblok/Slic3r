@@ -12,8 +12,8 @@
 # There is no window manager, so the click goes to fixed coordinates inside the
 # default-size window; re-measure them if the layout changes (see the screenshots).
 #
-# Needs the GUI build (cmake -S src -B build-gui -DEnable_GUI=ON), the CLI build
-# (build/slic3r), Xvfb, xdotool and ImageMagick.
+# Runs as //utils:gui_smoke_script_test (bazel/gui_script.sh passes the arguments; one
+# program serves as both). Needs Xvfb, xdotool and ImageMagick.
 # Usage: utils/cpp_gui_smoke.sh path/to/gui/slic3r path/to/cli/slic3r OUTDIR
 set -eu
 # hang guard: after 290 s the whole run is killed, Xvfb and the program included

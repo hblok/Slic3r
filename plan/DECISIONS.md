@@ -40,4 +40,6 @@
   Existing C++ tests are ported to Google Test. Boost: whichever version is most
   convenient (1.90, see [bazel.md](bazel.md)). Bazel in CI later.
 - Continue with the Bazel steps without waiting after each; CMake to be phased out soon.
-
+- Bazel with the system's wxWidgets and OpenGL; a Bazel job in CI with the GUI tests.
+- Once CI is green, CMake goes, after checking that everything builds and runs. A release
+  pipeline comes first: it builds the `.deb` and publishes a GitHub release.

@@ -22,7 +22,7 @@ bazel_dep(name = "rules_pkg", version = "1.3.0")
 bazel_dep(name = "rules_shell", version = "0.8.0")
 bazel_dep(name = "googletest", version = "1.18.0.bcr.1", dev_dependency = True)
 
-# wxWidgets is not in the registry: it comes from the system, as for the CMake build
+# wxWidgets is not in the registry: it comes from the system
 system_wxwidgets = use_repo_rule("//bazel:wx.bzl", "system_wxwidgets")
 
 system_wxwidgets(name = "wxwidgets")

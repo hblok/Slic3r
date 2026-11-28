@@ -55,51 +55,53 @@ See [slic3r.org](https://slic3r.org/), the original project's homepage, for back
 
 ### What language is it written in?
 
-C++ (C++11 core, C++14 graphical interface with wxWidgets 3.2). Until November 2026 the
+C++ (graphical interface with wxWidgets 3.2). Until November 2026 the
 graphical interface and parts of the program were written in Perl; that program is in the
 git history (tag `perl-final`).
 
 ### How to install?
 
-No packages are provided yet. It builds from source on Debian 13.
+On Debian 13, take the `.deb` from the
+[releases](https://github.com/hblok/Slic3r/releases), if there is one:
 
 ```sh
-sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev \
-  libwxgtk3.2-dev libgl-dev libglu1-mesa-dev
-cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
-cmake --build build-gui -j$(nproc) --target slic3r
-./build-gui/slic3r                  # graphical interface
-./build-gui/slic3r -g model.stl     # slice on the command line
-./build-gui/slic3r --help
+sudo apt install ./slic3r_*_amd64.deb
+slic3r                  # graphical interface
+slic3r -g model.stl     # slice on the command line
+slic3r --help
 ```
 
-For the command line alone, leave out the wxWidgets and OpenGL packages and
-`-DEnable_GUI=ON`.
+### How to build?
 
-The build is moving to [Bazel](plan/bazel.md). With
-[Bazelisk](https://github.com/bazelbuild/bazelisk) installed (it needs `g++` and, for the
-graphical interface, `libwxgtk3.2-dev libgl-dev libglu1-mesa-dev`; Boost comes with the
-build), `utils/make_dist.sh` puts the program, its icons and the printer profiles into a
-directory you can copy, and `bazel test //...` runs the tests.
-
-Tests (see [CLAUDE.md](CLAUDE.md)):
+With [Bazel](https://bazel.build): install
+[Bazelisk](https://github.com/bazelbuild/bazelisk) (it fetches the right Bazel) and
 
 ```sh
-cmake -S src -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j$(nproc)
-ctest --test-dir build -L quick --output-on-failure        # a few seconds
-cmake --build build-gui -j$(nproc)                         # also builds the GUI unit tests
-ctest --test-dir build-gui -L gui -j5 --output-on-failure  # GUI under Xvfb; needs xvfb xauth xdotool imagemagick
+sudo apt install g++ libwxgtk3.2-dev libgl-dev libglu1-mesa-dev
+bazel run //src:slic3r          # build and start the graphical interface
+utils/make_dist.sh              # program, icons and printer profiles into build/dist-gui
+```
+
+Boost and the other libraries come with the build. `//src:slic3r-cli` is the command line
+alone and needs only `g++`.
+
+Tests (the GUI ones also need `xvfb xauth xdotool imagemagick libgl1-mesa-dri`):
+
+```sh
+bazel test //...
+bazel test --build_tag_filters=-gui --test_tag_filters=-gui //...     # without the GUI
 ```
 
 ### Directory structure
 
-* `package/`: Linux desktop entry (packaging is to be rebuilt)
-* `src/`: the C++ source of the `slic3r` executable and the CMake definition file for compiling it
+* `package/`: the Debian package and the desktop entry
+* `src/`: the C++ source of the `slic3r` executable
 * `src/libslic3r/`: the slicing core
 * `src/GUI/`: the graphical interface
-* `src/test/`: tests, implemented with [Catch2](https://github.com/catchorg/Catch2)
+* `src/test/`: tests, implemented with [Google Test](https://github.com/google/googletest)
 * `src/third_party/`: libraries from other projects
 * `utils/`: GUI test scripts, `make_dist.sh` and post-processing scripts
+* `bazel/`: build rules for the system libraries and the tests under Xvfb
 
 ### Acknowledgements
 

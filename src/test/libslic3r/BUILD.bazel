@@ -1,7 +1,6 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
-# A test depends on the target it tests (and Google Test) only. The test_*.cpp files here
-# are the Catch tests of the CMake build; they go as their cases are ported.
+# A test depends on the target it tests (and Google Test) only.
 
 cc_test(
     name = "exception_test",

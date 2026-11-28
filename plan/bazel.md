@@ -1,29 +1,22 @@
-# Bazel build: plan
+# Bazel build
 
-Written 2026-11-28, last revised with the owner's answers the same day. Decisions: [DECISIONS.md](DECISIONS.md).
+Planned and carried out 2026-11-28; CMake is removed (in git history). Decisions:
+[DECISIONS.md](DECISIONS.md).
 
-Goal: build, test and package with Bazel, then remove CMake.
+## Rules for targets
 
-## How we work
-
-- Slowly, from the bottom up. One step adds one library target (as small as the code
-  allows, often one `.cpp` and its header) and its own test target.
-- A step is done when `bazel test //...` builds, runs and passes. Commit, push, then the
-  next one.
+- One library target is as small as the code allows, often one `.cpp` and its header, with
+  its own test target.
 - A test depends only on the target it tests (and Google Test), and is `size = "small"`
   unless it cannot be. `//src/test:minimal_test` stays: it checks the setup itself.
 - The code is not reshaped for the sake of tests: files that need each other make one
   target.
-- The existing Catch tests are ported to Google Test as their targets arrive, to
-  `<name>_test.cpp` beside them; the `test_*.cpp` files stay for CMake until it goes.
-- CMake stays authoritative until Bazel matches it, and is then removed soon.
-- We build inside a container (the development one for now; a build container later).
 
 ## What the code allows
 
-Measured on 2026-11-28 from the `#include` lines and the symbols of the CMake objects.
+Measured on 2026-11-28 from the `#include` lines and the symbols of the object files.
 `libslic3r` has 65 units (a `.cpp` with its header, or a lone file). Most can be a target
-of their own. Four groups need each other in a circle, and each becomes one target:
+of their own. Four groups need each other in a circle, and each is one target:
 
 | Target | Units | Lines |
 |---|---|---|
@@ -31,6 +24,9 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 | fill patterns | 7 | 1,700 |
 | slicing core: Model, IO, Print, layers, GCode, support, ... | 15 | 10,900 |
 | ExtrusionEntity and its collection | 2 | 700 |
+
+In the GUI nearly every file is a target; the main window, plater, controller and preset
+editors need each other (`//src/GUI:application`).
 
 ## Steps
 
@@ -50,12 +46,11 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 | 12 | `extrusion_entity` (2 units), `flow`, `perimeter_generator`, `fill` (7 units) | config | `extrusion_entity`, `flow`, `perimeter_generator`, `fill` tests | done |
 | 13 | `slicing_core` (15 units), `sla_print`, `simple_print` | all above, `expat`, `Zip` | `print`, `model`, G-code, support, mesh and file format tests, ported; `sla_print`, `simple_print` (new) | done |
 | 14 | `slic3r-cli`, a program without wxWidgets | core | `command_line_test` (ported), `golden_test`, `command_line_script_test` | done |
-| 15 | GUI parts, bottom up, then `slic3r` | wxWidgets, OpenGL | unit tests per part, then the GUI scripts | next |
-| 16 | `utils/make_dist.sh` on Bazel, a Bazel job in CI | | CI green; the owner tries the program | |
-| 17 | remove CMake, update `CLAUDE.md` and README | | CI green | |
-| later | `.deb` (`rules_pkg`), build container | | installs and slices in a clean `debian:13` | |
-
-Steps 9 to 15 are split further when we get there: one target (or one test) per commit.
+| 15 | GUI parts, bottom up, then `slic3r` | wxWidgets, OpenGL | unit tests per part, then the GUI scripts | done |
+| 16 | `utils/make_dist.sh` on Bazel, a Bazel job in CI | | CI green | done |
+| 17 | remove CMake, the Catch tests and the old Boost.Nowide copy | | CI green | done |
+| 18 | `//package:deb` (`rules_pkg`), release workflow | `dpkg-dev` | installs, slices and starts in a clean `debian:13` | done |
+| later | build container | | | |
 
 ## Dependencies
 
@@ -63,48 +58,32 @@ Libraries come from the Bazel Central Registry.
 
 - **Google Test** 1.18.0: in use.
 - **Boost** 1.90.0.bcr.1, one module per library as targets need them. Bazel builds it
-  from source and links it into the programs, so the installed Boost is not used. CMake
-  uses Debian's 1.83; 1.83 is no choice for Bazel (the registry has no Boost.Nowide that
-  old). Checked 2026-11-28 with Debian 13's compiler and the CMake flags: the whole
+  from source and links it into the programs, so the installed Boost is not used. Debian
+  has 1.83, which is no choice for Bazel (the registry has no Boost.Nowide that
+  old). Checked 2026-11-28 with Debian 13's compiler and the same flags: the whole
   program and all tests built against 1.90 give identical golden G-code, pass the command
   line checks and the 101 test cases. One change is needed: `ConfigBase.cpp` includes
   `boost/nowide/cstdlib.hpp` instead of `cenv.hpp` (done in step 11).
 - **Where to build.** A program Bazel builds needs only the C and C++ runtime of the
   system (and wxWidgets for the GUI), but those must be as new as the build machine's:
-  build releases on Debian 13 (later: the build container). Seen 2026-11-28:
-  `slic3r-cli` built in the Ubuntu development container asks for glibc 2.43 and does not
-  start on Debian 13 (2.41). Test programs are linked
-  against files in Bazel's output tree and run through `bazel test`.
-- **wxWidgets** is not in the registry (looked for `wxwidgets` and `wxwidget`). For step
-  15 it comes from the system (installing build packages in the container is agreed), or
-  Bazel builds it from source with `rules_foreign_cc`. Decided then.
-- `src/third_party/boost` holds an old copy of Boost.Nowide that comes before the system
-  one on the CMake include path (it is where `cenv.hpp` comes from). Bazel uses the
-  registry's; removing the copy waits for step 17.
+  build releases on Debian 13 (the release workflow does; later also a build container).
+  Seen 2026-11-28: `slic3r-cli` built in the Ubuntu development container asks for glibc
+  2.43 and does not start on Debian 13 (2.41). Test programs are linked against files in
+  Bazel's output tree and run through `bazel test`.
+- **wxWidgets** is not in the registry (looked for `wxwidgets` and `wxwidget`): it and
+  OpenGL come from the system, found through `wx-config` (`bazel/wx.bzl`).
 
-## Where it stands (2026-11-28)
+## Packages
 
-Steps 1 to 14: all of `libslic3r` and the program without a GUI build with Bazel, 49
-test targets pass, and every Catch test outside `src/test/GUI` is ported (Google Test,
-249 cases). The golden G-code matches.
+`//package:deb` puts the program and icons in `/usr/lib/slic3r`, a link in `/usr/bin`, the
+profiles in `/usr/share/slic3r`. `dpkg-shlibdeps` names the dependencies from the build
+machine, so a package is for the Debian it was built on.
+`.github/workflows/release.yml` builds it, installs it with
+`--no-install-recommends` in a clean `debian:13`, compares golden G-code and runs the GUI
+smoke script on the installed program, and publishes a release only when asked.
 
-Settled on the way: the flags are in `.bazelrc`; `print_config` defines `USE_WX` itself,
-so there is one library; tests find their files at `src/test/inputs/` in their runfiles.
+## Not carried over from CMake
 
-## To solve when we get there
-
-| Topic | Note |
-|---|---|
-| Build commit in G-code and About box | still "Unknown revision": `--workspace_status_command` and a stamped header |
-| Icons | the program looks in `../var` beside itself; check `bazel run` |
-| Test time limits | GUI tests 300 s (`timeout = "moderate"`) |
-| `.deb` dependencies | `rules_pkg` does not work them out; list them and check by installing |
-| Checking GUI steps | the GUI scripts click at fixed positions, recorded on Debian 13; the container is Ubuntu |
-| Compiler warnings | CMake builds with `-Wall`, Bazel does not yet |
-
-## Open questions
-
-| # | Question | Suggestion |
-|---|---|---|
-| 1 | wxWidgets: the system's packages (found through `wx-config`), or built from source by Bazel (`rules_foreign_cc`; GTK still comes from the system)? | System: it is what Debian ships and what CMake uses |
-| 2 | Run the GUI tests where? The scripts expect Debian 13's looks; a Bazel job in CI (`debian:13`) would check them there | Add the CI job with step 15 rather than at step 16 |
+- Windows and macOS settings (the target is Debian 13).
+- `-Wall`: add it when the warnings are to be worked through.
+- Options: for debug output `--copt=-DSLIC3R_DEBUG`, for coverage `bazel coverage`.

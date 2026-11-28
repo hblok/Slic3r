@@ -8,13 +8,15 @@ P=profiles
 E="--load $P/printer/Ender-5-Pro.ini --load $P/filament/Ender-5-Pro-PLA.ini --load $P/print/Ender-5-Pro-0.20mm.ini"
 ```
 
+`slic3r` below is the installed program (or `build/dist-gui/slic3r`).
+
 ## Temperature tower
 
 Eight 5 mm sections, printed at 225, 220, ... 190 °C from the bottom up (the
 `layer_gcode` sets the hotend by height; a groove marks each section).
 
 ```sh
-./build/slic3r -g $E --load $P/calibration/temperature-tower.ini $P/calibration/temperature-tower.stl
+slic3r -g $E --load $P/calibration/temperature-tower.ini $P/calibration/temperature-tower.stl
 ```
 
 Pick the section with the best surface, overhang edges and least stringing, and set
@@ -26,7 +28,7 @@ in `temperature-tower.ini`.
 A 20 mm cube printed as one spiral wall (spiral vase, no top, no infill).
 
 ```sh
-./build/slic3r -g $E --load $P/calibration/flow-single-wall.ini $P/calibration/flow-cube.stl
+slic3r -g $E --load $P/calibration/flow-single-wall.ini $P/calibration/flow-cube.stl
 ```
 
 The G-code header gives the expected wall (`; external perimeters extrusion width = 0.44mm`).

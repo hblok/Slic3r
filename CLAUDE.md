@@ -12,90 +12,67 @@ before proposing a change of direction.
 | Path | What |
 |---|---|
 | `src/libslic3r/` | C++ slicing core |
-| `src/` | command line program (`slic3r.cpp`), CMake build, Catch2 tests (`src/test/`) |
-| `src/GUI/` | GUI (wxWidgets 3.2): builds with `-DEnable_GUI=ON` |
+| `src/` | the program (`slic3r.cpp`), tests (`src/test/`) |
+| `src/GUI/` | GUI (wxWidgets 3.2) |
 | `src/third_party/` | libraries from other projects (admesh, Clipper, poly2tri, expat, miniz, ...) |
 | `utils/` | GUI test scripts and their stand-ins, `make_dist.sh`, post-processing scripts (Python) |
-| `package/` | Linux desktop entry only; packaging not built yet |
+| `package/` | the Debian package (`//package:deb`), desktop entry |
+| `bazel/` | wxWidgets from the system, tests under Xvfb |
 
 All C++ since 2026-11-28. The Perl program (GUI, bindings, tests) is in git history; the
 tag `perl-final` is the last commit with all of it.
 
-## Bazel (replacing CMake)
+## Build
+
+Bazel only (CMake removed 2026-11-28; it is in git history). Target is Debian 13:
 
 ```sh
-bazel test //...                                        # everything, GUI included (about 4 min)
-bazel test --test_tag_filters=-gui --build_tag_filters=-gui //...   # without wxWidgets
-bazel run //src:slic3r                                  # the program; //src:slic3r-cli has no GUI
-utils/make_dist.sh                                      # a copyable run directory
+sudo apt install g++ libwxgtk3.2-dev libgl-dev libglu1-mesa-dev \
+  xvfb xauth xdotool imagemagick libgl1-mesa-dri      # second line: the GUI tests
+bazel run //src:slic3r                                # the program; //src:slic3r-cli has no GUI
+utils/make_dist.sh                                    # a copyable run directory
 ```
 
-Version in `.bazelversion`, result links in `build/bazel/`, libraries from the registry
-except wxWidgets and OpenGL (system packages, `bazel/wx.bzl`). CI builds and tests with
-both systems until CMake is removed: [plan/bazel.md](plan/bazel.md). A change to a source
-file list or a test goes into both builds. Google Tests are `<name>_test.cpp`, one per
-target; the Catch files `test_*.cpp` are the CMake build's. A test depends on the target
-it tests; files that need each other are one target.
+Version in `.bazelversion` (Bazelisk fetches it), flags in `.bazelrc`, result links in
+`build/bazel/`, libraries from the registry except wxWidgets and OpenGL (system packages,
+`bazel/wx.bzl`). Programs need system libraries as new as the build machine's: build
+what is to run on Debian 13 on Debian 13.
 
-## Tests: two labelled sets
+One target per file where the code allows; files that need each other are one target
+([plan/bazel.md](plan/bazel.md)).
 
-| Set | Command | What | Limit |
-|---|---|---|---|
-| `quick` | `ctest --test-dir build -L quick -j8 --output-on-failure` | unit and functional tests, golden G-code, command line (about 6 s) | 2 min each |
-| `gui` | `ctest --test-dir build-gui -L gui -j5 --output-on-failure` | full C++ GUI under Xvfb (about 3 min) | 5 min each |
+## Tests
 
-Build first (below). Run `quick` while working, `gui` after GUI changes. A new test gets
-one of the two labels and a `TIMEOUT` in `src/CMakeLists.txt`. The GUI scripts also kill
-themselves after 290 s, run by hand or in CI. Never wait longer than 5 minutes for a test:
-a run that gets there is stuck.
+| Command | What |
+|---|---|
+| `bazel test //...` | everything: unit tests, golden G-code, command line, GUI (about 4 min) |
+| `bazel test --test_tag_filters=-gui --build_tag_filters=-gui //...` | without the GUI and wxWidgets |
+| `bazel test //src/...` | one part; `//utils/...` are the GUI scripts |
 
-## Build and test (C++ core)
+Google Tests are `<name>_test.cpp`, one per target; a test depends on the target it tests.
+GUI unit tests use `gui_test` (`bazel/gui_test.bzl`). Tests are `size` small or medium;
+GUI ones are tagged `gui`. The GUI scripts kill themselves after 290 s. Never wait longer
+than 5 minutes for a test: a run that gets there is stuck.
 
-Target is Debian 13:
+Run the non-GUI tests before committing C++ changes, the GUI ones after GUI changes.
+If the golden G-code changes on purpose, run `src/test/golden/check.sh PROGRAM --update`
+(a built `slic3r-cli`) and review the diff. Expected output is recorded on Debian 13.
 
-```sh
-sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev
-```
+The GUI scripts: `utils/cpp_gui_smoke.sh` (slicing, presets, preview, quit prompt),
+`cpp_gui_presets.sh` (preset editors, shortcuts, several extruders, upload to a stand-in
+print server), `cpp_gui_controller.sh` (the Controller tab with a stand-in printer on a
+pseudo terminal), `cpp_gui_projector.sh` (DLP projector) and the four parts of
+`cpp_gui_plate.sh` (plater, object operations, face and cut tools, File menu).
+Screenshots are among the test outputs (`build/bazel/testlogs/utils/*/test.outputs/`).
+They click at fixed positions and count menu entries: a new menu entry or layout change
+needs the scripts adjusted. A part that nears 5 minutes gets split.
 
-```sh
-cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j$(nproc)
-ctest --test-dir build -L quick -j8 --output-on-failure   # slic3r_test, golden/check.sh, cli/check.sh
-```
+## Packages and releases
 
-Run the quick set before committing C++ changes. If the golden
-output changes on purpose, run `check.sh build/slic3r --update` and review the diff.
-Expected output is recorded on Debian 13.
-
-The first build downloads Catch2. CMake writes `src/test/test_options.hpp`
-(ignored by git).
-
-## Build and test (C++ GUI)
-
-Also needs `libwxgtk3.2-dev libgl-dev libglu1-mesa-dev xvfb xauth xdotool imagemagick`.
-
-```sh
-cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
-cmake --build build-gui -j$(nproc)
-ctest --test-dir build-gui -L gui -j5 --output-on-failure
-```
-
-That runs `gui_unit` (the Catch tests in `src/test/GUI`; a build directory from before
-2026-11-28 needs `-DGUI_BUILD_TESTS=ON`), `utils/cpp_gui_smoke.sh` (slicing, presets, preview, quit prompt),
-`utils/cpp_gui_presets.sh` (preset editors, shortcuts, several extruders, upload to a
-stand-in print server; that step needs python3), `utils/cpp_gui_controller.sh` (the
-Controller tab with a stand-in printer on a pseudo terminal; skipped where there are
-none, as in the chroot), `utils/cpp_gui_projector.sh` (DLP projector; without pseudo
-terminals it leaves out the print) and the four
-parts of `utils/cpp_gui_plate.sh` (plater, object operations, face and cut tools, File
-menu); screenshots end
-up in `build-gui/gui-*`. A part that nears 5 minutes gets split.
-Run it after GUI changes. They click at fixed positions and count menu entries: a new
-menu entry or layout change needs the scripts adjusted (see their screenshots).
-
-`utils/make_dist.sh` (Bazel) builds a copyable run directory of the program in
-`build/dist-gui`; build it on Debian 13: it needs system libraries as new as the build
-machine's.
+`.github/workflows/release.yml` builds the `.deb` on Debian 13, installs it on a clean
+one, checks it (`package/debian/check_installed.sh`) and, only when asked (run with
+"publish" ticked, or a `v*` tag), publishes a GitHub release. Without that it is a
+rehearsal: `gh workflow run release.yml`.
 
 ## Rules
 
