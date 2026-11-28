@@ -12,7 +12,7 @@ directory, one preset per file:
 | [calibration/](calibration/README.md) | temperature tower and single-wall flow test |
 
 Only settings that differ from the Slic3r defaults are listed. The files have no
-comments: the C++ loader accepts only `;` comments and the Perl loader only `#`.
+comments.
 
 ## Use
 
@@ -23,10 +23,10 @@ then pick the presets in the plater.
 cp -r profiles/print profiles/filament profiles/printer ~/.Slic3r/
 ```
 
-Command line (Perl or C++):
+Command line:
 
 ```sh
-perl slic3r.pl --load profiles/printer/Ender-5-Pro.ini --load profiles/filament/Ender-5-Pro-PLA.ini \
+slic3r -g --load profiles/printer/Ender-5-Pro.ini --load profiles/filament/Ender-5-Pro-PLA.ini \
   --load profiles/print/Ender-5-Pro-0.20mm.ini model.stl
 ```
 

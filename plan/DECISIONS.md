@@ -23,3 +23,7 @@
   the Perl code is deleted. The USB printer controller is wanted. SLA/projector is lower
   priority.
 - Commit and push as the work goes.
+
+## 2026-11-28
+- Perl is removed ("get rid of the Perl code, feature parity first"). Already broken
+  scripts were dropped rather than ported: `wireframe.pl`, `gcode_sectioncut.pl`.

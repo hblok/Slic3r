@@ -55,52 +55,45 @@ See [slic3r.org](https://slic3r.org/), the original project's homepage, for back
 
 ### What language is it written in?
 
-The core parts of Slic3r are written in C++11, with multithreading. The graphical interface is in the process of being ported to C++14.
+C++ (C++11 core, C++14 graphical interface with wxWidgets 3.2). Until November 2026 the
+graphical interface and parts of the program were written in Perl; that program is in the
+git history (last commit with all of it: `93bb6610`).
 
 ### How to install?
 
-No packages are provided yet. Both programs build from source on Debian 13.
-
-**The Perl application** is the graphical interface. Slicing, support material and
-G-code come from the C++ core (through the XS module); command line use of `slic3r.pl`
-is handed to the C++ command line tool, so build that too.
+No packages are provided yet. It builds from source on Debian 13.
 
 ```sh
-sudo apt install g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev \
-  perl liblocal-lib-perl libdevel-checklib-perl libextutils-cppguess-perl \
-  libextutils-typemaps-default-perl libextutils-xspp-perl libmodule-build-withxspp-perl \
-  libmoo-perl libencode-locale-perl libio-stringy-perl libclass-xsaccessor-perl \
-  libclass-accessor-perl libwww-perl libwx-perl libwx-glcanvas-perl libopengl-perl
-(cd xs && perl Build.PL && ./Build && ./Build test)
-export PERL5LIB=$PWD/xs/blib/arch:$PWD/xs/blib/lib
-prove -j$(nproc) t/
-perl slic3r.pl            # graphical interface
-perl slic3r.pl --help     # GUI options, then the C++ command line options
+sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev \
+  libwxgtk3.2-dev libgl-dev libglu1-mesa-dev
+cmake -S src -B build-gui -DCMAKE_BUILD_TYPE=Release -DEnable_GUI=ON
+cmake --build build-gui -j$(nproc) --target slic3r
+./build-gui/slic3r                  # graphical interface
+./build-gui/slic3r -g model.stl     # slice on the command line
+./build-gui/slic3r --help
 ```
 
-**The C++ command line tool** (`build/slic3r`) does the command line work, also when
-called through `slic3r.pl`. Its output equals what the Perl program produced; see
-[plan/baseline.md](plan/baseline.md).
+`utils/make_dist.sh` puts the program, its icons and the printer profiles into a directory
+you can copy. For the command line alone, leave out the wxWidgets and OpenGL packages and
+`-DEnable_GUI=ON`.
+
+Tests (see [CLAUDE.md](CLAUDE.md)):
 
 ```sh
-sudo apt install cmake g++ libboost-dev libboost-thread-dev libboost-filesystem-dev libboost-nowide-dev
-cmake -S src -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j$(nproc)
-ctest --test-dir build -L quick --output-on-failure   # tests, a few seconds
-./build/slic3r --help
+cmake -S src -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j$(nproc)
+ctest --test-dir build -L quick --output-on-failure        # a few seconds
+ctest --test-dir build-gui -L gui -j5 --output-on-failure  # GUI under Xvfb; needs xvfb xdotool imagemagick
 ```
 
 ### Directory structure
 
 * `package/`: Linux desktop entry (packaging is to be rebuilt)
 * `src/`: the C++ source of the `slic3r` executable and the CMake definition file for compiling it
-* `src/GUI`: The C++ GUI.
-* `src/test`: New test suite for libslic3r and the GUI. Implemented with [Catch2](https://github.com/catchorg/Catch2)
-* `t/`: test suite for the Perl application
-* `utils/`: various useful scripts, including the GUI smoke test `gui_smoke.sh`
-* `xs/src/libslic3r/`: C++ sources for libslic3r
-* `xs/t/`: test suite for the Perl bindings
-* `xs/xsp/`: bindings for calling libslic3r from Perl (XS)
+* `src/libslic3r/`: the slicing core
+* `src/GUI/`: the graphical interface
+* `src/test/`: tests, implemented with [Catch2](https://github.com/catchorg/Catch2)
+* `src/third_party/`: libraries from other projects
+* `utils/`: GUI test scripts, `make_dist.sh` and post-processing scripts
 
 ### Acknowledgements
 

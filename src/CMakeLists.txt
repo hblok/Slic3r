@@ -12,7 +12,7 @@ option(SLIC3R_DEBUG "Build with Slic3r's debug output" OFF)
 
 # only on newer GCCs: -ftemplate-backtrace-limit=0
 add_compile_options(-ftemplate-backtrace-limit=0)
-add_compile_options(-DNO_PERL -DM_PI=3.14159265358979323846 -DHAS_BOOL -DNOGDI -DBOOST_ASIO_DISABLE_KQUEUE)
+add_compile_options(-DM_PI=3.14159265358979323846 -DHAS_BOOL -DNOGDI -DBOOST_ASIO_DISABLE_KQUEUE)
 if(SLIC3R_DEBUG)
     add_compile_options(-DSLIC3R_DEBUG)
 endif()
@@ -120,7 +120,9 @@ if (NOT (${Boost_VERSION_STRING} VERSION_LESS "1.74.0"))
     find_package(Boost REQUIRED COMPONENTS thread filesystem OPTIONAL_COMPONENTS nowide)
 endif()
 
-set(LIBDIR ${CMAKE_CURRENT_SOURCE_DIR}/../xs/src/)
+set(LIBDIR ${CMAKE_CURRENT_SOURCE_DIR}/)
+# libraries from other projects
+set(EXTDIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/)
 set(GUI_LIBDIR ${CMAKE_CURRENT_SOURCE_DIR}/GUI/)
 
 set(TESTDIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
@@ -130,23 +132,24 @@ set(GUI_TESTDIR ${CMAKE_CURRENT_SOURCE_DIR}/test/GUI/)
 set(TESTFILE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test/inputs/)
 
 set(EXPAT_INCLUDES
-    ${LIBDIR}/expat
+    ${EXTDIR}/expat
 )
 set(ADMESH_INCLUDES
-    ${LIBDIR}/admesh
+    ${EXTDIR}/admesh
 )
 
 set(BSPLINE_INCLUDES
-    ${LIBDIR}/BSpline/
+    ${EXTDIR}/BSpline/
 )
 
 set(POLY2TRI_INCLUDES
-    ${LIBDIR}/poly2tri
-    ${LIBDIR}/poly2tri/sweep
-    ${LIBDIR}/poly2tri/common
+    ${EXTDIR}/poly2tri
+    ${EXTDIR}/poly2tri/sweep
+    ${EXTDIR}/poly2tri/common
 )
 set(COMMON_INCLUDES
     ${LIBDIR}
+    ${EXTDIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/standalone/
 )
 set(SLIC3R_INCLUDES
@@ -163,11 +166,11 @@ set(LIBSLIC3R_INCLUDES
 
 
 add_library(ZipArchive STATIC
-    ${LIBDIR}/Zip/ZipArchive.cpp
+    ${EXTDIR}/Zip/ZipArchive.cpp
 )
 
 add_library(miniz STATIC
-    ${LIBDIR}/miniz/miniz.c
+    ${EXTDIR}/miniz/miniz.c
 )
 target_compile_features(ZipArchive PUBLIC cxx_std_11)
 target_include_directories(ZipArchive PUBLIC ${COMMON_INCLUDES})
@@ -243,48 +246,48 @@ target_include_directories(libslic3r SYSTEM PUBLIC ${SLIC3R_INCLUDES})
 target_include_directories(libslic3r PUBLIC ${LIBSLIC3R_INCLUDES})
 
 add_library(BSpline STATIC
-    ${LIBDIR}/BSpline/BSpline.cpp
+    ${EXTDIR}/BSpline/BSpline.cpp
 )
 target_include_directories(BSpline PUBLIC ${BSPLINE_INCLUDES})
 target_compile_options(BSpline PUBLIC -w)
 
 add_library(admesh STATIC
-    ${LIBDIR}/admesh/connect.c
-    ${LIBDIR}/admesh/normals.c
-    ${LIBDIR}/admesh/shared.c
-    ${LIBDIR}/admesh/stl_io.c
-    ${LIBDIR}/admesh/stlinit.c
-    ${LIBDIR}/admesh/util.c
+    ${EXTDIR}/admesh/connect.c
+    ${EXTDIR}/admesh/normals.c
+    ${EXTDIR}/admesh/shared.c
+    ${EXTDIR}/admesh/stl_io.c
+    ${EXTDIR}/admesh/stlinit.c
+    ${EXTDIR}/admesh/util.c
 )
 target_include_directories(admesh PUBLIC ${ADMESH_INCLUDES} ${COMMON_INCLUDES})
 set_property(TARGET admesh PROPERTY C_STANDARD 99)
 target_compile_options(admesh PUBLIC -w)
 
 
-add_library(clipper STATIC ${LIBDIR}/clipper.cpp)
+add_library(clipper STATIC ${EXTDIR}/clipper.cpp)
 target_compile_features(clipper PUBLIC cxx_std_11)
 target_include_directories(clipper PUBLIC ${COMMON_INCLUDES})
 target_compile_options(clipper PUBLIC -w)
 
 add_library(expat STATIC
-    ${LIBDIR}/expat/xmlparse.c
-    ${LIBDIR}/expat/xmlrole.c
-    ${LIBDIR}/expat/xmltok.c
+    ${EXTDIR}/expat/xmlparse.c
+    ${EXTDIR}/expat/xmlrole.c
+    ${EXTDIR}/expat/xmltok.c
 )
 target_compile_features(expat PUBLIC cxx_std_11)
 target_include_directories(expat PUBLIC ${EXPAT_INCLUDES})
 target_compile_options(expat PUBLIC -w)
 
-add_library(polypartition STATIC ${LIBDIR}/polypartition.cpp)
+add_library(polypartition STATIC ${EXTDIR}/polypartition.cpp)
 target_include_directories(polypartition PUBLIC ${COMMON_INCLUDES})
 target_compile_options(polypartition PUBLIC -w)
 
 add_library(poly2tri STATIC
-    ${LIBDIR}/poly2tri/common/shapes.cc
-    ${LIBDIR}/poly2tri/sweep/advancing_front.cc
-    ${LIBDIR}/poly2tri/sweep/cdt.cc
-    ${LIBDIR}/poly2tri/sweep/sweep_context.cc
-    ${LIBDIR}/poly2tri/sweep/sweep.cc
+    ${EXTDIR}/poly2tri/common/shapes.cc
+    ${EXTDIR}/poly2tri/sweep/advancing_front.cc
+    ${EXTDIR}/poly2tri/sweep/cdt.cc
+    ${EXTDIR}/poly2tri/sweep/sweep_context.cc
+    ${EXTDIR}/poly2tri/sweep/sweep.cc
 )
 target_include_directories(poly2tri PUBLIC ${COMMON_INCLUDES})
 target_compile_options(poly2tri PUBLIC -w)
@@ -410,7 +413,6 @@ set(LIBSLIC3R_DEPENDS
 
 set(SLIC3R_GUI_INCLUDES
     ${LIBDIR}/libslic3r
-    ${LIBDIR}/slic3r/GUI
     ${GUI_LIBDIR}
     ${OPENGL_INCLUDE_DIR}
     ${wxWidgets_INCLUDE}
@@ -467,7 +469,7 @@ IF(wxWidgets_FOUND AND OPENGL_FOUND AND Enable_GUI)
     ${GUI_LIBDIR}/OptionsGroup/UI_Point3.cpp
     ${GUI_LIBDIR}/OptionsGroup/UI_Color.cpp
     ${GUI_LIBDIR}/OptionsGroup/UI_Slider.cpp
-    ${LIBDIR}/slic3r/GUI/3DScene.cpp
+    ${GUI_LIBDIR}/3DScene.cpp
     )
     target_compile_features(slic3r_gui PUBLIC cxx_std_14)
     target_include_directories(slic3r_gui PUBLIC ${SLIC3R_GUI_INCLUDES} ${SLIC3R_INCLUDES} )
@@ -558,7 +560,7 @@ endif()
 IF (WIN32)
     if (NOT BOOST_NOWIDE_FOUND)
         add_library(boost-nowide STATIC 
-            ${LIBDIR}/boost/nowide/iostream.cpp
+            ${EXTDIR}/boost/nowide/iostream.cpp
         )
         if(MSVC)
             # Tell boost pragmas to not rename nowide as we are building it

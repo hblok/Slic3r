@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write the AMF test models for compare_perl.sh (run from this directory).
+"""Write the AMF test models for the golden check (run from this directory).
 
 modifier.amf    20x20x10 box; a modifier over the left half sets 80% rectilinear
                 infill and 1 perimeter.

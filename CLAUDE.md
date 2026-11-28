@@ -11,16 +11,15 @@ before proposing a change of direction.
 
 | Path | What |
 |---|---|
-| `xs/src/libslic3r/` | C++ slicing core |
-| `src/` | C++ CLI (`slic3r.cpp`), CMake build, Catch2 tests (`src/test/`) |
-| `src/GUI/` | C++ GUI (wxWidgets 3.2), replacing the Perl GUI: builds with `-DEnable_GUI=ON` and starts (`utils/cpp_gui_smoke.sh`, `utils/cpp_gui_plate.sh`); what is missing is in plan/TODO.md |
-| `lib/Slic3r/`, `slic3r.pl` | Perl GUI; slicing, support and G-code run in C++ through XS; command line use goes to the C++ CLI |
-| `xs/xsp/`, `xs/t/`, `t/` | Perl/C++ bindings and Perl tests |
+| `src/libslic3r/` | C++ slicing core |
+| `src/` | command line program (`slic3r.cpp`), CMake build, Catch2 tests (`src/test/`) |
+| `src/GUI/` | GUI (wxWidgets 3.2): builds with `-DEnable_GUI=ON` |
+| `src/third_party/` | libraries from other projects (admesh, Clipper, poly2tri, expat, miniz, ...) |
+| `utils/` | GUI test scripts and their stand-ins, `make_dist.sh`, post-processing scripts (Python) |
 | `package/` | Linux desktop entry only; packaging not built yet |
 
-**One pipeline** since 2026-11-27: the Perl program calls the C++ G-code export and
-support generation (`Print.xsp`); their Perl ports are deleted. Goal: Perl only for the
-GUI, then not at all (plan/README.md, "Perl and the GUI path").
+All C++ since 2026-11-28. The Perl program (GUI, bindings, tests) is in git history; the
+last commit with all of it is `93bb6610`.
 
 ## Tests: two labelled sets
 
@@ -55,12 +54,6 @@ Expected output is recorded on Debian 13.
 The first build downloads Catch2. CMake writes `src/test/test_options.hpp`
 (ignored by git).
 
-`slic3r.pl` with files hands its arguments to the C++ CLI (`build/slic3r`, or
-`slic3r-cli` in a run directory); only the GUI start is Perl. The former parity check
-(`compare_perl.sh`, 94 setups identical) was removed with the Perl command line; some of
-its setups live on in the golden check. The GUI smoke test compares the GUI's G-code
-with the C++ CLI's.
-
 ## Build and test (C++ GUI)
 
 Also needs `libwxgtk3.2-dev libgl-dev libglu1-mesa-dev xvfb xdotool imagemagick`.
@@ -83,27 +76,8 @@ up in `build-gui/gui-*`. A part that nears 5 minutes gets split.
 Run it after GUI changes. They click at fixed positions and count menu entries: a new
 menu entry or layout change needs the scripts adjusted (see their screenshots).
 
-## Build and test (Perl application and GUI)
-
-Packages are listed in README and in the `perl` job of
-[build.yml](.github/workflows/build.yml). The XS module compiles the same
-`xs/src/libslic3r` sources, so C++ changes reach the Perl program after `./Build`.
-
-After changing a header, run `./Build realclean` first: Module::Build only rebuilds a
-`.cpp` newer than its `.o`, and objects built against an old class layout still link.
-
-```sh
-(cd xs && perl Build.PL && ./Build && ./Build test)
-export PERL5LIB=$PWD/xs/blib/arch:$PWD/xs/blib/lib
-prove -j$(nproc) t/
-utils/gui_smoke.sh /tmp/gui-smoke   # needs xvfb xdotool imagemagick
-```
-
-`utils/make_dist.sh` builds a copyable run directory of the C++ program (no Perl) in
+`utils/make_dist.sh` builds a copyable run directory of the program in
 `build/dist-gui`; build it on Debian 13 (the chroot), it is tied to its wxWidgets and Boost.
-
-The smoke test drives the GUI with clicks at fixed window coordinates (no window
-manager under Xvfb). A layout change breaks it; check its screenshots, re-measure.
 
 ## Rules
 

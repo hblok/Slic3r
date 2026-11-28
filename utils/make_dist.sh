@@ -1,7 +1,7 @@
 #!/bin/sh
-# Build a run directory you can copy anywhere: the C++ program (GUI and command line in
-# one), its icons and the printer profiles. No Perl. Not a package; the runtime
-# libraries come from Debian 13 (listed in the README written below).
+# Build a run directory you can copy anywhere: the program (GUI and command line in one),
+# its icons and the printer profiles. Not a package; the runtime libraries come from
+# Debian 13 (listed in the README written below).
 #
 # Usage: utils/make_dist.sh [output dir]   (default: build/dist-gui, ignored by git)
 # Needs the build packages from README.md plus libwxgtk3.2-dev libgl-dev libglu1-mesa-dev.
@@ -42,8 +42,8 @@ Built $(date -u +%Y-%m-%d) from commit $(git rev-parse --short HEAD 2>/dev/null 
     ./slic3r -g model.stl         # slice on the command line
     ./slic3r --help
 
-Settings and presets are in ~/.Slic3r (shared with the Perl GUI). For the Ender-5 Pro
-presets: cp -r profiles/print profiles/filament profiles/printer ~/.Slic3r/
+Settings and presets are in ~/.Slic3r (the same files the Perl program used). For the
+Ender-5 Pro presets: cp -r profiles/print profiles/filament profiles/printer ~/.Slic3r/
 
 Runtime packages (Debian 13):
 

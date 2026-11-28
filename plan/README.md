@@ -1,6 +1,6 @@
 # Plan
 
-Started 2026-11-26. Status: **phases 0 to 2 mostly done, only the GUI is Perl; phase 3 started, needs the printer**.
+Started 2026-11-26. Status: **all C++ since 2026-11-28 (Perl removed); phase 3 started, needs the printer**.
 Target: Debian 13, unmodified Creality Ender 5 Pro.
 
 | File | Content |
@@ -176,7 +176,8 @@ The Perl GUI is the reference for behaviour and layout.
       full-screen layer view, `DLP.ini` (same file as Perl), manual control, the print
       sequence and SVG export (`cpp_gui_projector.sh`; the print part needs pseudo
       terminals). Not tried with a projector. Custom G-code now has its placeholders filled
-- [ ] The rest of what the Perl GUI has and is worth keeping, listed in [TODO.md](TODO.md)
+- [x] The rest of what the Perl GUI has (menu entries compared 2026-11-28); the known
+      differences are listed in [TODO.md](TODO.md)
 - [x] The Perl utility scripts (2026-11-28): post-processing, config bundle and PDF slices
       are Python now (same output, checked against Perl; `src/test/cli/check.sh`); the
       command line got what only Perl had (`--version`, `--save` of the defaults,
@@ -185,7 +186,10 @@ The Perl GUI is the reference for behaviour and layout.
       `gcode_sectioncut.pl`, `split_stl.pl`, `stl-to-amf.pl` (already broken; `--split` and
       `--export-amf` cover the last two), the two viewers (the GUI), `dump-stl.pl` (for the
       Perl tests)
-- [ ] Remove Perl: `lib/`, `slic3r.pl`, `xs/` (the XS bindings), `t/`; packaging deps
+- [x] Perl removed (2026-11-28): `lib/`, `slic3r.pl`, the XS bindings, `t/`, the CI `perl`
+      job. The core moved from `xs/src/libslic3r` to `src/libslic3r`, other projects'
+      libraries to `src/third_party`. The last commit with all the Perl code
+      is `93bb6610`
 
 If phase 2 turns out to be hopeless, go to B. (It did not: see phase 2.)
 

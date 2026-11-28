@@ -1,42 +1,32 @@
 # TODO
 
-Open items as of 2026-11-27. Background and what is done: [README.md](README.md).
+Open items as of 2026-11-28. Background and what is done: [README.md](README.md).
 Feature candidates (not scheduled): [features.md](features.md).
 
-## C++ GUI
+## GUI
 
-Done on 2026-11-27 and checked only under Xvfb: preview, plater operations and menus,
-preferences, editor rules, object settings and modifiers, a one-page wizard.
+Perl is gone; the GUI has been checked only under Xvfb.
 
-Missing, compared with the Perl GUI:
+- [ ] Try drag and drop (the "Add…" dialog was tried once, 2026-11-28)
+- [ ] Not tried against hardware or real servers: the serial and OctoPrint "Test"
+      buttons, "Browse…" (needs `avahi-browse`), the DLP projector
+- [ ] `-DGUI_BUILD_TESTS=ON` (the Catch GUI tests in `src/test/GUI`) not built since the
+      preset and options code changed
 
-- [ ] Try the "Add…" dialog and drag and drop
+Differences from the Perl GUI, to fix if they matter:
 
-Done since: closing (and leaving a preset) asks to save or discard modified presets,
-saving or deleting a preset keeps the unsaved changes of the others, and the preset
-editors are complete: the Perl pages, several extruders with a material for each,
-compatible printers, bed shape dialog, material overrides, shortcuts beside the plate,
-serial port and print server buttons. Also the multi-page wizard (on the first start
-too), a preset bundle beside the program, loaded config files staying in the lists,
-reload from disk with its options, TIN import, window positions, and the remaining
-preferences. Not tried with a real printer or server: the
-serial and OctoPrint "Test" buttons and "Browse…" (needs `avahi-browse`).
+- Menu entries that cannot be used are not greyed out
+- "Layer heights…" shows layer lines in its 3D view, not toolpaths
+- No Growl notification when slicing is done (it needed an optional Perl module)
+- Importing a config bundle never overwrites an existing preset
+- The conflict rules of the preset editors run on a change, not when a preset is loaded
+- `--load` does not look beside the program for a file that is not found
 
-Order: the missing features and the USB controller, then:
+## Repo cleanup (needs a yes)
 
-## Removing Perl (only when nothing would be lost)
-
-- [ ] More of the Perl pipeline tests, if wanted (the files are in git history; `xs/t/`
-      and `t/bridges`, `thin`, `cooling`, `retraction`, `custom_gcode` are ported). Not
-      ported, with only golden G-code or partial C++ cover: `gaps`, `combineinfill`,
-      `adaptive_width`, `multi` (toolchange area, interface shells), `perimeters`
-      (winding, seam, concave start), `shells` (spiral vase), and parts of `fill`,
-      `gcode`, `print`, `support`
-- [ ] Tag the last commit with Perl (`perl-final`)
-- [ ] Move the C++ core out of `xs/` (`LIBDIR` in `src/CMakeLists.txt`, keep
-      `xs/src/slic3r/GUI/3DScene.*`), drop the `NO_PERL` conditional
-- [ ] Delete `lib/`, `t/`, the bindings, `slic3r.pl`, `Build.PL`, `utils/gui_smoke.sh`,
-      the CI `perl` job; update docs and packaging dependencies
+- [ ] Tag the last commit with Perl: `git tag perl-final 93bb6610 && git push origin perl-final`
+- [ ] Unused: `src/GUI/Plater/PreviewDLP.hpp`, `translation/` (neither program loaded it),
+      Perl entries in `.gitignore` (`Build`, `MYMETA.*`, `blib`, `local-lib`, `xs/...`)
 
 ## Found while removing Perl
 

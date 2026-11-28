@@ -7,7 +7,7 @@
 # Print Settings tab, export (must equal the CLI with that change), and save the preset
 # under a new name. Then the preview: both toolpath tabs slice and draw (counted by
 # colour), the slider cuts layers off, an export afterwards still equals the CLI, and the
-# preview empties with the plate. The Perl GUI has utils/gui_smoke.sh.
+# preview empties with the plate.
 #
 # There is no window manager, so the click goes to fixed coordinates inside the
 # default-size window; re-measure them if the layout changes (see the screenshots).
