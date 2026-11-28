@@ -164,3 +164,106 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "config_base_test",
+    size = "small",
+    srcs = ["config_base_test.cpp"],
+    deps = [
+        "//src/libslic3r:config_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "config_test",
+    size = "small",
+    srcs = ["config_test.cpp"],
+    data = ["//src/test:inputs"],
+    deps = [
+        "//src/libslic3r:config",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "print_config_test",
+    size = "small",
+    srcs = ["print_config_test.cpp"],
+    data = ["//src/test:inputs"],
+    deps = [
+        "//src/libslic3r:print_config",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "placeholder_parser_test",
+    size = "small",
+    srcs = ["placeholder_parser_test.cpp"],
+    deps = [
+        "//src/libslic3r:placeholder_parser",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "extruder_test",
+    size = "small",
+    srcs = ["extruder_test.cpp"],
+    deps = [
+        "//src/libslic3r:extruder",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "gcode_reader_test",
+    size = "small",
+    srcs = ["gcode_reader_test.cpp"],
+    deps = [
+        "//src/libslic3r:gcode_reader",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "gcode_time_estimator_test",
+    size = "small",
+    srcs = ["gcode_time_estimator_test.cpp"],
+    deps = [
+        "//src/libslic3r:gcode_time_estimator",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "pressure_regulator_test",
+    size = "small",
+    srcs = ["pressure_regulator_test.cpp"],
+    deps = [
+        "//src/libslic3r:pressure_regulator",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "vibration_limit_test",
+    size = "small",
+    srcs = ["vibration_limit_test.cpp"],
+    deps = [
+        "//src/libslic3r:vibration_limit",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "gcode_writer_test",
+    size = "small",
+    srcs = ["gcode_writer_test.cpp"],
+    data = ["//src/test:inputs"],
+    deps = [
+        "//src/libslic3r:gcode_writer",
+        "@googletest//:gtest_main",
+    ],
+)

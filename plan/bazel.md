@@ -46,8 +46,8 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 | 8 | `miniz`, `miniz_extension` | `exception` | `miniz_extension_test` (new): a zip file there and back | done |
 | 9 | `geometry` (15 units), after `clipper`, `admesh`, `poly2tri`, `polypartition` | Boost.Polygon | `geometry_test`, `polygon_test`, `transformation_matrix_test`: ported from the three Catch files | done |
 | 10 | bridge detector, motion planner, adaptive slicing, surfaces | geometry | `primitives`, `medial_axis`, `bridge_detector`, `motion_planner`, `surface_collection`, `slicing_adaptive` tests | done |
-| 11 | config: base, print config, parser, G-code reader and writer, extruder, filters | geometry | config and G-code tests | next |
-| 12 | extrusion entities, flow, perimeters, `fill` (7 units) | config | per target | |
+| 11 | `config_base`, `print_config`, `config`, `placeholder_parser`, `extruder`, `gcode_reader`, `gcode_writer`, `gcode_time_estimator`, `pressure_regulator`, `vibration_limit` | geometry | 11 new and ported tests, one per target (`config_base` ... `vibration_limit`) | done |
+| 12 | extrusion entities, flow, perimeters, `fill` (7 units) | config | per target | next |
 | 13 | slicing core, then SLA and simple print | all above, `expat`, `Zip` | the tests that need whole prints | |
 | 14 | `slic3r-cli`, a program without wxWidgets | core | golden G-code and command line checks | |
 | 15 | GUI parts, bottom up, then `slic3r` | wxWidgets, OpenGL | unit tests per part, then the GUI scripts | |

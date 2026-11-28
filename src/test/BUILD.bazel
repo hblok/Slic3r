@@ -8,3 +8,10 @@ cc_test(
     srcs = ["minimal_test.cpp"],
     deps = ["@googletest//:gtest_main"],
 )
+
+# models and configuration files the tests read, found at src/test/inputs/
+filegroup(
+    name = "inputs",
+    srcs = glob(["inputs/**"]),
+    visibility = ["//src:__subpackages__"],
+)

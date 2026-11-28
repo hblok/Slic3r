@@ -190,3 +190,139 @@ cc_library(
         ":libslic3r_header",
     ],
 )
+
+cc_library(
+    name = "config_base",
+    srcs = ["ConfigBase.cpp"],
+    hdrs = ["ConfigBase.hpp"],
+    includes = ["."],
+    deps = [
+        ":geometry",
+        ":libslic3r_header",
+        ":log",
+        ":utils",
+        "@boost.algorithm",
+        "@boost.config",
+        "@boost.foreach",
+        "@boost.lexical_cast",
+        "@boost.nowide",
+        "@boost.property_tree",
+    ],
+)
+
+cc_library(
+    name = "print_config",
+    srcs = ["PrintConfig.cpp"],
+    hdrs = ["PrintConfig.hpp"],
+    # --autosave, --datadir and so on, also in the program without a GUI
+    local_defines = ["USE_WX"],
+    includes = ["."],
+    deps = [
+        ":config_base",
+        ":libslic3r_header",
+        "@boost.algorithm",
+        "@boost.lexical_cast",
+        "@boost.thread",
+    ],
+)
+
+cc_library(
+    name = "config",
+    srcs = ["Config.cpp"],
+    hdrs = ["Config.hpp"],
+    includes = ["."],
+    deps = [
+        ":config_base",
+        ":print_config",
+    ],
+)
+
+cc_library(
+    name = "placeholder_parser",
+    srcs = ["PlaceholderParser.cpp"],
+    hdrs = ["PlaceholderParser.hpp"],
+    includes = ["."],
+    deps = [
+        ":libslic3r_header",
+        ":print_config",
+    ],
+)
+
+cc_library(
+    name = "extruder",
+    srcs = ["Extruder.cpp"],
+    hdrs = ["Extruder.hpp"],
+    includes = ["."],
+    deps = [
+        ":geometry",
+        ":libslic3r_header",
+        ":print_config",
+    ],
+)
+
+cc_library(
+    name = "gcode_writer",
+    srcs = ["GCodeWriter.cpp"],
+    hdrs = ["GCodeWriter.hpp"],
+    includes = ["."],
+    deps = [
+        ":extruder",
+        ":geometry",
+        ":libslic3r_header",
+        ":print_config",
+        ":utils",
+    ],
+)
+
+cc_library(
+    name = "gcode_reader",
+    srcs = ["GCodeReader.cpp"],
+    hdrs = ["GCodeReader.hpp"],
+    includes = ["."],
+    deps = [
+        ":libslic3r_header",
+        ":print_config",
+        "@boost.algorithm",
+    ],
+)
+
+cc_library(
+    name = "gcode_time_estimator",
+    srcs = ["GCodeTimeEstimator.cpp"],
+    hdrs = ["GCodeTimeEstimator.hpp"],
+    includes = ["."],
+    deps = [
+        ":gcode_reader",
+        ":libslic3r_header",
+        "@boost.bind",
+        "@boost.config",
+    ],
+)
+
+cc_library(
+    name = "pressure_regulator",
+    srcs = ["GCode/PressureRegulator.cpp"],
+    hdrs = ["GCode/PressureRegulator.hpp"],
+    includes = [
+        ".",
+        "GCode",
+    ],
+    deps = [
+        ":gcode_reader",
+        ":libslic3r_header",
+    ],
+)
+
+cc_library(
+    name = "vibration_limit",
+    srcs = ["GCode/VibrationLimit.cpp"],
+    hdrs = ["GCode/VibrationLimit.hpp"],
+    includes = [
+        ".",
+        "GCode",
+    ],
+    deps = [
+        ":gcode_reader",
+        ":libslic3r_header",
+    ],
+)

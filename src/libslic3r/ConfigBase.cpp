@@ -17,11 +17,7 @@
 #include <boost/config.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#ifdef BOOST_NOWIDE_FOUND
-#include <boost/nowide/cstdlib.hpp>
-#else
-#include <boost/nowide/cenv.hpp>
-#endif
+#include <boost/nowide/cstdlib.hpp>  // setenv
 #include <boost/nowide/fstream.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>

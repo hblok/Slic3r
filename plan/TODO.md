@@ -15,6 +15,11 @@ Differences from the Perl GUI, to fix if they matter:
 - "Layer heights…" shows layer lines in its 3D view, not toolpaths
 - The Solarized colour scheme keeps the default toolbar icons
 
+## Bugs
+
+- [ ] `Config::set` with text that is not a number throws, but leaves 0 in the option
+      (found 2026-11-28 porting the tests; `config_test.cpp`)
+
 ## Needs the printer
 
 - [ ] Controller tab on the real printer: connect, temperatures, manual moves, a print,
