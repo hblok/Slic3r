@@ -9,6 +9,7 @@ Target: Debian 13, unmodified Creality Ender 5 Pro.
 | [baseline.md](baseline.md) | What we found in the repo and what works today |
 | [features.md](features.md) | Candidate features, ranked for the Ender 5 Pro |
 | [bazel.md](bazel.md) | The Bazel build: target rules, dependency findings, packages |
+| [tree-support.md](tree-support.md) | Tree supports: design, parts, steps |
 | [DECISIONS.md](DECISIONS.md) | Settled decisions |
 
 ## Phases

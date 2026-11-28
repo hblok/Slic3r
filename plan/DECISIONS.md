@@ -43,3 +43,5 @@
 - Bazel with the system's wxWidgets and OpenGL; a Bazel job in CI with the GUI tests.
 - Once CI is green, CMake goes, after checking that everything builds and runs. A release
   pipeline comes first: it builds the `.deb` and publishes a GitHub release.
+- Tree supports: our own simple tree first (not the organic port yet), modular so that
+  other tree models and parts can be swapped in later ([tree-support.md](tree-support.md)).
