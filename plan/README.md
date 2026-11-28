@@ -188,8 +188,8 @@ The Perl GUI is the reference for behaviour and layout.
       Perl tests)
 - [x] Perl removed (2026-11-28): `lib/`, `slic3r.pl`, the XS bindings, `t/`, the CI `perl`
       job. The core moved from `xs/src/libslic3r` to `src/libslic3r`, other projects'
-      libraries to `src/third_party`. The last commit with all the Perl code
-      is `93bb6610`
+      libraries to `src/third_party`. The tag `perl-final` is the last commit
+      with all the Perl code
 
 If phase 2 turns out to be hopeless, go to B. (It did not: see phase 2.)
 

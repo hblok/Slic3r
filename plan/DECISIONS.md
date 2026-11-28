@@ -27,3 +27,5 @@
 ## 2026-11-28
 - Perl is removed ("get rid of the Perl code, feature parity first"). Already broken
   scripts were dropped rather than ported: `wireframe.pl`, `gcode_sectioncut.pl`.
+- The translation files (`translation/`, `share/locale/`) are removed: neither program
+  loaded them. For translations later, start from those at the tag `perl-final`.

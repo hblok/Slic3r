@@ -57,7 +57,7 @@ See [slic3r.org](https://slic3r.org/), the original project's homepage, for back
 
 C++ (C++11 core, C++14 graphical interface with wxWidgets 3.2). Until November 2026 the
 graphical interface and parts of the program were written in Perl; that program is in the
-git history (last commit with all of it: `93bb6610`).
+git history (tag `perl-final`).
 
 ### How to install?
 

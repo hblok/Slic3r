@@ -19,7 +19,7 @@ before proposing a change of direction.
 | `package/` | Linux desktop entry only; packaging not built yet |
 
 All C++ since 2026-11-28. The Perl program (GUI, bindings, tests) is in git history; the
-last commit with all of it is `93bb6610`.
+tag `perl-final` is the last commit with all of it.
 
 ## Tests: two labelled sets
 
