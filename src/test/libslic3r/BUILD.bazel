@@ -1,0 +1,14 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
+# A test depends on the target it tests (and Google Test) only. The test_*.cpp files here
+# are the Catch tests of the CMake build; they go as their cases are ported.
+
+cc_test(
+    name = "exception_test",
+    size = "small",
+    srcs = ["exception_test.cpp"],
+    deps = [
+        "//src/libslic3r:exception",
+        "@googletest//:gtest_main",
+    ],
+)

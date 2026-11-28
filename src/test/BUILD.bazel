@@ -1,6 +1,7 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
-# Shows that Bazel can build, run and judge a C++ test here, and nothing else.
+# Keep this one: it shows that Bazel can build, run and judge a C++ test here, and
+# nothing else. If it fails, the setup is broken, not Slic3r.
 cc_test(
     name = "minimal_test",
     size = "small",

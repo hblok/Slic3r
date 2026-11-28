@@ -37,7 +37,7 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 | # | Library target | Needs | Test | State |
 |---|---|---|---|---|
 | 1 | none | Google Test | `minimal_test`: asserts true | done |
-| 2 | `exception` (header) | nothing | new, small | next |
+| 2 | `exception` (header) | nothing | `exception_test` (new) | done |
 | 3 | `log` | Boost.Locale, Boost.Algorithm | the cases of `test_log.cpp` | the first Boost target |
 | 4 | `conditional_gcode` | `exprtk` | new, small | |
 | 5 | `bspline`, `libslic3r` (common header), `layer_height_spline` | Boost.Thread | new, small | |

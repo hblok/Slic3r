@@ -23,9 +23,9 @@ tag `perl-final` is the last commit with all of it.
 
 ## Bazel (being introduced)
 
-`bazel test //...` (version in `.bazelversion`; result links in `build/bazel/`). So far
-only an empty test: [plan/bazel.md](plan/bazel.md) says what comes next, one small
-target with its test at a time. CMake below remains the real build.
+`bazel test //...` (version in `.bazelversion`; result links in `build/bazel/`). Being built up
+one small target with its test at a time: [plan/bazel.md](plan/bazel.md) has the steps
+and the rules. CMake below remains the real build.
 
 ## Tests: two labelled sets
 
