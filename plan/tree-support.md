@@ -56,7 +56,7 @@ the header comments.
 
 - [x] `Model`, `Obstacles`
 - [x] `GridTips`
-- [ ] `MergingGrowth`
+- [x] `MergingGrowth`
 - [ ] `TreeModel`
 - [ ] Settings, `Models`, use in `SupportMaterial`, GUI, golden G-code
 - [ ] Look at the result; compare filament with normal support

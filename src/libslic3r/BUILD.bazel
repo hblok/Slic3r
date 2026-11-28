@@ -542,3 +542,14 @@ cc_library(
     deps = [":geometry"],
 )
 
+cc_library(
+    name = "tree_growth",
+    srcs = ["Support/TreeGrowth.cpp"],
+    hdrs = ["Support/TreeGrowth.hpp"],
+    includes = ["."],
+    deps = [
+        ":geometry",
+        ":tree_obstacles",
+    ],
+)
+

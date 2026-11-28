@@ -498,3 +498,13 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "tree_growth_test",
+    size = "small",
+    srcs = ["tree_growth_test.cpp"],
+    deps = [
+        "//src/libslic3r:tree_growth",
+        "@googletest//:gtest_main",
+    ],
+)
+
