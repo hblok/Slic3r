@@ -19,3 +19,11 @@ cc_library(
         "@boost.locale",
     ],
 )
+
+cc_library(
+    name = "conditional_gcode",
+    srcs = ["ConditionalGCode.cpp"],
+    hdrs = ["ConditionalGCode.hpp"],
+    includes = ["."],
+    deps = ["//src/third_party:exprtk"],
+)

@@ -1,3 +1,8 @@
 # links to the results go below build/ (ignored by git) instead of into the root
 common --symlink_prefix=build/bazel/
 test --test_output=errors
+
+# the flags of the CMake build (optimized, GNU C++17): the reference G-code depends on them
+build --compilation_mode=opt
+build --copt=-O3
+build --cxxopt=-std=gnu++17

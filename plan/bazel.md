@@ -39,8 +39,8 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 | 1 | none | Google Test | `minimal_test`: asserts true | done |
 | 2 | `exception` (header) | nothing | `exception_test` (new) | done |
 | 3 | `log` | Boost.Locale, Boost.Algorithm | `log_test`: ported from `test_log.cpp` (its 80 checks less 3 repeats) | done |
-| 4 | `conditional_gcode` | `exprtk` | new, small | next |
-| 5 | `bspline`, `libslic3r` (common header), `layer_height_spline` | Boost.Thread | new, small | |
+| 4 | `conditional_gcode` | `exprtk` | `conditional_gcode_test`: the `apply_math` checks of `test_gcode_math.cpp` | done |
+| 5 | `bspline`, `libslic3r` (common header), `layer_height_spline` | Boost.Thread | new, small | next |
 | 6 | `utils` | `log` | new, small | |
 | 7 | `gcode_sender` | Boost.Asio | new, with a pseudo terminal | |
 | 8 | `miniz`, `miniz_extension` | Boost.Nowide | new, small | |

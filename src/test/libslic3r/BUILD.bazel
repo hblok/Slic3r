@@ -22,3 +22,13 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "conditional_gcode_test",
+    size = "small",
+    srcs = ["conditional_gcode_test.cpp"],
+    deps = [
+        "//src/libslic3r:conditional_gcode",
+        "@googletest//:gtest_main",
+    ],
+)

@@ -1,0 +1,10 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+# Libraries from other projects, built without warnings. Include paths start here.
+package(default_visibility = ["//src:__subpackages__"])
+
+cc_library(
+    name = "exprtk",
+    hdrs = ["exprtk/exprtk.hpp"],
+    includes = ["."],
+)
