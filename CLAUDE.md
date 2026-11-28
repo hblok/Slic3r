@@ -21,13 +21,21 @@ before proposing a change of direction.
 All C++ since 2026-11-28. The Perl program (GUI, bindings, tests) is in git history; the
 tag `perl-final` is the last commit with all of it.
 
-## Bazel (being introduced)
+## Bazel (replacing CMake)
 
-`bazel test //...` builds `libslic3r` and `//src:slic3r-cli` and runs their tests, golden
-G-code included (version in `.bazelversion`; result links in `build/bazel/`). The GUI is
-not there yet, and CI runs CMake only: [plan/bazel.md](plan/bazel.md) has the steps and
-the rules. A change to a source file list or a test goes into both builds. Google Tests
-are `<name>_test.cpp`; the Catch files `test_*.cpp` are the CMake build's.
+```sh
+bazel test //...                                        # everything, GUI included (about 4 min)
+bazel test --test_tag_filters=-gui --build_tag_filters=-gui //...   # without wxWidgets
+bazel run //src:slic3r                                  # the program; //src:slic3r-cli has no GUI
+utils/make_dist.sh                                      # a copyable run directory
+```
+
+Version in `.bazelversion`, result links in `build/bazel/`, libraries from the registry
+except wxWidgets and OpenGL (system packages, `bazel/wx.bzl`). CI builds and tests with
+both systems until CMake is removed: [plan/bazel.md](plan/bazel.md). A change to a source
+file list or a test goes into both builds. Google Tests are `<name>_test.cpp`, one per
+target; the Catch files `test_*.cpp` are the CMake build's. A test depends on the target
+it tests; files that need each other are one target.
 
 ## Tests: two labelled sets
 
@@ -85,8 +93,9 @@ up in `build-gui/gui-*`. A part that nears 5 minutes gets split.
 Run it after GUI changes. They click at fixed positions and count menu entries: a new
 menu entry or layout change needs the scripts adjusted (see their screenshots).
 
-`utils/make_dist.sh` builds a copyable run directory of the program in
-`build/dist-gui`; build it on Debian 13 (the chroot), it is tied to its wxWidgets and Boost.
+`utils/make_dist.sh` (Bazel) builds a copyable run directory of the program in
+`build/dist-gui`; build it on Debian 13: it needs system libraries as new as the build
+machine's.
 
 ## Rules
 

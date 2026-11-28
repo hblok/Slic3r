@@ -73,9 +73,14 @@ cmake --build build-gui -j$(nproc) --target slic3r
 ./build-gui/slic3r --help
 ```
 
-`utils/make_dist.sh` puts the program, its icons and the printer profiles into a directory
-you can copy. For the command line alone, leave out the wxWidgets and OpenGL packages and
+For the command line alone, leave out the wxWidgets and OpenGL packages and
 `-DEnable_GUI=ON`.
+
+The build is moving to [Bazel](plan/bazel.md). With
+[Bazelisk](https://github.com/bazelbuild/bazelisk) installed (it needs `g++` and, for the
+graphical interface, `libwxgtk3.2-dev libgl-dev libglu1-mesa-dev`; Boost comes with the
+build), `utils/make_dist.sh` puts the program, its icons and the printer profiles into a
+directory you can copy, and `bazel test //...` runs the tests.
 
 Tests (see [CLAUDE.md](CLAUDE.md)):
 
