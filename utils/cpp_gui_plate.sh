@@ -361,6 +361,22 @@ done
 grep -q '^bed_shape = 0x0,200' "$out/data/printer/My Settings.ini" || fail "wizard: bed shape"
 grep -q '^selected\|^printer = My Settings' "$out/data/slic3r.ini" || fail "wizard: preset not selected"
 ok "configuration wizard"
+
+# a bundle with a preset of the user's name: kept unless the user says to overwrite it
+mine="$out/data/print/My Settings.ini"
+printf '[print:My Settings]\nlayer_height = 0.17\n' >"$out/bundle.ini"
+import_bundle() { # key for the question
+    file_menu 5; answer_open "$out/bundle.ini"
+    dialog=$(xdotool search --onlyvisible --name '^Existing presets$') || fail "bundle: no question"
+    xdotool windowfocus "$dialog"; sleep 0.3; shot "bundle-question-$1"; key "$1"; sleep 1
+    dialog=$(xdotool search --onlyvisible --name '^Config Bundle$') || fail "bundle: no summary"
+    xdotool windowfocus "$dialog"; sleep 0.3; key Return
+}
+import_bundle Return                                    # the default: No
+! grep -q '^layer_height = 0.17' "$mine" || fail "bundle: a preset was overwritten unasked"
+import_bundle alt+y                                     # Yes
+grep -q '^layer_height = 0.17' "$mine" || fail "bundle: the preset was not overwritten"
+ok "config bundle: overwrite only when asked for"
 fi
 
 alive end

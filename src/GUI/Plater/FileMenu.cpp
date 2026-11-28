@@ -319,6 +319,14 @@ void Plater::load_config_bundle(const wxString& path, bool only_with_id) {
         return text.substr(at + key.size(), text.find('\n', at) - at - key.size());
     };
     int imported {0}, skipped {0};
+    auto write = [&imported](const wxFileName& target, const std::string& text) {
+        std::ofstream out(target.GetFullPath().ToUTF8().data());
+        out << text;
+        if (out) ++imported;
+    };
+    // presets the user already has under that name
+    std::vector<std::pair<wxFileName, std::string>> clashes;
+    wxString clash_names;
     for (const auto& entry : sections) {
         const size_t group {entry.first.first};
         const std::string id {id_of(entry.second, group)};
@@ -330,10 +338,21 @@ void Plater::load_config_bundle(const wxString& path, bool only_with_id) {
             if (!id.empty() && config.has(key) && config.config().serialize(key) == id) known = true;
         }
         const wxFileName target(SLIC3RAPP->preset_ini.at(group), wxString::FromUTF8(entry.first.second.c_str()) + ".ini");
-        if (known || target.FileExists()) { ++skipped; continue; }  // never over a preset of the user's
-        std::ofstream out(target.GetFullPath().ToUTF8().data());
-        out << entry.second;
-        if (out) ++imported;
+        if (known) { ++skipped; continue; }
+        if (target.FileExists()) {
+            clashes.emplace_back(target, entry.second);
+            clash_names << "\n" << GROUP_SECTIONS[group] << ": " << target.GetName();
+            continue;
+        }
+        write(target, entry.second);
+    }
+    // never over a preset of the user's without asking (and not at all at the first start)
+    const bool overwrite {!clashes.empty() && path.IsEmpty() && wxMessageBox(
+        _("The bundle has presets with the names of some of yours:") + "\n" + clash_names + "\n\n" + _("Overwrite yours?"),
+        _("Existing presets"), wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION, this) == wxYES};
+    for (const auto& clash : clashes) {
+        if (overwrite) write(clash.first, clash.second);
+        else ++skipped;
     }
     if (settings.count("autocenter") > 0) ui_settings->autocenter = settings["autocenter"] == "1";
     for (size_t group = 0; group < preset_types; ++group) {

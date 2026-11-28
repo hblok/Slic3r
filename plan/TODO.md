@@ -15,7 +15,6 @@ Differences from the Perl GUI, to fix if they matter:
 
 - "Layer heights…" shows layer lines in its 3D view, not toolpaths
 - No Growl notification when slicing is done (it needed an optional Perl module)
-- Importing a config bundle never overwrites an existing preset
 - The Solarized colour scheme keeps the default toolbar icons
 
 ## Needs the printer
