@@ -62,3 +62,20 @@ cc_library(
         "@boost.system",
     ],
 )
+
+cc_library(
+    name = "gcode_sender",
+    srcs = ["GCodeSender.cpp"],
+    hdrs = ["GCodeSender.hpp"],
+    includes = ["."],
+    deps = [
+        ":libslic3r_header",
+        "@boost.algorithm",
+        "@boost.asio",
+        "@boost.bind",
+        "@boost.core",
+        "@boost.date_time",
+        "@boost.lexical_cast",
+        "@boost.thread",
+    ],
+)

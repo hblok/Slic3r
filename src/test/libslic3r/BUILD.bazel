@@ -52,3 +52,13 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "gcode_sender_test",
+    size = "small",
+    srcs = ["gcode_sender_test.cpp"],
+    deps = [
+        "//src/libslic3r:gcode_sender",
+        "@googletest//:gtest_main",
+    ],
+)

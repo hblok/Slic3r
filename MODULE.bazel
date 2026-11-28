@@ -1,7 +1,12 @@
 module(name = "slic3r")
 
 bazel_dep(name = "boost.algorithm", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.asio", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.bind", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.core", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.date_time", version = "1.90.0.bcr.1")
 bazel_dep(name = "boost.function", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.lexical_cast", version = "1.90.0.bcr.1")
 bazel_dep(name = "boost.locale", version = "1.90.0.bcr.1")
 bazel_dep(name = "boost.system", version = "1.90.0.bcr.1")
 bazel_dep(name = "boost.thread", version = "1.90.0.bcr.1")
