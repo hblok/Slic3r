@@ -27,3 +27,10 @@ gui_test(
     data = ["//src/test:inputs"],
     deps = ["//src/GUI:preset"],
 )
+
+gui_test(
+    name = "preset_chooser_test",
+    srcs = ["preset_chooser_test.cpp"],
+    data = ["//src/test:inputs"],
+    deps = ["//src/GUI:preset_chooser"],
+)

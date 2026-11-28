@@ -4,6 +4,7 @@
 set -eu
 export HOME="${TEST_TMPDIR:?}" NO_AT_BRIDGE=1
 display="$TEST_TMPDIR/display"
+: >"$display"
 Xvfb -displayfd 3 -screen 0 1280x900x24 -nolisten tcp 3>"$display" >"$TEST_TMPDIR/xvfb.log" 2>&1 &
 server=$!
 trap 'kill "$server" 2>/dev/null || :' EXIT

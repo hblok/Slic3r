@@ -4,6 +4,8 @@
 
 #include <wx/wx.h>
 
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 
 int main(int argc, char** argv) {
@@ -23,8 +25,8 @@ int main(int argc, char** argv) {
     wxTheApp->SetTopWindow(top);
     top->Show();
     const int result {RUN_ALL_TESTS()};
-    top->Destroy();
-    wxTheApp->ProcessPendingEvents();
-    wxEntryCleanup();
-    return result;
+    // Leave without shutting the toolkit down: the tests are over, and with the image
+    // loader of newer systems (glycin) the shutdown can wait for its threads for ever.
+    std::fflush(nullptr);
+    std::_Exit(result);
 }
