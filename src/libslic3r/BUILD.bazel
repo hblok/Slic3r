@@ -326,3 +326,82 @@ cc_library(
         ":libslic3r_header",
     ],
 )
+
+# The two need each other.
+cc_library(
+    name = "extrusion_entity",
+    srcs = [
+        "ExtrusionEntity.cpp",
+        "ExtrusionEntityCollection.cpp",
+    ],
+    hdrs = [
+        "ExtrusionEntity.hpp",
+        "ExtrusionEntityCollection.hpp",
+    ],
+    includes = ["."],
+    deps = [
+        ":extruder",
+        ":geometry",
+        ":libslic3r_header",
+        ":utils",
+    ],
+)
+
+cc_library(
+    name = "flow",
+    srcs = ["Flow.cpp"],
+    hdrs = ["Flow.hpp"],
+    includes = ["."],
+    deps = [
+        ":config_base",
+        ":extrusion_entity",
+        ":libslic3r_header",
+        ":utils",
+    ],
+)
+
+cc_library(
+    name = "perimeter_generator",
+    srcs = ["PerimeterGenerator.cpp"],
+    hdrs = ["PerimeterGenerator.hpp"],
+    includes = ["."],
+    deps = [
+        ":extrusion_entity",
+        ":flow",
+        ":geometry",
+        ":libslic3r_header",
+        ":print_config",
+        ":surface_collection",
+    ],
+)
+
+# The patterns need their base class, and its factory needs the patterns.
+cc_library(
+    name = "fill",
+    srcs = [
+        "Fill/Fill.cpp",
+        "Fill/Fill3DHoneycomb.cpp",
+        "Fill/FillConcentric.cpp",
+        "Fill/FillGyroid.cpp",
+        "Fill/FillHoneycomb.cpp",
+        "Fill/FillPlanePath.cpp",
+        "Fill/FillRectilinear.cpp",
+    ],
+    hdrs = [
+        "Fill/Fill.hpp",
+        "Fill/Fill3DHoneycomb.hpp",
+        "Fill/FillConcentric.hpp",
+        "Fill/FillGyroid.hpp",
+        "Fill/FillHoneycomb.hpp",
+        "Fill/FillPlanePath.hpp",
+        "Fill/FillRectilinear.hpp",
+    ],
+    includes = ["."],
+    deps = [
+        ":flow",
+        ":geometry",
+        ":libslic3r_header",
+        ":print_config",
+        ":utils",
+    ],
+)

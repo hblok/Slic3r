@@ -47,8 +47,8 @@ of their own. Four groups need each other in a circle, and each becomes one targ
 | 9 | `geometry` (15 units), after `clipper`, `admesh`, `poly2tri`, `polypartition` | Boost.Polygon | `geometry_test`, `polygon_test`, `transformation_matrix_test`: ported from the three Catch files | done |
 | 10 | bridge detector, motion planner, adaptive slicing, surfaces | geometry | `primitives`, `medial_axis`, `bridge_detector`, `motion_planner`, `surface_collection`, `slicing_adaptive` tests | done |
 | 11 | `config_base`, `print_config`, `config`, `placeholder_parser`, `extruder`, `gcode_reader`, `gcode_writer`, `gcode_time_estimator`, `pressure_regulator`, `vibration_limit` | geometry | 11 new and ported tests, one per target (`config_base` ... `vibration_limit`) | done |
-| 12 | extrusion entities, flow, perimeters, `fill` (7 units) | config | per target | next |
-| 13 | slicing core, then SLA and simple print | all above, `expat`, `Zip` | the tests that need whole prints | |
+| 12 | `extrusion_entity` (2 units), `flow`, `perimeter_generator`, `fill` (7 units) | config | `extrusion_entity`, `flow`, `perimeter_generator`, `fill` tests | done |
+| 13 | slicing core, then SLA and simple print | all above, `expat`, `Zip` | the tests that need whole prints | next |
 | 14 | `slic3r-cli`, a program without wxWidgets | core | golden G-code and command line checks | |
 | 15 | GUI parts, bottom up, then `slic3r` | wxWidgets, OpenGL | unit tests per part, then the GUI scripts | |
 | 16 | `utils/make_dist.sh` on Bazel, a Bazel job in CI | | CI green; the owner tries the program | |
@@ -68,7 +68,7 @@ Libraries come from the Bazel Central Registry.
   old). Checked 2026-11-28 with Debian 13's compiler and the CMake flags: the whole
   program and all tests built against 1.90 give identical golden G-code, pass the command
   line checks and the 101 test cases. One change is needed: `ConfigBase.cpp` includes
-  `boost/nowide/cstdlib.hpp` instead of `cenv.hpp` (step 11).
+  `boost/nowide/cstdlib.hpp` instead of `cenv.hpp` (done in step 11).
 - **Where to build.** A program Bazel builds needs only the C and C++ runtime of the
   system (and wxWidgets for the GUI), but those must be as new as the build machine's:
   build releases on Debian 13 (later: the build container). Test programs are linked

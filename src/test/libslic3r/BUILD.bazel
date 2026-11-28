@@ -267,3 +267,43 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "extrusion_entity_test",
+    size = "small",
+    srcs = ["extrusion_entity_test.cpp"],
+    deps = [
+        "//src/libslic3r:extrusion_entity",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "flow_test",
+    size = "small",
+    srcs = ["flow_test.cpp"],
+    deps = [
+        "//src/libslic3r:flow",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "perimeter_generator_test",
+    size = "small",
+    srcs = ["perimeter_generator_test.cpp"],
+    deps = [
+        "//src/libslic3r:perimeter_generator",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "fill_test",
+    size = "small",
+    srcs = ["fill_test.cpp"],
+    deps = [
+        "//src/libslic3r:fill",
+        "@googletest//:gtest_main",
+    ],
+)
