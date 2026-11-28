@@ -14,7 +14,7 @@ PLA_PRICE, ABS_PRICE = 0.05, 0.02
 CURRENCY = "EUR"
 
 for line in fileinput.input(inplace=len(sys.argv) > 1, encoding="utf-8", errors="surrogateescape"):
-    used = re.match(r"(;\s+filament\s+used\s+=\s.*\((\d+(?:\.\d+)?)cm3)\)", line)
+    used = re.match(r"(;\s+(?:material|filament)\s+used\s+=\s.*\((\d+(?:\.\d+)?)cm3)\)", line)
     if used:
         pla = float(used.group(2)) * PLA_DENSITY
         abs_ = float(used.group(2)) * ABS_DENSITY

@@ -369,8 +369,7 @@ PrintGCode::output()
         fh << "; material used = ";
         fh << std::fixed << std::setprecision(2) << used_material << "mm ";
         fh << "(" << std::fixed << std::setprecision(2)
-           << extruded_volume / 1000.0
-           << used_material << "cm3)\n";
+           << extruded_volume / 1000.0 << "cm3)\n";
 
         if (material_weight > 0) {
             _print.total_weight += material_weight;
@@ -379,7 +378,7 @@ PrintGCode::output()
             if (material_cost > 0) {
                 _print.total_cost += material_cost;
                 fh << "; material cost = "
-                   << std::fixed << std::setprecision(2) << material_weight << "g\n";
+                   << std::fixed << std::setprecision(2) << material_cost << "\n";
             }
         }
         _print.total_used_filament += used_material;

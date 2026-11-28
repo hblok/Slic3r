@@ -452,7 +452,7 @@ M140 S0 ; set bed temperature
 ; cog_x = 100.001696
 ; cog_y = 100.000960
 ; cog_z = 1.432684
-; material used = 32.13mm (0.2332.13cm3)
+; material used = 32.13mm (0.23cm3)
 ; total filament cost = 0.00
 
 ; avoid_crossing_perimeters = 0

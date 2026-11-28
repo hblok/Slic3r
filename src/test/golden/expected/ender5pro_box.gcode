@@ -2759,7 +2759,7 @@ M84 X Y E ; motors off except Z
 ; cog_x = 109.996830
 ; cog_y = 109.996792
 ; cog_z = 5.102969
-; material used = 869.20mm (2.09869.20cm3)
+; material used = 869.20mm (2.09cm3)
 ; material used = 2.59g
 ; total filament cost = 0.00
 
