@@ -83,7 +83,9 @@ jobs:
             "--per_file_copt=^src/.*@-DSLIC3R_BUILD_COMMIT=$COMMIT" \
             "--define=SLIC3R_DEB_VERSION=$debian" //package:deb
           mkdir out
-          cp build/bazel/bin/package/slic3r__amd64.deb "out/slic3r_${debian}_amd64.deb"
+          # GitHub renames release files with other characters, and SHA256SUMS must match
+          file=slic3r_$(printf '%s' "$VERSION" | tr '+' '.')_amd64.deb
+          cp build/bazel/bin/package/slic3r__amd64.deb "out/$file"
           (cd out && sha256sum ./*.deb >SHA256SUMS && cat SHA256SUMS)
           dpkg-deb -I out/*.deb
       - uses: actions/upload-artifact@v7
