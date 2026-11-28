@@ -37,11 +37,14 @@ cc_library(
     ],
 )
 
-# The application window, the plater and the preset editors need each other.
+# The application window, the plater, the preset editors and the printer controller need
+# each other.
 cc_library(
     name = "application",
     tags = ["gui"],
     srcs = [
+        "Controller/Controller.cpp",
+        "Controller/PrinterPanel.cpp",
         "Dialogs/MaterialEditor.cpp",
         "Dialogs/PresetEditor.cpp",
         "Dialogs/PresetRules.cpp",
@@ -58,8 +61,8 @@ cc_library(
         ":about_dialog",
         ":bed_shape_dialog",
         ":config_wizard",
-        ":controller",
         ":layer_heights_dialog",
+        ":manual_control_dialog",
         ":misc_ui",
         ":object_cut_dialog",
         ":object_face_dialog",
@@ -76,7 +79,6 @@ cc_library(
         ":preview_2d",
         ":preview_3d",
         ":preview_panel",
-        ":printer_panel",
         ":progress_status_bar",
         ":projector",
         ":scene_3d",
@@ -105,19 +107,6 @@ cc_library(
         ":headers",
         ":bed_shape_dialog",
         ":option_control",
-    ],
-)
-
-cc_library(
-    name = "controller",
-    tags = ["gui"],
-    srcs = ["Controller/Controller.cpp"],
-    deps = [
-        ":headers",
-        ":misc_ui",
-        ":preset",
-        ":printer_panel",
-        ":settings",
     ],
 )
 
@@ -279,6 +268,8 @@ cc_library(
     ],
 )
 
+# The constructor that takes the application's settings and presets needs :application
+# to link; the other one, which the tests use, does not.
 cc_library(
     name = "preset_chooser",
     tags = ["gui"],
@@ -323,20 +314,6 @@ cc_library(
     deps = [
         ":headers",
         "//src/libslic3r:extrusion_entity",
-    ],
-)
-
-cc_library(
-    name = "printer_panel",
-    tags = ["gui"],
-    srcs = ["Controller/PrinterPanel.cpp"],
-    deps = [
-        ":headers",
-        ":manual_control_dialog",
-        ":misc_ui",
-        ":preset",
-        ":settings",
-        "//src/libslic3r:gcode_time_estimator",
     ],
 )
 

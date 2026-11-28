@@ -15,6 +15,23 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "gui_test_support",
+    testonly = True,
+    hdrs = ["gui_test_support.hpp"],
+    includes = ["."],
+    tags = ["gui"],
+    deps = ["@wxwidgets"],
+)
+
+cc_library(
+    name = "object_fixture",
+    testonly = True,
+    hdrs = ["object_fixture.hpp"],
+    includes = ["."],
+    deps = ["//src/libslic3r:slicing_core"],
+)
+
 gui_test(
     name = "misc_ui_test",
     srcs = ["misc_ui_test.cpp"],
@@ -33,4 +50,195 @@ gui_test(
     srcs = ["preset_chooser_test.cpp"],
     data = ["//src/test:inputs"],
     deps = ["//src/GUI:preset_chooser"],
+)
+
+gui_test(
+    name = "settings_test",
+    srcs = ["settings_test.cpp"],
+    deps = ["//src/GUI:settings"],
+)
+
+gui_test(
+    name = "progress_status_bar_test",
+    srcs = ["progress_status_bar_test.cpp"],
+    deps = ["//src/GUI:progress_status_bar"],
+)
+
+gui_test(
+    name = "plater_object_test",
+    srcs = ["plater_object_test.cpp"],
+    deps = ["//src/GUI:plater_object"],
+)
+
+gui_test(
+    name = "volume_scene_test",
+    srcs = ["volume_scene_test.cpp"],
+    deps = ["//src/GUI:volume_scene"],
+)
+
+gui_test(
+    name = "scene_3d_test",
+    srcs = ["scene_3d_test.cpp"],
+    deps = ["//src/GUI:scene_3d"],
+)
+
+gui_test(
+    name = "octoprint_test",
+    srcs = ["octoprint_test.cpp"],
+    deps = ["//src/GUI:octoprint"],
+)
+
+gui_test(
+    name = "option_control_test",
+    srcs = ["option_control_test.cpp"],
+    deps = ["//src/GUI:option_control"],
+)
+
+gui_test(
+    name = "override_panel_test",
+    srcs = ["override_panel_test.cpp"],
+    deps = ["//src/GUI:override_panel"],
+)
+
+gui_test(
+    name = "about_dialog_test",
+    srcs = ["about_dialog_test.cpp"],
+    data = ["//var"],
+    deps = [
+        ":gui_test_support",
+        "//src/GUI:about_dialog",
+    ],
+)
+
+gui_test(
+    name = "bed_shape_dialog_test",
+    srcs = ["bed_shape_dialog_test.cpp"],
+    data = ["//var"],
+    deps = ["//src/GUI:bed_shape_dialog"],
+)
+
+gui_test(
+    name = "config_wizard_test",
+    srcs = ["config_wizard_test.cpp"],
+    data = ["//var"],
+    deps = [
+        ":gui_test_support",
+        "//src/GUI:config_wizard",
+    ],
+)
+
+gui_test(
+    name = "preferences_test",
+    srcs = ["preferences_test.cpp"],
+    data = ["//var"],
+    deps = [
+        ":gui_test_support",
+        "//src/GUI:preferences",
+    ],
+)
+
+gui_test(
+    name = "object_cut_dialog_test",
+    srcs = ["object_cut_dialog_test.cpp"],
+    data = ["//var"],
+    deps = [
+        ":object_fixture",
+        "//src/GUI:object_cut_dialog",
+    ],
+)
+
+gui_test(
+    name = "object_face_dialog_test",
+    srcs = ["object_face_dialog_test.cpp"],
+    data = ["//var"],
+    deps = [
+        ":object_fixture",
+        "//src/GUI:object_face_dialog",
+    ],
+)
+
+gui_test(
+    name = "object_settings_test",
+    srcs = ["object_settings_test.cpp"],
+    data = ["//var"],
+    deps = [
+        ":object_fixture",
+        "//src/GUI:object_settings",
+    ],
+)
+
+gui_test(
+    name = "layer_heights_dialog_test",
+    srcs = ["layer_heights_dialog_test.cpp"],
+    data = ["//var"],
+    deps = [
+        ":object_fixture",
+        "//src/GUI:layer_heights_dialog",
+    ],
+)
+
+gui_test(
+    name = "manual_control_dialog_test",
+    srcs = ["manual_control_dialog_test.cpp"],
+    data = ["//var"],
+    deps = ["//src/GUI:manual_control_dialog"],
+)
+
+gui_test(
+    name = "projector_screen_test",
+    srcs = ["projector_screen_test.cpp"],
+    data = ["//var"],
+    deps = ["//src/GUI:projector_screen"],
+)
+
+gui_test(
+    name = "projector_test",
+    srcs = ["projector_test.cpp"],
+    data = ["//var"],
+    deps = [
+        ":gui_test_support",
+        "//src/GUI:projector",
+    ],
+)
+
+gui_test(
+    name = "preview_panel_test",
+    srcs = ["preview_panel_test.cpp"],
+    deps = [
+        "//src/GUI:preview_panel",
+        "//src/test:print_test_data",
+    ],
+)
+
+gui_test(
+    name = "preview_2d_test",
+    srcs = ["preview_2d_test.cpp"],
+    deps = [
+        "//src/GUI:preview_2d",
+        "//src/test:print_test_data",
+    ],
+)
+
+gui_test(
+    name = "preview_3d_test",
+    srcs = ["preview_3d_test.cpp"],
+    deps = [
+        "//src/GUI:preview_3d",
+        "//src/test:print_test_data",
+    ],
+)
+
+gui_test(
+    name = "plate_2d_test",
+    srcs = ["plate_2d_test.cpp"],
+    deps = ["//src/GUI:plate_2d"],
+)
+
+gui_test(
+    name = "plate_3d_test",
+    srcs = ["plate_3d_test.cpp"],
+    deps = [
+        ":object_fixture",
+        "//src/GUI:plate_3d",
+    ],
 )
