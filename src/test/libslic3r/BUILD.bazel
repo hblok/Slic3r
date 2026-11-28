@@ -307,3 +307,154 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "model_test",
+    size = "small",
+    srcs = ["model_test.cpp"],
+    deps = [
+        "//src/test:print_test_data",
+        "//src/libslic3r:slicing_core",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "print_test",
+    size = "small",
+    srcs = ["print_test.cpp"],
+    deps = [
+        "//src/test:print_test_data",
+        "//src/libslic3r:slicing_core",
+        "@boost.filesystem",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "print_object_test",
+    size = "small",
+    srcs = ["print_object_test.cpp"],
+    deps = [
+        "//src/test:print_test_data",
+        "//src/libslic3r:slicing_core",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "print_gcode_test",
+    size = "small",
+    srcs = ["print_gcode_test.cpp"],
+    data = ["//src/test:inputs"],
+    deps = [
+        "//src/test:print_test_data",
+        "//src/libslic3r:slicing_core",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "skirt_brim_test",
+    size = "small",
+    srcs = ["skirt_brim_test.cpp"],
+    deps = [
+        "//src/test:print_test_data",
+        "//src/libslic3r:slicing_core",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "support_material_test",
+    size = "small",
+    srcs = ["support_material_test.cpp"],
+    deps = [
+        "//src/test:print_test_data",
+        "//src/libslic3r:slicing_core",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "toolpaths_test",
+    size = "small",
+    srcs = ["toolpaths_test.cpp"],
+    deps = [
+        "//src/test:print_test_data",
+        "//src/libslic3r:slicing_core",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "print_flow_test",
+    size = "small",
+    srcs = ["print_flow_test.cpp"],
+    deps = [
+        "//src/test:print_test_data",
+        "//src/libslic3r:slicing_core",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "gcode_export_test",
+    size = "small",
+    srcs = ["gcode_export_test.cpp"],
+    # CoolingBuffer.hpp declares apply_speed_factor() for tests only
+    local_defines = ["SLIC3R_TEST"],
+    deps = [
+        "//src/test:print_test_data",
+        "//src/libslic3r:slicing_core",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "tmf_test",
+    size = "small",
+    srcs = ["tmf_test.cpp"],
+    data = [
+        "//src/test:golden",
+        "//src/test:inputs",
+    ],
+    deps = [
+        "//src/libslic3r:slicing_core",
+        "@boost.filesystem",
+        "@boost.nowide",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "amf_test",
+    size = "small",
+    srcs = ["amf_test.cpp"],
+    data = ["//src/test:inputs"],
+    deps = [
+        "//src/libslic3r:slicing_core",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "print_test_data_test",
+    size = "small",
+    srcs = ["print_test_data_test.cpp"],
+    deps = [
+        "//src/test:print_test_data",
+        "//src/libslic3r:slicing_core",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "triangle_mesh_test",
+    size = "small",
+    srcs = ["triangle_mesh_test.cpp"],
+    deps = [
+        "//src/libslic3r:geometry",
+        "@googletest//:gtest_main",
+    ],
+)

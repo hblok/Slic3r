@@ -83,3 +83,36 @@ cc_library(
     copts = ["-w"],
     includes = ["."],
 )
+
+cc_library(
+    name = "expat",
+    srcs = [
+        "expat/xmlparse.c",
+        "expat/xmlrole.c",
+        "expat/xmltok.c",
+    ],
+    hdrs = glob([
+        "expat/*.h",
+        "expat/*.inc",
+    ]),
+    copts = ["-w"],
+    includes = [
+        ".",
+        "expat",
+    ],
+)
+
+cc_library(
+    name = "tiny_obj_loader",
+    hdrs = ["tiny_obj_loader.h"],
+    includes = ["."],
+)
+
+cc_library(
+    name = "zip_archive",
+    srcs = ["Zip/ZipArchive.cpp"],
+    hdrs = ["Zip/ZipArchive.hpp"],
+    copts = ["-w"],
+    includes = ["."],
+    deps = [":miniz"],
+)

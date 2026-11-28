@@ -1,3 +1,4 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 # Keep this one: it shows that Bazel can build, run and judge a C++ test here, and
@@ -14,4 +15,22 @@ filegroup(
     name = "inputs",
     srcs = glob(["inputs/**"]),
     visibility = ["//src:__subpackages__"],
+)
+
+# the models and reference G-code of the golden check
+filegroup(
+    name = "golden",
+    srcs = glob(["golden/**"]),
+    visibility = ["//src:__subpackages__"],
+)
+
+# the test meshes and "slice this" helpers of the tests that need whole prints
+cc_library(
+    name = "print_test_data",
+    testonly = True,
+    srcs = ["test_data.cpp"],
+    hdrs = ["test_data.hpp"],
+    includes = ["."],
+    visibility = ["//src:__subpackages__"],
+    deps = ["//src/libslic3r:slicing_core"],
 )
