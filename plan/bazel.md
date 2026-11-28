@@ -1,6 +1,6 @@
 # Bazel build: plan
 
-Written and revised 2026-11-28. Step 1 is done. Decisions: [DECISIONS.md](DECISIONS.md).
+Written 2026-11-28, last revised with the owner's answers the same day. Decisions: [DECISIONS.md](DECISIONS.md).
 
 Goal: build, test and package with Bazel, then remove CMake.
 
@@ -10,35 +10,27 @@ Goal: build, test and package with Bazel, then remove CMake.
   allows, often one `.cpp` and its header) and its own test target.
 - A step is done when `bazel test //...` builds, runs and passes. Commit, push, then the
   next one.
-- A test depends only on the target it tests.
+- A test depends only on the target it tests (and Google Test), and is `size = "small"`
+  unless it cannot be. `//src/test:minimal_test` stays: it checks the setup itself.
+- The code is not reshaped for the sake of tests: files that need each other make one
+  target.
+- The existing Catch tests are ported to Google Test as their targets arrive, to
+  `<name>_test.cpp` beside them; the `test_*.cpp` files stay for CMake until it goes.
 - CMake stays unchanged and authoritative until Bazel matches it.
 - We build inside a container (the development one for now; a build container later).
 
 ## What the code allows
 
 Measured on 2026-11-28 from the `#include` lines and the symbols of the CMake objects.
-`libslic3r` has 65 units (a `.cpp` with its header, or a lone file). Units that need
-each other in a circle cannot be separate Bazel targets.
+`libslic3r` has 65 units (a `.cpp` with its header, or a lone file). Most can be a target
+of their own. Four groups need each other in a circle, and each becomes one target:
 
-| Circle | Units | Lines | To split it |
-|---|---|---|---|
-| Geometry: Point, BoundingBox, Line, MultiPoint, Polyline, ClipperUtils, Polygon, ExPolygon, Geometry, ExPolygonCollection, PolylineCollection, SVG, Surface, TransformationMatrix, TriangleMesh | 15 | 7,700 | move the functions behind 13 references |
-| Fill patterns | 7 | 1,700 | 8 references; putting the factory in its own file likely does it |
-| Slicing core: Model, IO, Print, layers, GCode, support, ... | 15 | 10,900 | 19 references, some deep (Print and PrintObject) |
-| ExtrusionEntity and its collection | 2 | 700 | keep as one |
-
-All other units can be targets of their own. The headers are in good shape: the only
-circle between headers is `Print.hpp` and `SupportMaterial.hpp`. So the geometry circle
-is made by the `.cpp` files, and splitting it means moving function bodies:
-
-| Today in | Needs | Function |
+| Target | Units | Lines |
 |---|---|---|
-| Point | Line, MultiPoint | `Line::length`, `MultiPoint::first_point` |
-| BoundingBox | Polygon | building a `Polygon` |
-| Line | Polyline, Geometry | building a `Polyline`, `directions_parallel` |
-| Polyline | ClipperUtils, ExPolygon, ExPolygonCollection | `offset`, `contains` |
-| ClipperUtils | Polygon, ExPolygon, Geometry | conversions, `chained_path_items` |
-| ExPolygon | Geometry | `MedialAxis::build` |
+| geometry: Point, BoundingBox, Line, MultiPoint, Polyline, ClipperUtils, Polygon, ExPolygon, Geometry, ExPolygonCollection, PolylineCollection, SVG, Surface, TransformationMatrix, TriangleMesh | 15 | 7,700 |
+| fill patterns | 7 | 1,700 |
+| slicing core: Model, IO, Print, layers, GCode, support, ... | 15 | 10,900 |
+| ExtrusionEntity and its collection | 2 | 700 |
 
 ## Steps
 
@@ -52,33 +44,35 @@ is made by the `.cpp` files, and splitting it means moving function bodies:
 | 6 | `utils` | `log` | new, small | |
 | 7 | `gcode_sender` | Boost.Asio | new, with a pseudo terminal | |
 | 8 | `miniz`, `miniz_extension` | Boost.Nowide | new, small | |
-| 9 | geometry (question 1) with `clipper`, `admesh`, `poly2tri`, `polypartition` | Boost.Polygon | geometry, polygon, matrix tests | |
+| 9 | `geometry` (15 units), after `clipper`, `admesh`, `poly2tri`, `polypartition` | Boost.Polygon | geometry, polygon, matrix tests | |
 | 10 | bridge detector, motion planner, adaptive slicing, surfaces | geometry | per target | |
 | 11 | config: base, print config, parser, G-code reader and writer, extruder, filters | geometry | config and G-code tests | |
-| 12 | extrusion entities, flow, perimeters, fill | config | per target | |
+| 12 | extrusion entities, flow, perimeters, `fill` (7 units) | config | per target | |
 | 13 | slicing core, then SLA and simple print | all above, `expat`, `Zip` | the tests that need whole prints | |
 | 14 | `slic3r-cli`, a program without wxWidgets | core | golden G-code and command line checks | |
 | 15 | GUI parts, bottom up, then `slic3r` | wxWidgets, OpenGL | unit tests per part, then the GUI scripts | |
-| 16 | `utils/make_dist.sh` on Bazel, CI | | CI green; the owner tries the program | |
+| 16 | `utils/make_dist.sh` on Bazel, a Bazel job in CI | | CI green; the owner tries the program | |
 | 17 | remove CMake, update `CLAUDE.md` and README | | CI green | |
 | later | `.deb` (`rules_pkg`), build container | | installs and slices in a clean `debian:13` | |
 
-Steps 9 to 15 are split further when we get there: one target and one test per commit.
+Steps 9 to 15 are split further when we get there: one target (or one test) per commit.
 
 ## Dependencies
 
 Libraries come from the Bazel Central Registry.
 
 - **Google Test** 1.18.0: in use.
-- **Boost**: tried 2026-11-28 with Bazel 9.3.3 (thread, filesystem, polygon only).
-  1.83.0, Debian 13's version, builds with `--incompatible_disallow_empty_glob=false`;
-  1.90.0.bcr.1 builds as it is (question 3).
+- **Boost** 1.90.0.bcr.1, one module per library as targets need them. Tried
+  2026-11-28: all 63 `libslic3r` files compile with it, after `ConfigBase.cpp` includes
+  `boost/nowide/cstdlib.hpp` for `cenv.hpp` (step 11). 1.83.0, Debian 13's version, is
+  not possible: the registry has no Boost.Nowide that old. CMake keeps using 1.83, so
+  compare the G-code of both (step 14).
 - **wxWidgets** is not in the registry (looked for `wxwidgets` and `wxwidget`). For step
   15 it comes from the system (installing build packages in the container is agreed), or
   Bazel builds it from source with `rules_foreign_cc`. Decided then.
-- `src/third_party/boost` holds a copy of Boost.Nowide that comes before the system one
-  on the include path. The Bazel build should use the registry's; removing the copy
-  waits for step 17.
+- `src/third_party/boost` holds an old copy of Boost.Nowide that comes before the system
+  one on the CMake include path (it is where `cenv.hpp` comes from). Bazel uses the
+  registry's; removing the copy waits for step 17.
 
 ## To solve when we get there
 
@@ -92,12 +86,3 @@ Libraries come from the Bazel Central Registry.
 | Test time limits | quick tests `size = "small"` (60 s), GUI tests 300 s |
 | `.deb` dependencies | `rules_pkg` does not work them out; list them and check by installing |
 | Checking GUI steps | the container is Ubuntu; CI and the target are Debian 13 |
-
-## Open questions
-
-| # | Question | Suggestion |
-|---|---|---|
-| 1 | Geometry: split into 15 targets (moves about a dozen functions between files, no change in behaviour; CMake must still pass), or one coarse target? | Split, one function move per commit, checked with CMake and the golden files, before step 9 |
-| 2 | The 101 existing test cases use Catch2 2.4.2. Port them to Google Test as their targets arrive, or run them with Catch? | Port, split to one file per target; the Catch files stay for CMake until step 17 |
-| 3 | Boost 1.83.0 (with the flag) or 1.90? | 1.83.0 first, so results compare with CMake; upgrade as a step of its own |
-| 4 | A Bazel job in CI now, or at step 16? | Now, while it is small |

@@ -36,4 +36,7 @@
 - Bazel step by step: first an empty test, then small isolated targets (down to one
   file) with a test each, built up one by one, the GUI after the core. See
   [bazel.md](bazel.md).
+- No code restructuring just for tests: files that need each other are one Bazel target.
+  Existing C++ tests are ported to Google Test. Boost: whichever version is most
+  convenient (1.90, see [bazel.md](bazel.md)). Bazel in CI later.
 

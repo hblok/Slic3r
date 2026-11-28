@@ -43,5 +43,5 @@ Differences from the Perl GUI, to fix if they matter:
 ## Next: Bazel
 
 - [x] An empty Google Test builds, runs and passes (`bazel test //...`, 2026-11-28)
-- [ ] Next [step](bazel.md#steps): the `exception` target and its test. Answer the
-      [open questions](bazel.md#open-questions) (`.deb` comes much later)
+- [ ] Go through the [steps](bazel.md#steps), one target and its test at a time; next:
+      `exception` (a Bazel job in CI and the `.deb` come later)
