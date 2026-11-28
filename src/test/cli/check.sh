@@ -26,6 +26,12 @@ grep -q '^M117 from a file' table.gcode || fail "--start-gcode FILE"
 head -n1 ascii.stl | grep -q '^solid' || fail "--export-stl --ascii"
 grep -q 'facet normal' ascii.stl || fail "--export-stl --ascii"
 "$slic3r" --no-gui table.stl || fail "--no-gui"
+# --load also looks beside the program
+mkdir beside
+cp "$slic3r" beside/slic3r
+echo 'layer_height = 0.15' >beside/beside.ini
+beside/slic3r --load beside.ini --save loaded.ini 2>log
+grep -qx 'layer_height = 0.15' loaded.ini || fail "--load beside the program"
 # the material summary: volume in cm3, and the cost (here twice the weight) as a cost
 "$slic3r" -g --filament-density 1.25 --filament-cost 2000 -o summary.gcode table.stl >log
 grep -Eqx '; material used = [0-9]+\.[0-9]{2}mm \([0-9]+\.[0-9]{2}cm3\)' summary.gcode || fail "material summary: length and volume"

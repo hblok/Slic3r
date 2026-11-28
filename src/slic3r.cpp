@@ -90,8 +90,23 @@ int CLI::run(int argc, char **argv) {
         }
         value = content.str();
     }
-    // load config files supplied via --load
-    for (auto const &file : config.getStrings("load", {})) {
+    // load config files supplied via --load; a file that is not found is also looked for
+    // beside the program (as the Perl program did)
+    std::vector<std::string> load_files;
+    {
+        boost::system::error_code no_proc;
+        boost::filesystem::path program {boost::filesystem::read_symlink("/proc/self/exe", no_proc)};
+        if (no_proc) program = argv[0];
+        for (std::string file : config.getStrings("load", {})) {
+            const boost::filesystem::path given {file}, beside {program.parent_path() / given};
+            if (given.is_relative() && !boost::filesystem::exists(given) && boost::filesystem::exists(beside)) {
+                boost::nowide::cerr << "Loading " << beside.string() << std::endl;
+                file = beside.string();
+            }
+            load_files.push_back(file);
+        }
+    }
+    for (auto const &file : load_files) {
         try{
             if (!boost::filesystem::exists(file)) {
                 if (config.getBool("ignore_nonexistent_config", false)) {
@@ -493,7 +508,7 @@ int CLI::run(int argc, char **argv) {
 #ifdef USE_WX
         GUI::App *gui = new GUI::App();
         gui->autosave = this->config.getString("autosave", "");
-        gui->config_files = this->config.getStrings("load", {});
+        gui->config_files = load_files;
         gui->threads = this->config.has("threads") ? this->config.getInt("threads") : 0;
         // the print options on the command line itself; those of --load files come with them
         gui->overrides.apply(this->config, true);
