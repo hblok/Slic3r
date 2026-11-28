@@ -82,15 +82,29 @@ Libraries come from the Bazel Central Registry.
   one on the CMake include path (it is where `cenv.hpp` comes from). Bazel uses the
   registry's; removing the copy waits for step 17.
 
+## Where it stands (2026-11-28)
+
+Steps 1 to 14: all of `libslic3r` and the program without a GUI build with Bazel, 49
+test targets pass, and every Catch test outside `src/test/GUI` is ported (Google Test,
+249 cases). The golden G-code matches.
+
+Settled on the way: the flags are in `.bazelrc`; `print_config` defines `USE_WX` itself,
+so there is one library; tests find their files at `src/test/inputs/` in their runfiles.
+
 ## To solve when we get there
 
 | Topic | Note |
 |---|---|
-| Compiler flags | CMake: `-O3 -DNDEBUG`, gnu++17 (compiler default), `-DM_PI=...` and a few more. Bazel's defaults differ; the golden G-code decides |
-| `USE_WX` | changes `PrintConfig.cpp` (`--autosave`, `--datadir`, ...): define those options always, so there is one library |
-| Build commit in G-code and About box | `--workspace_status_command` and a stamped header |
-| `test_options.hpp` | paths of test inputs become runfiles |
+| Build commit in G-code and About box | still "Unknown revision": `--workspace_status_command` and a stamped header |
 | Icons | the program looks in `../var` beside itself; check `bazel run` |
-| Test time limits | quick tests `size = "small"` (60 s), GUI tests 300 s |
+| Test time limits | GUI tests 300 s (`timeout = "moderate"`) |
 | `.deb` dependencies | `rules_pkg` does not work them out; list them and check by installing |
-| Checking GUI steps | the container is Ubuntu; CI and the target are Debian 13 |
+| Checking GUI steps | the GUI scripts click at fixed positions, recorded on Debian 13; the container is Ubuntu |
+| Compiler warnings | CMake builds with `-Wall`, Bazel does not yet |
+
+## Open questions
+
+| # | Question | Suggestion |
+|---|---|---|
+| 1 | wxWidgets: the system's packages (found through `wx-config`), or built from source by Bazel (`rules_foreign_cc`; GTK still comes from the system)? | System: it is what Debian ships and what CMake uses |
+| 2 | Run the GUI tests where? The scripts expect Debian 13's looks; a Bazel job in CI (`debian:13`) would check them there | Add the CI job with step 15 rather than at step 16 |

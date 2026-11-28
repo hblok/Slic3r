@@ -23,9 +23,11 @@ tag `perl-final` is the last commit with all of it.
 
 ## Bazel (being introduced)
 
-`bazel test //...` (version in `.bazelversion`; result links in `build/bazel/`). Being built up
-one small target with its test at a time: [plan/bazel.md](plan/bazel.md) has the steps
-and the rules. CMake below remains the real build.
+`bazel test //...` builds `libslic3r` and `//src:slic3r-cli` and runs their tests, golden
+G-code included (version in `.bazelversion`; result links in `build/bazel/`). The GUI is
+not there yet, and CI runs CMake only: [plan/bazel.md](plan/bazel.md) has the steps and
+the rules. A change to a source file list or a test goes into both builds. Google Tests
+are `<name>_test.cpp`; the Catch files `test_*.cpp` are the CMake build's.
 
 ## Tests: two labelled sets
 

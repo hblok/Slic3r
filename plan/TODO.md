@@ -48,5 +48,6 @@ Differences from the Perl GUI, to fix if they matter:
 ## Next: Bazel
 
 - [x] An empty Google Test builds, runs and passes (`bazel test //...`, 2026-11-28)
-- [ ] Go through the [steps](bazel.md#steps), one target and its test at a time; next:
-      `conditional_gcode` (a Bazel job in CI and the `.deb` come later)
+- [x] The library and the program without a GUI, with all their tests (steps 1 to 14)
+- [ ] The GUI (step 15): answer the [open questions](bazel.md#open-questions) first; then
+      CI, removing CMake, and much later the `.deb`
